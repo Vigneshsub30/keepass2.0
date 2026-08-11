@@ -1,0 +1,22 @@
+{
+  "description": "Golden test data for AutoType window-title matching. Generated from .NET Framework baseline.",
+  "cases": [
+    { "window": "Notepad",                     "filter": "Notepad",            "expected": true  },
+    { "window": "NOTEPAD",                     "filter": "notepad",            "expected": true  },
+    { "window": "Notepad",                     "filter": "Word",               "expected": false },
+    { "window": "Notepad - C:\\file.txt",       "filter": "Notepad*",           "expected": true  },
+    { "window": "Word - doc.docx",             "filter": "Notepad*",           "expected": false },
+    { "window": "KeePass - vault.kdbx",        "filter": "*.kdbx",             "expected": true  },
+    { "window": "KeePass - vault.kdbx",        "filter": "*.docx",             "expected": false },
+    { "window": "My KeePass Window",           "filter": "*KeePass*",          "expected": true  },
+    { "window": "My Word Window",              "filter": "*KeePass*",          "expected": false },
+    { "window": "anything at all",             "filter": "**",                 "expected": true  },
+    { "window": "Firefox - My Site",           "filter": "//firefox.+site//",  "expected": true  },
+    { "window": "NOTEPAD",                     "filter": "//notepad//",        "expected": true  },
+    { "window": "Chrome - Google",             "filter": "//firefox.+//",      "expected": false },
+    { "window": "Anything",                    "filter": "//[invalid(//",      "expected": false },
+    { "window": "",                            "filter": "",                   "expected": false },
+    { "window": "паролевый менеджер",          "filter": "паролевый менеджер", "expected": true  },
+    { "window": "КееПасс \u2014 сейф",         "filter": "*КееПасс*",          "expected": true  }
+  ]
+}
