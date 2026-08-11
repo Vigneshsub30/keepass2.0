@@ -11,10 +11,10 @@ namespace KeePass.Desktop.WinForms
 	/// existing Windows-specific behaviour (auto-type, global hot-keys,
 	/// clipboard operations, DPI handling, session lock detection).
 	/// </summary>
-	internal static class Program
+	public static class Program
 	{
 		[STAThread]
-		private static int Main(string[] args)
+		private static void Main(string[] args)
 		{
 			// .NET 10 WinForms: explicit DPI configuration replaces the
 			// manifest-based approach.  PerMonitorV2 matches the .NET
@@ -24,7 +24,7 @@ namespace KeePass.Desktop.WinForms
 			// Delegate to the existing KeePass startup sequence.
 			// KeePass.Program.Main handles command-line parsing, mutex
 			// single-instance enforcement, config loading, and MainForm setup.
-			return KeePass.Program.Main(args);
+			KeePass.Program.Main(args);
 		}
 	}
 }

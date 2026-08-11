@@ -12,6 +12,9 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <EnableDefaultItems>true</EnableDefaultItems>
+    <EnableFileInclusionValidation>false</EnableFileInclusionValidation>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
 
   <ItemGroup>

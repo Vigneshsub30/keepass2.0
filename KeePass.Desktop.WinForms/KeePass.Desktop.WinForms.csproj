@@ -31,6 +31,13 @@
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
 
+  <!-- Explicitly include the entry-point file; the DefaultItemExcludes glob
+       above is broad enough to exclude everything under the repo root, so
+       files local to this project must be enumerated explicitly. -->
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+  </ItemGroup>
+
   <ItemGroup>
     <!--
       Reference KeePassLib and KeePass.Core for the shared domain model.
@@ -40,6 +47,7 @@
     -->
     <ProjectReference Include="..\KeePassLib\KeePassLib.csproj" />
     <ProjectReference Include="..\KeePass.Core\KeePass.Core.csproj" />
+    <ProjectReference Include="..\KeePass\KeePass.csproj" />
   </ItemGroup>
 
 </Project>

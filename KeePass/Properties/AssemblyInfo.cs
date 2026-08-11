@@ -41,5 +41,3 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyVersion("2.61.1.0")]
 [assembly: AssemblyFileVersion("2.61.1.0")]
 
-// Grant test projects access to internal auto-type and SPR engine APIs.
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("KeePass.Tests.AutoType")]

@@ -33,6 +33,7 @@ using KeePassLib.Cryptography.Cipher;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace KeePass.App
@@ -117,9 +118,9 @@ namespace KeePass.App
 				}
 				else
 				{
-					// All loggers resolve to NullLogger — zero allocation in
-					// the fast path when diagnostics are turned off.
-					builder.AddProvider(NullLoggerFactory.Instance.CreateProvider());
+				// All loggers resolve to NullLogger — zero allocation in
+				// the fast path when diagnostics are turned off.
+				builder.AddProvider(NullLoggerProvider.Instance);
 				}
 			});
 

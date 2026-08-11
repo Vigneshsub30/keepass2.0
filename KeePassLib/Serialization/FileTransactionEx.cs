@@ -592,7 +592,7 @@ namespace KeePassLib.Serialization
 		/// the caller can surface a recovery-oriented error to the user.
 		/// </summary>
 		/// <param name="strPath">Absolute local path of the committed file.</param>
-		internal static void PostCommitIntegrityCheck(string strPath)
+		public static void PostCommitIntegrityCheck(string strPath)
 		{
 			// Read the first 12 bytes — enough to hold the two KDBX u32 signature
 			// words (8 bytes) plus the version word (4 bytes).  We deliberately

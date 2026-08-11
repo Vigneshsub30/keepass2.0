@@ -1360,9 +1360,8 @@ namespace KeePassLib.Cryptography
 			if(str != "Test") throw new InvalidOperationException("UrlUtil-Q1");
 			str = UrlUtil.GetQuotedAppPath("C:\\Program Files\\Test.exe");
 			if(str != "C:\\Program Files\\Test.exe") throw new InvalidOperationException("UrlUtil-Q2");
-			str = UrlUtil.GetQuotedAppPath("Reg.exe \"Test\" \"Test 2\"");
-			if(str != "Reg.exe \"Test\" \"Test 2\"") throw new InvalidOperationException("UrlUtil-Q3");
-#endif
-		}
+		str = UrlUtil.GetQuotedAppPath("Reg.exe \"Test\" \"Test 2\"");
+		if(str != "Reg.exe \"Test\" \"Test 2\"") throw new InvalidOperationException("UrlUtil-Q3");
 	}
+}
 }
