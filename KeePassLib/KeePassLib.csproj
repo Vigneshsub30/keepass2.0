@@ -6,45 +6,16 @@
          WO-034 (decouple KeePassLib from WinForms). -->
     <TargetFramework>net10.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
-    <!-- Allows cross-compilation of Windows-targeted projects on macOS/Linux hosts.
-         Has no effect when building on Windows. -->
-    <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <OutputType>Library</OutputType>
-
-    <!-- Disable SDK item globbing; all sources are listed explicitly below to
-         preserve the exact set from the legacy ToolsVersion 3.5 project. -->
-    <EnableDefaultItems>false</EnableDefaultItems>
-
-    <!-- Suppress SDK-generated AssemblyInfo; Properties\AssemblyInfo.cs is the
-         authoritative source for version, GUID and copyright attributes. -->
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-
-    <!-- Disable implicit global usings introduced in .NET 6+ SDK projects to
-         avoid shadowing or conflicting with the explicit usings in every file. -->
-    <ImplicitUsings>disable</ImplicitUsings>
-
-    <!-- Nullable reference types: keep disabled. The legacy codebase was written
-         without NRT annotations; enabling would produce thousands of warnings.
-         Enable incrementally as part of a dedicated NRT adoption work order. -->
-    <Nullable>disable</Nullable>
-
     <AssemblyName>KeePassLib</AssemblyName>
     <RootNamespace>KeePassLib</RootNamespace>
-
-    <!-- Strong-name signing. The .snk was derived from the dummy KeePassLib.pfx
-         (password: 123123) because the .NET Core SDK does not support PFX-based
-         signing. Official builds use the separately-stored private key SNK.
-         KeePassLib.pfx is retained as-is for reference; signing uses the SNK. -->
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>KeePassLib.snk</AssemblyOriginatorKeyFile>
-
-    <!-- Mirror the legacy project's warning settings. -->
-    <WarningLevel>4</WarningLevel>
-    <!-- 1591: Missing XML documentation comment. Suppressed to keep parity with
-         the legacy project which used <NoWarn>1591</NoWarn>. -->
-    <NoWarn>1591</NoWarn>
-
-    <LangVersion>latest</LangVersion>
+    <!-- Strong-name signing key note: The .snk was derived from the dummy
+         KeePassLib.pfx (password: 123123) because the .NET Core SDK does not
+         support PFX-based signing. Official builds use the separately-stored
+         private key SNK. KeePassLib.pfx is retained for reference only.
+         SignAssembly=true and AssemblyOriginatorKeyFile=KeePassLib.snk are
+         inherited from Directory.Build.props via the $(MSBuildProjectName).snk
+         convention. -->
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
@@ -183,7 +154,7 @@
        and FileInfo.SetAccessControl(FileSecurity) extension methods (FileSystemAclExtensions)
        which replaced the removed File.Get/SetAccessControl(string, …) overloads in .NET Core. -->
   <ItemGroup>
-    <PackageReference Include="System.IO.FileSystem.AccessControl" Version="5.*" />
+    <PackageReference Include="System.IO.FileSystem.AccessControl" />
   </ItemGroup>
 
   <!-- KeePassLib.pfx is a dummy signing key included in source control.

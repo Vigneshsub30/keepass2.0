@@ -3,21 +3,13 @@
   <PropertyGroup>
     <TargetFramework>net10.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
-    <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <OutputType>WinExe</OutputType>
-    <EnableDefaultItems>false</EnableDefaultItems>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <ImplicitUsings>disable</ImplicitUsings>
-    <Nullable>disable</Nullable>
     <AssemblyName>KeePass</AssemblyName>
     <RootNamespace>KeePass</RootNamespace>
     <ApplicationIcon>KeePass.ico</ApplicationIcon>
     <ApplicationManifest>Resources\App.manifest</ApplicationManifest>
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>KeePass.snk</AssemblyOriginatorKeyFile>
-    <WarningLevel>4</WarningLevel>
-    <NoWarn>1591</NoWarn>
-    <LangVersion>latest</LangVersion>
+    <!-- SignAssembly=true and AssemblyOriginatorKeyFile=KeePass.snk are inherited
+         from Directory.Build.props via the $(MSBuildProjectName).snk convention. -->
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">

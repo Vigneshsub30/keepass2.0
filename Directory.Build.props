@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Repository-wide build defaults, imported by MSBuild before every SDK-style
+  project in this tree.  Per-project overrides go inside the project's own
+  <PropertyGroup>; they take effect after this file is evaluated.
+
+  Property reference
+  ──────────────────
+  LangVersion          Pinned to 14 (ships with the .NET 10 SDK).  Using a
+                       numeric literal rather than "latest" prevents a silent
+                       language bump when the SDK is updated.
+
+  Nullable             Disabled — the legacy codebase was written without NRT
+                       annotations; enabling now produces thousands of warnings.
+                       Enable incrementally once each assembly has been
+                       annotated (planned for a dedicated future work order).
+
+  ImplicitUsings       Disabled — every source file carries explicit 'using'
+                       directives; injecting global usings would shadow or
+                       conflict with them.
+
+  GenerateAssemblyInfo Disabled — Properties/AssemblyInfo.cs in each project
+                       is the authoritative source for version, GUID, and
+                       copyright attributes.
+
+  EnableDefaultItems   Disabled — all source files are listed explicitly in
+                       each project to preserve the exact set from the legacy
+                       ToolsVersion 3.5 files and prevent accidental inclusion
+                       of generated artefacts.
+
+  EnableWindowsTargeting
+                       Allows the Windows TFM (net10.0-windows) to be
+                       cross-compiled on macOS/Linux CI agents without error
+                       NETSDK1100.  Has no effect on Windows.
+
+  TreatWarningsAsErrors
+                       Intentionally false — the legacy code emits hundreds of
+                       CS1591/CA1416/SYSLIB diagnostics.  Re-enable once
+                       WO-006 and later work orders resolve those warnings.
+
+  SignAssembly /
+  AssemblyOriginatorKeyFile
+                       True for all projects by convention.  Each signed
+                       project places its <AssemblyName>.snk file in its own
+                       project directory; $(AssemblyName) is resolved in the
+                       context of the project being built, so the path is
+                       always relative to the project directory.
+                       Projects that do not ship signed binaries (e.g.
+                       development utilities) override this by setting
+                       <SignAssembly>false</SignAssembly> in their .csproj.
+-->
+<Project>
+  <PropertyGroup>
+    <LangVersion>14</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <WarningLevel>4</WarningLevel>
+    <!-- 1591: missing XML documentation comment — suppressed to match the
+         original project settings; documentation will be added incrementally. -->
+    <NoWarn>$(NoWarn);1591</NoWarn>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <!-- Strong-name signing.  Convention: each signed project places its
+         <ProjectName>.snk beside its .csproj (e.g. KeePass.snk, KeePassLib.snk).
+         $(MSBuildProjectName) is a reserved MSBuild property set before any
+         import is evaluated, so it resolves correctly here — unlike $(AssemblyName)
+         which is not yet set when Directory.Build.props is imported.
+         Projects without an SNK must override with <SignAssembly>false</SignAssembly>. -->
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>$(MSBuildProjectName).snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+</Project>

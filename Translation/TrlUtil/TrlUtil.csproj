@@ -3,19 +3,15 @@
   <PropertyGroup>
     <TargetFramework>net10.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
-    <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <OutputType>WinExe</OutputType>
-    <EnableDefaultItems>false</EnableDefaultItems>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <ImplicitUsings>disable</ImplicitUsings>
-    <Nullable>disable</Nullable>
     <AssemblyName>TrlUtil</AssemblyName>
     <RootNamespace>TrlUtil</RootNamespace>
     <ApplicationIcon>Resources\KeePass.ico</ApplicationIcon>
     <ApplicationManifest>Resources\App.manifest</ApplicationManifest>
-    <WarningLevel>4</WarningLevel>
-    <NoWarn>1591</NoWarn>
-    <LangVersion>latest</LangVersion>
+    <!-- TrlUtil is a development utility and is not distributed as a signed
+         binary; override the Directory.Build.props default of SignAssembly=true
+         because no TrlUtil.snk key file exists. -->
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">

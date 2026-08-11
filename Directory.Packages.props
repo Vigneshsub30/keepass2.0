@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Central Package Management (CPM) for the KeePass repository.
+
+  All <PackageReference> elements across the solution must declare only the
+  Include attribute — the version is resolved from the <PackageVersion> entries
+  here.  Never add a Version attribute to a PackageReference; add or update the
+  corresponding PackageVersion entry in this file instead.
+-->
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Provides FileSystemAclExtensions (GetAccessControl / SetAccessControl)
+         extension methods for FileInfo on .NET Core targets.
+         Used in KeePassLib/Serialization/FileTransactionEx.cs. -->
+    <PackageVersion Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
+
+    <!-- Available for future use if cross-platform GDI+ support is needed
+         beyond the built-in net10.0-windows platform surface. -->
+    <PackageVersion Include="System.Drawing.Common" Version="10.0.10" />
+
+    <!-- Available for future use to embed PDB source-mapping for debugging. -->
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.301" />
+  </ItemGroup>
+</Project>
