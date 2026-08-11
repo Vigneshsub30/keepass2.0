@@ -1,0 +1,183 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:KeePass.Core.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="560" d:DesignHeight="520"
+             x:Class="KeePass.Desktop.Avalonia.Views.OptionsView"
+             x:DataType="vm:OptionsViewModel">
+
+    <Grid RowDefinitions="Auto,*,Auto" Margin="12">
+
+        <TextBlock Grid.Row="0" Text="Application Options"
+                   FontSize="15" FontWeight="Bold" Margin="0,0,0,10" />
+
+        <TabControl Grid.Row="1">
+
+            <!-- ── Security ── -->
+            <TabItem Header="Security">
+                <ScrollViewer>
+                    <StackPanel Spacing="10" Margin="8"
+                                x:DataType="vm:SecurityOptionsViewModel"
+                                DataContext="{Binding Security}">
+
+                        <TextBlock Text="Lock Workspace" FontSize="12" FontWeight="SemiBold" />
+                        <CheckBox Content="Lock on window minimize"
+                                  IsChecked="{Binding LockOnWindowMinimize}" />
+                        <CheckBox Content="Lock on session switch"
+                                  IsChecked="{Binding LockOnSessionSwitch}" />
+                        <CheckBox Content="Lock on system suspend"
+                                  IsChecked="{Binding LockOnSuspend}" />
+                        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto">
+                            <TextBlock Text="Lock after (seconds, 0=off):" VerticalAlignment="Center" />
+                            <NumericUpDown Grid.Column="1" Value="{Binding LockAfterSeconds}"
+                                           Minimum="0" Maximum="99999" Margin="8,0,0,0" />
+                        </Grid>
+
+                        <Separator />
+
+                        <TextBlock Text="Clipboard" FontSize="12" FontWeight="SemiBold" />
+                        <CheckBox Content="Clear clipboard on exit"
+                                  IsChecked="{Binding ClipboardClearOnExit}" />
+                        <CheckBox Content="Do not persist clipboard"
+                                  IsChecked="{Binding ClipboardNoPersist}" />
+                        <Grid ColumnDefinitions="Auto,*">
+                            <TextBlock Text="Auto-clear after (seconds):" VerticalAlignment="Center" />
+                            <NumericUpDown Grid.Column="1" Value="{Binding ClipboardClearAfterSeconds}"
+                                           Minimum="0" Maximum="999" Margin="8,0,0,0" />
+                        </Grid>
+
+                        <Separator />
+
+                        <TextBlock Text="Master Key" FontSize="12" FontWeight="SemiBold" />
+                        <CheckBox Content="Use Secure Desktop for master key entry (Windows)"
+                                  IsChecked="{Binding MasterKeyOnSecureDesktop}" />
+                        <Grid ColumnDefinitions="Auto,*">
+                            <TextBlock Text="Max unlock attempts (0=unlimited):" VerticalAlignment="Center" />
+                            <NumericUpDown Grid.Column="1" Value="{Binding MasterKeyTries}"
+                                           Minimum="0" Maximum="99" Margin="8,0,0,0" />
+                        </Grid>
+
+                        <Separator />
+
+                        <TextBlock Text="Miscellaneous" FontSize="12" FontWeight="SemiBold" />
+                        <CheckBox Content="Prevent screen capture"
+                                  IsChecked="{Binding PreventScreenCapture}" />
+                        <CheckBox Content="Clear key command-line parameters"
+                                  IsChecked="{Binding ClearKeyCommandLineParams}" />
+
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ── Interface ── -->
+            <TabItem Header="Interface">
+                <ScrollViewer>
+                    <StackPanel Spacing="10" Margin="8"
+                                x:DataType="vm:InterfaceOptionsViewModel"
+                                DataContext="{Binding Interface}">
+
+                        <TextBlock Text="Language" FontSize="12" FontWeight="SemiBold" />
+                        <TextBox Text="{Binding LanguageFile}"
+                                 Watermark="Default (built-in English)" />
+
+                        <Separator />
+
+                        <TextBlock Text="Toolbar and Status Bar" FontSize="12" FontWeight="SemiBold" />
+                        <CheckBox Content="Show toolbar" IsChecked="{Binding ShowToolBar}" />
+                        <CheckBox Content="Show status bar" IsChecked="{Binding ShowStatusBar}" />
+                        <CheckBox Content="Show grid lines in entry list"
+                                  IsChecked="{Binding ShowGridLines}" />
+
+                        <Separator />
+
+                        <TextBlock Text="Window Behaviour" FontSize="12" FontWeight="SemiBold" />
+                        <CheckBox Content="Minimize to tray instead of taskbar"
+                                  IsChecked="{Binding MinimizeToTray}" />
+                        <CheckBox Content="Close to tray instead of exiting"
+                                  IsChecked="{Binding CloseToTray}" />
+
+                        <Separator />
+
+                        <TextBlock Text="Expiry" FontSize="12" FontWeight="SemiBold" />
+                        <Grid ColumnDefinitions="Auto,*">
+                            <TextBlock Text="Warn expiry within (days):" VerticalAlignment="Center" />
+                            <NumericUpDown Grid.Column="1" Value="{Binding ExpirySoonDays}"
+                                           Minimum="0" Maximum="365" Margin="8,0,0,0" />
+                        </Grid>
+
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ── Integration ── -->
+            <TabItem Header="Integration">
+                <ScrollViewer>
+                    <StackPanel Spacing="10" Margin="8"
+                                x:DataType="vm:IntegrationOptionsViewModel"
+                                DataContext="{Binding Integration}">
+
+                        <TextBlock Text="URL Override" FontSize="12" FontWeight="SemiBold" />
+                        <TextBox Text="{Binding UrlOverride}"
+                                 Watermark="e.g. cmd://firefox.exe -url {URL}" />
+
+                        <Separator />
+
+                        <TextBlock Text="Auto-Type" FontSize="12" FontWeight="SemiBold" />
+                        <CheckBox Content="Enable global auto-type"
+                                  IsChecked="{Binding AutoTypeEnabled}" />
+                        <CheckBox Content="Match by window title"
+                                  IsChecked="{Binding AutoTypeMatchByTitle}" />
+                        <CheckBox Content="Always show entry selection dialog"
+                                  IsChecked="{Binding AutoTypeAlwaysShowSelectionDialog}" />
+                        <Grid ColumnDefinitions="Auto,*">
+                            <TextBlock Text="Keystroke delay (ms):" VerticalAlignment="Center" />
+                            <NumericUpDown Grid.Column="1" Value="{Binding AutoTypeDelay}"
+                                           Minimum="0" Maximum="30000" Margin="8,0,0,0" />
+                        </Grid>
+
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ── Advanced ── -->
+            <TabItem Header="Advanced">
+                <ScrollViewer>
+                    <StackPanel Spacing="10" Margin="8"
+                                x:DataType="vm:AdvancedOptionsViewModel"
+                                DataContext="{Binding Advanced}">
+
+                        <TextBlock Text="Startup" FontSize="12" FontWeight="SemiBold" />
+                        <CheckBox Content="Start minimized"
+                                  IsChecked="{Binding StartMinimized}" />
+                        <CheckBox Content="Open last file on startup"
+                                  IsChecked="{Binding OpenLastFile}" />
+                        <CheckBox Content="Remember working directories"
+                                  IsChecked="{Binding RememberWorkingDirectories}" />
+
+                        <Separator />
+
+                        <TextBlock Text="File Handling" FontSize="12" FontWeight="SemiBold" />
+                        <CheckBox Content="Auto-save after entry edit"
+                                  IsChecked="{Binding AutoSaveAfterEntryEdit}" />
+                        <CheckBox Content="Use transacted file writes"
+                                  IsChecked="{Binding UseTransactedFileWrites}" />
+                        <CheckBox Content="Verify file integrity after saving"
+                                  IsChecked="{Binding VerifyWrittenFileAfterSaving}" />
+
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+        </TabControl>
+
+        <!-- OK / Cancel -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal"
+                    HorizontalAlignment="Right" Spacing="8" Margin="0,10,0,0">
+            <Button Content="Cancel" Click="CancelButton_Click" />
+            <Button Content="OK" Classes="accent"
+                    Command="{Binding ApplyCommand}" />
+        </StackPanel>
+
+    </Grid>
+</UserControl>
