@@ -5,6 +5,7 @@ using KeePass.App.Configuration;
 using KeePass.DataExchange;
 using KeePass.Ecas;
 using KeePass.Forms;
+using KeePass.UI;
 using KeePass.Util;
 
 using KeePassLib;

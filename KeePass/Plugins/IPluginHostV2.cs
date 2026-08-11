@@ -3,6 +3,7 @@ using System.Resources;
 using KeePass.App.Configuration;
 using KeePass.DataExchange;
 using KeePass.Ecas;
+using KeePass.UI;
 using KeePass.Util;
 
 using KeePassLib;

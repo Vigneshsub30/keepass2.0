@@ -362,6 +362,8 @@
     <Compile Include="UI\RichTextBoxContextMenu.cs" />
     <Compile Include="Plugins\Plugin.cs" />
     <Compile Include="Plugins\IPluginHost.cs" />
+    <Compile Include="Plugins\IPluginHostV2.cs" />
+    <Compile Include="Plugins\LegacyPluginHostAdapter.cs" />
     <Compile Include="Plugins\DefaultPluginHost.cs" />
     <Compile Include="Plugins\PluginManager.cs" />
     <Compile Include="Plugins\WinFormsPluginMenuAdapter.cs" />
@@ -373,6 +375,7 @@
     <Compile Include="UI\ShowWarningsLogger.cs" />
     <Compile Include="UI\StatusBarLogger.cs" />
     <Compile Include="UI\UIUtil.cs" />
+    <Compile Include="Forms\WinFormsApplicationHost.cs" />
     <Compile Include="Forms\WinFormsMainWindowService.cs" />
     <Compile Include="Services\DatabaseEventArgs.cs" />
     <Compile Include="Services\DatabaseSessionCoordinator.cs" />

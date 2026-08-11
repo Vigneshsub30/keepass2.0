@@ -65,6 +65,13 @@ namespace KeePassLib.Plugins
 		public string ImageFormat { get; set; }
 
 		/// <summary>
+		/// Human-readable description of the keyboard shortcut, e.g. "Ctrl+T".
+		/// Shown as supplementary text in some platform menus.
+		/// <c>null</c> means no shortcut.
+		/// </summary>
+		public string ShortcutKeyDescription { get; set; }
+
+		/// <summary>
 		/// Invoked on the UI thread when the user activates the menu item.
 		/// </summary>
 		public EventHandler Click { get; set; }

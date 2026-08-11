@@ -85,9 +85,34 @@ namespace KeePass.Plugins
 		/// </summary>
 		/// <param name="t">Type of the menu that the plugin should
 		/// return an item for.</param>
+		[Obsolete("Override GetMenuCommands instead. GetMenuCommand will be " +
+			"removed in a future version.")]
 		public virtual PluginMenuCommand GetMenuCommand(PluginMenuType t)
 		{
 			return null;
+		}
+
+		/// <summary>
+		/// Returns a list of platform-neutral menu commands for
+		/// <paramref name="t"/>.  Override this method to provide menu items
+		/// without depending on any WinForms or Avalonia types.
+		/// </summary>
+		/// <remarks>
+		/// The default implementation bridges the legacy
+		/// <see cref="GetMenuCommand"/> method: if it returns a non-null value
+		/// the result is wrapped in a single-element list.  Plugins that
+		/// override <see cref="GetMenuCommands"/> directly need not override
+		/// <see cref="GetMenuCommand"/>.
+		/// </remarks>
+		public virtual IReadOnlyList<PluginMenuCommand> GetMenuCommands(PluginMenuType t)
+		{
+#pragma warning disable CS0618 // call the obsolete bridge for backward compat
+			PluginMenuCommand single = GetMenuCommand(t);
+#pragma warning restore CS0618
+			if (single == null)
+				return Array.Empty<PluginMenuCommand>();
+
+			return new PluginMenuCommand[] { single };
 		}
 	}
 

@@ -529,18 +529,12 @@ namespace KeePass.Plugins
 				Plugin p = pi.Interface;
 				if(p == null) { Debug.Assert(false); continue; }
 
-				KeePassLib.Plugins.PluginMenuCommand cmd = p.GetMenuCommand(t);
-				ToolStripMenuItem tsmi = WinFormsPluginMenuAdapter.ToMenuItem(cmd);
-				if(tsmi != null)
+				System.Collections.Generic.IReadOnlyList<KeePassLib.Plugins.PluginMenuCommand> cmds =
+					p.GetMenuCommands(t);
+				foreach(KeePassLib.Plugins.PluginMenuCommand cmd in cmds)
 				{
-					// string strTip = tsmi.ToolTipText;
-					// if((strTip == null) || (strTip == tsmi.Text))
-					//	strTip = string.Empty;
-					// if(strTip.Length != 0) strTip += MessageService.NewParagraph;
-					// strTip += KPRes.Plugin + ": " + pi.Name;
-					// tsmi.ToolTipText = strTip;
-
-					l.Add(tsmi);
+					ToolStripMenuItem tsmi = WinFormsPluginMenuAdapter.ToMenuItem(cmd);
+					if(tsmi != null) l.Add(tsmi);
 				}
 			}
 			if(l.Count == 0) return;
