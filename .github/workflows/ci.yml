@@ -149,6 +149,91 @@ jobs:
           path: ${{ steps.attest.outputs.bundle-path }}
           if-no-files-found: warn
 
+      # ── Authenticode code signing (WO-010) ─────────────────────────────────
+      # Signing is Windows-only and runs only on push to main / version tags.
+      # Pull-request builds are intentionally skipped (untrusted forks must not
+      # trigger signing).  Requires SIGNING_ENABLED repository variable = 'true'
+      # and the three AZURE_* secrets documented in SIGNING.md.
+      - name: Azure login (OIDC federation)
+        if: >
+          runner.os == 'Windows' &&
+          github.event_name == 'push' &&
+          (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) &&
+          vars.SIGNING_ENABLED == 'true'
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Sign Windows binaries (Azure Trusted Signing)
+        if: >
+          runner.os == 'Windows' &&
+          github.event_name == 'push' &&
+          (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) &&
+          vars.SIGNING_ENABLED == 'true'
+        uses: azure/trusted-signing-action@v0.4
+        with:
+          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure-subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          endpoint: https://eus.codesigning.azure.net/
+          trusted-signing-account-name: ${{ vars.AZURE_TRUSTED_SIGNING_ACCOUNT }}
+          certificate-profile-name: ${{ vars.AZURE_CERTIFICATE_PROFILE }}
+          # Sign all .exe and .dll files in the output directory.
+          files-folder: KeePass/bin/Release/net10.0-windows
+          files-folder-filter: exe,dll
+          files-folder-recurse: false
+          # RFC 3161 timestamp ensures signatures remain valid after cert expiry.
+          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+          timestamp-digest: SHA256
+
+      # Also sign KeePassLib (it ships standalone) and TrlUtil.
+      - name: Sign KeePassLib and TrlUtil (Azure Trusted Signing)
+        if: >
+          runner.os == 'Windows' &&
+          github.event_name == 'push' &&
+          (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) &&
+          vars.SIGNING_ENABLED == 'true'
+        uses: azure/trusted-signing-action@v0.4
+        with:
+          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure-subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          endpoint: https://eus.codesigning.azure.net/
+          trusted-signing-account-name: ${{ vars.AZURE_TRUSTED_SIGNING_ACCOUNT }}
+          certificate-profile-name: ${{ vars.AZURE_CERTIFICATE_PROFILE }}
+          files: |
+            KeePassLib/bin/Release/net10.0-windows/KeePassLib.dll
+            Translation/TrlUtil/bin/Release/net10.0-windows/TrlUtil.exe
+          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+          timestamp-digest: SHA256
+
+      # Verify the Authenticode signatures using signtool.exe (ships with the
+      # Windows SDK, available on windows-latest runners).
+      - name: Verify Authenticode signatures
+        if: >
+          runner.os == 'Windows' &&
+          github.event_name == 'push' &&
+          (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) &&
+          vars.SIGNING_ENABLED == 'true'
+        shell: pwsh
+        run: |
+          $files = @(
+            "KeePass/bin/Release/net10.0-windows/KeePass.exe",
+            "KeePassLib/bin/Release/net10.0-windows/KeePassLib.dll",
+            "Translation/TrlUtil/bin/Release/net10.0-windows/TrlUtil.exe"
+          )
+          $failed = $false
+          foreach ($f in $files) {
+            if (Test-Path $f) {
+              $sig = Get-AuthenticodeSignature $f
+              Write-Host "$f : $($sig.Status)"
+              if ($sig.Status -ne 'Valid') { $failed = $true; Write-Error "Signature invalid: $f" }
+            }
+          }
+          if ($failed) { exit 1 }
+
       # Upload the primary binaries produced by the Release build.
       # On Windows these include native .exe launchers; on macOS/Linux the
       # managed .dll assemblies are still produced and uploaded.
