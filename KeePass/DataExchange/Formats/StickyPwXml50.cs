@@ -39,6 +39,7 @@ namespace KeePass.DataExchange.Formats
 	// 5.0.4.232-8.4.4+
 	internal class StickyPwXml50 : FileFormatProvider
 	{
+		public override bool UsesXmlParsing => true;
 		public override bool SupportsImport { get { return true; } }
 		public override bool SupportsExport { get { return false; } }
 

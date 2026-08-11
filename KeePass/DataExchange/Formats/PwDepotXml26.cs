@@ -41,6 +41,7 @@ namespace KeePass.DataExchange.Formats
 		// newer versions use lower-case node names
 		private const string ElemGroup = "group";
 
+		public override bool UsesXmlParsing => true;
 		public override bool SupportsImport { get { return true; } }
 		public override bool SupportsExport { get { return false; } }
 

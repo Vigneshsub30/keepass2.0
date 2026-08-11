@@ -36,6 +36,7 @@ namespace KeePass.DataExchange.Formats
 	// 3.2+
 	internal sealed class DesktopKnoxXml32 : FileFormatProvider
 	{
+		public override bool UsesXmlParsing => true;
 		public override bool SupportsImport { get { return true; } }
 		public override bool SupportsExport { get { return false; } }
 

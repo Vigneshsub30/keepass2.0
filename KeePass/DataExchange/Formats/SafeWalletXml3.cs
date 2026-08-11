@@ -63,6 +63,7 @@ namespace KeePass.DataExchange.Formats
 		private const string AttribWebUserName = "Username";
 		private const string AttribWebPassword = "Password";
 
+		public override bool UsesXmlParsing => true;
 		public override bool SupportsImport { get { return true; } }
 		public override bool SupportsExport { get { return false; } }
 

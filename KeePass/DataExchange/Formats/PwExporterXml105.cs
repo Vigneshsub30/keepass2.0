@@ -35,6 +35,7 @@ namespace KeePass.DataExchange.Formats
 	// 1.0.5-1.3.4+
 	internal sealed class PwExporterXml105 : FileFormatProvider
 	{
+		public override bool UsesXmlParsing => true;
 		public override bool SupportsImport { get { return true; } }
 		public override bool SupportsExport { get { return false; } }
 

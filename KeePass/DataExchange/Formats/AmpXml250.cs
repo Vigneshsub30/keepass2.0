@@ -38,6 +38,7 @@ namespace KeePass.DataExchange.Formats
 	// 2.50-3.21+
 	internal sealed class AmpXml250 : FileFormatProvider
 	{
+		public override bool UsesXmlParsing => true;
 		public override bool SupportsImport { get { return true; } }
 		public override bool SupportsExport { get { return false; } }
 

@@ -40,6 +40,7 @@ namespace KeePass.DataExchange.Formats
 	// 1.00
 	internal sealed class MozillaBookmarksHtml100 : FileFormatProvider
 	{
+		public override bool UsesXmlParsing => true;
 		public override bool SupportsImport { get { return true; } }
 		public override bool SupportsExport { get { return true; } }
 

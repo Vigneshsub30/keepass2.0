@@ -39,6 +39,7 @@ namespace KeePass.DataExchange.Formats
 {
 	internal class KeePassKdbx2 : FileFormatProvider
 	{
+		public override bool UsesXmlParsing => true;
 		public override bool SupportsImport { get { return true; } }
 		public override bool SupportsExport { get { return true; } }
 

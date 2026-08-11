@@ -40,6 +40,7 @@ namespace KeePass.DataExchange.Formats
 		private const string ElemGroup = "group";
 		private const string ElemEntry = "item";
 
+		public override bool UsesXmlParsing => true;
 		public override bool SupportsImport { get { return true; } }
 		public override bool SupportsExport { get { return false; } }
 

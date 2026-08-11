@@ -42,6 +42,7 @@ namespace KeePass.DataExchange.Formats
 		private const string ElemName = "NAME";
 		private const string ElemIcon = "ICON";
 
+		public override bool UsesXmlParsing => true;
 		public override bool SupportsImport { get { return true; } }
 		public override bool SupportsExport { get { return false; } }
 

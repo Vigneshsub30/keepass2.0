@@ -149,8 +149,8 @@ namespace KeePass.DataExchange
 
 					// Wrap in the validation pipeline before any provider
 					// receives the stream, enforcing file-size and count ceilings.
-					var pipeline = new ImportValidationPipeline(
-						ImportValidationOptions.Default());
+					var valOpts = ImportValidationOptions.Default();
+					var pipeline = new ImportValidationPipeline(valOpts);
 					sSizeGuard = pipeline.Validate(s);
 
 					if(bUseTempDb)
@@ -177,9 +177,15 @@ namespace KeePass.DataExchange
 						")", LogStatusType.Info);
 
 					pdImp.Modified = true;
-					// Use the size-guarded wrapper stream so that oversized
-					// inputs are rejected before the provider can allocate memory.
-					fmtImp.Import(pdImp, sSizeGuard ?? s, dlgStatus);
+					fmtImp.Import(pdImp, sSizeGuard, dlgStatus);
+
+					// Post-parse: enforce the entry-count ceiling.
+					long entryCount = pdImp.RootGroup?.GetEntriesCount(true) ?? 0L;
+					if(entryCount > valOpts.MaxEntryCount)
+						throw new ImportValidationException(
+							nameof(ImportValidationOptions.MaxEntryCount),
+							valOpts.MaxEntryCount,
+							entryCount);
 				}
 				catch(ImportValidationException ivEx)
 				{

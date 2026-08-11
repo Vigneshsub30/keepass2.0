@@ -48,6 +48,7 @@ namespace KeePass.DataExchange.Formats
 		private static readonly string LnkDescSuffix = " [" +
 			PwDefs.ShortProductName + "]";
 
+		public override bool UsesXmlParsing => true;
 		public override bool SupportsImport { get { return false; } }
 		public override bool SupportsExport { get { return true; } }
 

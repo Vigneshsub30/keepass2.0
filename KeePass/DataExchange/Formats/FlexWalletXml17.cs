@@ -37,6 +37,7 @@ namespace KeePass.DataExchange.Formats
 	// 1.7
 	internal sealed class FlexWalletXml17 : FileFormatProvider
 	{
+		public override bool UsesXmlParsing => true;
 		public override bool SupportsImport { get { return true; } }
 		public override bool SupportsExport { get { return false; } }
 

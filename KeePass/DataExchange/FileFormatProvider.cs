@@ -34,6 +34,15 @@ namespace KeePass.DataExchange
 		public abstract bool SupportsImport { get; }
 		public abstract bool SupportsExport { get; }
 
+		/// <summary>
+		/// When <c>true</c>, the provider's <see cref="Import"/> method reads
+		/// XML from the input stream and therefore benefits from the pipeline's
+		/// <see cref="KeePass.Core.DataExchange.ImportValidationPipeline.CreateXmlReaderSettings"/>
+		/// (DTD prohibition + depth limit).
+		/// Providers that parse XML must override this property and return <c>true</c>.
+		/// </summary>
+		public virtual bool UsesXmlParsing => false;
+
 		public abstract string FormatName { get; }
 
 		public virtual string DisplayName

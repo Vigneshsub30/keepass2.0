@@ -40,6 +40,7 @@ namespace KeePass.DataExchange.Formats
 	{
 		private const string ParamXslFile = "XslFile";
 
+		public override bool UsesXmlParsing => true;
 		public override bool SupportsImport { get { return false; } }
 		public override bool SupportsExport { get { return true; } }
 
