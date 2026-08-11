@@ -11,20 +11,20 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
-
   <ItemGroup>
     <!-- Provides FileSystemAclExtensions (GetAccessControl / SetAccessControl)
          extension methods for FileInfo on .NET Core targets.
          Used in KeePassLib/Serialization/FileTransactionEx.cs. -->
+    <PackageVersion Include="coverlet.collector" Version="10.0.1">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageVersion>
     <PackageVersion Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
-
     <!-- Available for future use if cross-platform GDI+ support is needed
          beyond the built-in net10.0-windows platform surface. -->
     <PackageVersion Include="System.Drawing.Common" Version="10.0.10" />
-
     <!-- Available for future use to embed PDB source-mapping for debugging. -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.301" />
-
     <!-- Test packages for KeePass.Tests (xUnit characterization tests). -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.8.1" />
     <PackageVersion Include="xunit" Version="2.9.3" />

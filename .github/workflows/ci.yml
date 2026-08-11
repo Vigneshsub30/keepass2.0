@@ -53,7 +53,7 @@ jobs:
       # The test project (KeePass.Tests) targets net10.0-windows, which requires
       # the Microsoft.WindowsDesktop.App runtime that is only available on Windows
       # runners. Skip test execution on macOS and Linux.
-      - name: Run tests
+      - name: Run tests with coverage
         if: runner.os == 'Windows'
         run: >
           dotnet test KeePass.Tests/KeePass.Tests.csproj
@@ -61,6 +61,9 @@ jobs:
           --no-build
           --logger "trx;LogFileName=test-results.trx"
           --verbosity normal
+          --collect:"XPlat Code Coverage"
+          --results-directory coverage
+          --settings coverage.runsettings
 
       - name: Upload test results
         if: runner.os == 'Windows' && (success() || failure())
@@ -68,6 +71,74 @@ jobs:
         with:
           name: test-results-windows
           path: KeePass.Tests/TestResults/*.trx
+          if-no-files-found: warn
+
+      # ── Coverage reporting (WO-025) ─────────────────────────────────────────
+      # Uses ReportGenerator to produce a human-readable summary from the
+      # Cobertura XML emitted by coverlet.  Only runs on Windows where tests run.
+      - name: Install ReportGenerator
+        if: runner.os == 'Windows' && (success() || failure())
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool
+
+      - name: Generate coverage report
+        if: runner.os == 'Windows' && (success() || failure())
+        shell: pwsh
+        run: |
+          $coberturaFiles = Get-ChildItem -Path coverage -Recurse -Filter coverage.cobertura.xml |
+            Select-Object -ExpandProperty FullName
+          if (-not $coberturaFiles) {
+            Write-Warning "No Cobertura XML files found — coverage collection may have failed"
+            exit 0
+          }
+          $reports = $coberturaFiles -join ";"
+          reportgenerator `
+            -reports:$reports `
+            -targetdir:coverage-report `
+            -reporttypes:"HtmlSummary;TextSummary;Cobertura" `
+            -assemblyfilters:"+KeePassLib;-KeePass.Tests"
+
+      - name: Print coverage summary
+        if: runner.os == 'Windows' && (success() || failure())
+        shell: pwsh
+        run: |
+          $summary = "coverage-report\Summary.txt"
+          if (Test-Path $summary) {
+            Write-Host "=== Code Coverage Summary ==="
+            Get-Content $summary
+          } else {
+            Write-Warning "Coverage summary not found"
+          }
+
+      # Fail the build if KeePassLib line coverage drops below the threshold.
+      # Threshold is set conservatively (5%) and must be ratcheted upward as
+      # more tests are added. Update this value after each phase of test work.
+      - name: Enforce coverage threshold (≥5% line coverage)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $xml = "coverage-report\Cobertura.xml"
+          if (-not (Test-Path $xml)) {
+            Write-Warning "Merged Cobertura XML not found — skipping threshold check"
+            exit 0
+          }
+          [xml]$cov = Get-Content $xml
+          $lineRate = [double]$cov.coverage."line-rate"
+          $pct = [math]::Round($lineRate * 100, 2)
+          Write-Host "KeePassLib line coverage: $pct%"
+          # Baseline threshold — ratchet this up as coverage grows.
+          $threshold = 5.0
+          if ($pct -lt $threshold) {
+            Write-Error "Coverage $pct% is below the required threshold of $threshold%"
+            exit 1
+          }
+          Write-Host "Coverage gate passed: $pct% >= $threshold%"
+
+      - name: Upload coverage report
+        if: runner.os == 'Windows' && (success() || failure())
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-windows
+          path: coverage-report/
           if-no-files-found: warn
 
       # Log SHA-256 hashes of the primary assemblies to make deterministic-build
