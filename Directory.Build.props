@@ -71,4 +71,10 @@
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>$(MSBuildProjectName).snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
+
+  <!-- Post-build target: errors if a .cs file is on disk but absent from
+       Compile items.  See Build/ValidateFileInclusion.targets for details.
+       Pass /p:EnableFileInclusionValidation=false to suppress. -->
+  <Import Project="$(MSBuildThisFileDirectory)Build/ValidateFileInclusion.targets" />
+
 </Project>
