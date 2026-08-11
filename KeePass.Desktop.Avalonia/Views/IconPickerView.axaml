@@ -1,0 +1,65 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:KeePass.Core.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="480" d:DesignHeight="400"
+             x:Class="KeePass.Desktop.Avalonia.Views.IconPickerView"
+             x:DataType="vm:IconPickerViewModel">
+
+    <Grid RowDefinitions="Auto,*,Auto" Margin="12">
+
+        <TextBlock Grid.Row="0"
+                   Text="Select Icon"
+                   FontSize="14" FontWeight="Bold"
+                   Margin="0,0,0,8" />
+
+        <!-- Icon grid — scrollable, wrapped buttons -->
+        <ScrollViewer Grid.Row="1">
+            <ItemsControl ItemsSource="{Binding Icons}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:IconItemViewModel">
+                        <Button Margin="2"
+                                Width="40" Height="40"
+                                ToolTip.Tip="{Binding Label}"
+                                Command="{Binding $parent[UserControl].DataContext.SelectIconCommand}"
+                                CommandParameter="{Binding .}">
+                            <Button.Styles>
+                                <Style Selector="Button">
+                                    <Setter Property="Background" Value="Transparent" />
+                                </Style>
+                                <Style Selector="Button[IsVisible=True]:not(.selected)">
+                                    <Setter Property="Background" Value="Transparent" />
+                                </Style>
+                            </Button.Styles>
+                            <!-- Show icon index as text — replace with image once icon set is available -->
+                            <TextBlock Text="{Binding IconId}"
+                                       FontSize="10"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center">
+                                <TextBlock.Foreground>
+                                    <MultiBinding>
+                                        <Binding Path="IsSelected" />
+                                    </MultiBinding>
+                                </TextBlock.Foreground>
+                            </TextBlock>
+                        </Button>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <!-- Confirm / Cancel -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal"
+                    HorizontalAlignment="Right" Spacing="8" Margin="0,8,0,0">
+            <Button Content="Cancel" Command="{Binding CancelCommand}" />
+            <Button Content="OK" Classes="accent" Command="{Binding ConfirmCommand}" />
+        </StackPanel>
+
+    </Grid>
+</UserControl>

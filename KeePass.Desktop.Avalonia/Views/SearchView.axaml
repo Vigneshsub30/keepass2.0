@@ -1,0 +1,85 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:KeePass.Core.ViewModels"
+             xmlns:kp="using:KeePassLib"
+             xmlns:sys="using:System"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="480" d:DesignHeight="520"
+             x:Class="KeePass.Desktop.Avalonia.Views.SearchView"
+             x:DataType="vm:SearchViewModel">
+
+    <Grid RowDefinitions="Auto,*,Auto" Margin="12">
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+            <TextBlock Text="🔍" FontSize="20" VerticalAlignment="Center" />
+            <TextBlock Text="Advanced Search"
+                       FontSize="15" FontWeight="Bold" VerticalAlignment="Center" />
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1">
+            <StackPanel Spacing="10">
+
+                <!-- Search string -->
+                <TextBlock Text="Search For" FontSize="11" Opacity="0.7" />
+                <TextBox Text="{Binding SearchString}"
+                         Watermark="Enter search text…"
+                         x:Name="SearchBox"
+                         KeyDown="SearchBox_KeyDown" />
+
+                <!-- Search mode -->
+                <TextBlock Text="Search Mode" FontSize="11" Opacity="0.7" />
+                <ComboBox SelectedItem="{Binding SearchMode}" Width="200">
+                    <ComboBox.Items>
+                        <kp:PwSearchMode>Simple</kp:PwSearchMode>
+                        <kp:PwSearchMode>Regular</kp:PwSearchMode>
+                    </ComboBox.Items>
+                </ComboBox>
+
+                <Separator />
+
+                <!-- Field toggles -->
+                <TextBlock Text="Search in:" FontSize="11" Opacity="0.7" />
+                <WrapPanel>
+                    <CheckBox Content="Title"         IsChecked="{Binding SearchInTitles}"       Margin="0,0,8,4" />
+                    <CheckBox Content="User Name"     IsChecked="{Binding SearchInUserNames}"     Margin="0,0,8,4" />
+                    <CheckBox Content="Password"      IsChecked="{Binding SearchInPasswords}"     Margin="0,0,8,4" />
+                    <CheckBox Content="URL"           IsChecked="{Binding SearchInUrls}"          Margin="0,0,8,4" />
+                    <CheckBox Content="Notes"         IsChecked="{Binding SearchInNotes}"         Margin="0,0,8,4" />
+                    <CheckBox Content="Custom Fields" IsChecked="{Binding SearchInOther}"         Margin="0,0,8,4" />
+                    <CheckBox Content="Tags"          IsChecked="{Binding SearchInTags}"          Margin="0,0,8,4" />
+                    <CheckBox Content="UUIDs"         IsChecked="{Binding SearchInUuids}"         Margin="0,0,8,4" />
+                    <CheckBox Content="Group Paths"   IsChecked="{Binding SearchInGroupPaths}"    Margin="0,0,8,4" />
+                    <CheckBox Content="History"       IsChecked="{Binding SearchInHistory}"       Margin="0,0,8,4" />
+                </WrapPanel>
+
+                <Separator />
+
+                <!-- Additional options -->
+                <CheckBox Content="Exclude expired entries"
+                          IsChecked="{Binding ExcludeExpired}" />
+                <CheckBox Content="Respect entry-level search disable"
+                          IsChecked="{Binding RespectEntrySearchingDisabled}" />
+
+                <!-- Status -->
+                <Border IsVisible="{Binding IsSearchInProgress}" Padding="0,4">
+                    <ProgressBar IsIndeterminate="True" Height="4" />
+                </Border>
+                <TextBlock Text="{Binding ResultCount, StringFormat='{}{0} result(s) found'}"
+                           IsVisible="{Binding !IsSearchInProgress}"
+                           FontSize="11" Opacity="0.7" />
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Buttons -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal"
+                    HorizontalAlignment="Right" Spacing="8" Margin="0,8,0,0">
+            <Button Content="Close" x:Name="CloseButton" Click="CloseButton_Click" />
+            <Button Content="Search" Classes="accent"
+                    Command="{Binding SearchCommand}" />
+        </StackPanel>
+
+    </Grid>
+</UserControl>

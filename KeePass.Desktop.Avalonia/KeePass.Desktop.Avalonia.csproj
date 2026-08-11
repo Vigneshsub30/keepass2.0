@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <!-- Enable auto-include of .cs and .axaml files under the project directory. -->
+    <EnableDefaultItems>true</EnableDefaultItems>
+    <!-- Disable the file-inclusion validator — generated AXAML code-behind files
+         exist at build time, not source time, and would trigger false positives. -->
+    <EnableFileInclusionValidation>false</EnableFileInclusionValidation>
+    <!-- This project does not ship a signed binary yet. -->
+    <SignAssembly>false</SignAssembly>
+    <AssemblyName>KeePass.Desktop.Avalonia</AssemblyName>
+    <RootNamespace>KeePass.Desktop.Avalonia</RootNamespace>
+    <!-- Required for COM interop on Windows (e.g. clipboard). -->
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <!-- Use Avalonia compiled bindings for performance and type safety. -->
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\KeePass.Core\KeePass.Core.csproj" />
+    <ProjectReference Include="..\KeePassLib\KeePassLib.csproj" />
+  </ItemGroup>
+
+</Project>

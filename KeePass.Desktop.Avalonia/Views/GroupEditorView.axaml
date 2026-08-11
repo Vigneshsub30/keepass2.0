@@ -1,0 +1,100 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:KeePass.Core.ViewModels"
+             xmlns:m="using:KeePass.Core.Models"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="460" d:DesignHeight="480"
+             x:Class="KeePass.Desktop.Avalonia.Views.GroupEditorView"
+             x:DataType="vm:GroupEditorViewModel">
+
+    <Grid RowDefinitions="Auto,*,Auto" Margin="12">
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+            <TextBlock Text="📁" FontSize="20" VerticalAlignment="Center" />
+            <TextBlock Text="Group Properties"
+                       FontSize="15" FontWeight="Bold" VerticalAlignment="Center" />
+        </StackPanel>
+
+        <!-- Fields -->
+        <ScrollViewer Grid.Row="1">
+            <StackPanel Spacing="10">
+
+                <!-- Name -->
+                <TextBlock Text="Name *" FontSize="11" Opacity="0.7" />
+                <TextBox Text="{Binding Name}" Watermark="Group name (required)" />
+
+                <!-- Notes -->
+                <TextBlock Text="Notes" FontSize="11" Opacity="0.7" />
+                <TextBox Text="{Binding Notes}"
+                         AcceptsReturn="True" Height="60"
+                         TextWrapping="Wrap" />
+
+                <!-- Icon -->
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="Icon" FontSize="11" Opacity="0.7"
+                               VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding IconId}"
+                               VerticalAlignment="Center" />
+                    <Button Content="Change Icon…"
+                            x:Name="ChangeIconButton"
+                            Click="ChangeIconButton_Click" />
+                </StackPanel>
+
+                <Separator />
+
+                <!-- Default Auto-Type sequence -->
+                <TextBlock Text="Default Auto-Type Sequence" FontSize="11" Opacity="0.7" />
+                <TextBox Text="{Binding DefaultAutoTypeSequence}"
+                         Watermark="Inherit from entry / parent" />
+
+                <!-- Enable Auto-Type -->
+                <TextBlock Text="Enable Auto-Type" FontSize="11" Opacity="0.7" />
+                <ComboBox SelectedItem="{Binding EnableAutoType}" Width="200">
+                    <ComboBox.Items>
+                        <m:InheritableBoolean>Inherit</m:InheritableBoolean>
+                        <m:InheritableBoolean>Enabled</m:InheritableBoolean>
+                        <m:InheritableBoolean>Disabled</m:InheritableBoolean>
+                    </ComboBox.Items>
+                </ComboBox>
+
+                <!-- Enable Searching -->
+                <TextBlock Text="Enable Searching" FontSize="11" Opacity="0.7" />
+                <ComboBox SelectedItem="{Binding EnableSearching}" Width="200">
+                    <ComboBox.Items>
+                        <m:InheritableBoolean>Inherit</m:InheritableBoolean>
+                        <m:InheritableBoolean>Enabled</m:InheritableBoolean>
+                        <m:InheritableBoolean>Disabled</m:InheritableBoolean>
+                    </ComboBox.Items>
+                </ComboBox>
+
+                <Separator />
+
+                <!-- Expiry -->
+                <CheckBox Content="Group expires" IsChecked="{Binding Expires}" />
+                <StackPanel IsVisible="{Binding Expires}" Spacing="4">
+                    <TextBlock Text="Expiry date (UTC)" FontSize="11" Opacity="0.7" />
+                    <CalendarDatePicker SelectedDate="{Binding ExpiryTime}" />
+                </StackPanel>
+
+                <Separator />
+
+                <!-- Tags -->
+                <TextBlock Text="Tags (comma-separated)" FontSize="11" Opacity="0.7" />
+                <TextBox x:Name="TagsBox"
+                         Watermark="tag1, tag2"
+                         LostFocus="TagsBox_LostFocus" />
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- OK / Cancel -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal"
+                    HorizontalAlignment="Right" Spacing="8" Margin="0,8,0,0">
+            <Button Content="Cancel" Command="{Binding CancelCommand}" />
+            <Button Content="OK" Classes="accent" Command="{Binding SaveCommand}" />
+        </StackPanel>
+
+    </Grid>
+</UserControl>

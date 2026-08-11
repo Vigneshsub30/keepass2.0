@@ -15,6 +15,12 @@
     <!-- Provides FileSystemAclExtensions (GetAccessControl / SetAccessControl)
          extension methods for FileInfo on .NET Core targets.
          Used in KeePassLib/Serialization/FileTransactionEx.cs. -->
+    <PackageVersion Include="Avalonia" Version="11.3.20" />
+    <PackageVersion Include="Avalonia.Controls.DataGrid" Version="11.3.13" />
+    <PackageVersion Include="Avalonia.Desktop" Version="11.3.20" />
+    <PackageVersion Include="Avalonia.Themes.Fluent" Version="11.3.20" />
+    <PackageVersion Include="Avalonia.Headless.XUnit" Version="11.3.20" />
+    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageVersion Include="coverlet.collector" Version="10.0.1">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
