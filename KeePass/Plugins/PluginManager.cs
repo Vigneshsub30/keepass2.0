@@ -47,6 +47,8 @@ namespace KeePass.Plugins
 	{
 		private readonly List<PluginInfo> m_lPlugins = new List<PluginInfo>();
 		private IPluginHost m_host = null;
+		private KeePassLib.Plugins.IPluginAuditLogger m_auditLogger =
+			KeePassLib.Plugins.NullPluginAuditLogger.Instance;
 
 		private static string g_strUserDir = string.Empty;
 		internal static string UserDirectory
@@ -228,7 +230,8 @@ namespace KeePass.Plugins
 					PluginInfo pi = new PluginInfo(strFile, fvi, strDisplayFilePath);
 					pi.Interface = CreatePluginInstance(pi.FilePath, strTypeName);
 
-					CheckCompatibility(strHash, pi.Interface);
+					m_auditLogger.LogLoadAttempted(strFile);
+					CheckCompatibility(strHash, pi.Interface, m_auditLogger);
 					// CheckCompatibilityRefl(strFile);
 
 					if(!pi.Interface.Initialize(m_host))
@@ -545,7 +548,9 @@ namespace KeePass.Plugins
 
 		private static void CheckCompatibilityPriv(Plugin p)
 		{
-		// Workaround #9604 (Mono SIGABRT on invalid token) retired: dead on .NET 10.
+			// Workaround #9604 (Mono SIGABRT on invalid token) was retired.
+			// Module.ResolveType and Module.ResolveMember work correctly on
+			// all platforms on .NET 10 — the check now runs everywhere.
 
 			Assembly asm = p.GetType().Assembly;
 			if(asm == typeof(PluginManager).Assembly) { Debug.Assert(false); return; }
@@ -560,16 +565,22 @@ namespace KeePass.Plugins
 			}
 		}
 
-		private static void CheckCompatibility(string strHash, Plugin p)
+		private static void CheckCompatibility(string strHash, Plugin p,
+			KeePassLib.Plugins.IPluginAuditLogger auditLogger)
 		{
 			AceApplication aceApp = Program.Config.Application;
-			// bool? ob = aceApp.GetPluginCompat(strHash);
-			// if(ob.HasValue) return ob.Value;
 			if(aceApp.IsPluginCompatible(strHash)) return;
 
-			try { CheckCompatibilityPriv(p); }
+			string filePath = p.GetType().Assembly.Location;
+			try
+			{
+				CheckCompatibilityPriv(p);
+				auditLogger.LogAdmitted(filePath, p.GetType().FullName, null);
+			}
 			catch(Exception ex)
 			{
+				auditLogger.LogRejected(filePath,
+					$"Reference-token check failed: {ex.Message}");
 				throw new ExtendedException(null, ex, KPRes.PluginUpdateHint);
 			}
 
