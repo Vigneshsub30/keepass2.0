@@ -38,10 +38,10 @@ using KeePassLib.Security;
 
 namespace KeePass.Plugins
 {
-	internal sealed class DefaultPluginHost : IPluginHost
+	internal sealed class DefaultPluginHost : IPluginHost, IPluginHostV2
 	{
 		private MainForm m_form = null;
-		private WinFormsMainWindowService m_mainWindowService = null;
+		private WinFormsApplicationHost m_applicationHost = null;
 		private CommandLineArgs m_cmdLineArgs = null;
 		private CipherPool m_cipherPool = null;
 
@@ -56,15 +56,24 @@ namespace KeePass.Plugins
 			Debug.Assert(cmdLineArgs != null);
 			Debug.Assert(cipherPool != null);
 
-			m_form = form;
-			m_mainWindowService = new WinFormsMainWindowService(form);
-			m_cmdLineArgs = cmdLineArgs;
-			m_cipherPool = cipherPool;
+			m_form            = form;
+			m_applicationHost = new WinFormsApplicationHost(form);
+			m_cmdLineArgs     = cmdLineArgs;
+			m_cipherPool      = cipherPool;
 		}
+
+		// ── IPluginHost (legacy) ────────────────────────────────────── //
 
 		public IMainWindowService MainWindow
 		{
-			get { return m_mainWindowService; }
+			get { return m_applicationHost.MainWindowService; }
+		}
+
+		// ── IPluginHostV2 (modern) ──────────────────────────────────── //
+
+		public IApplicationHost ApplicationHost
+		{
+			get { return m_applicationHost; }
 		}
 
 		public PwDatabase Database
