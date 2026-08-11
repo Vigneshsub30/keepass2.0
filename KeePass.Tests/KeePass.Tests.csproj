@@ -30,6 +30,8 @@
   <ItemGroup>
     <ProjectReference Include="..\KeePassLib\KeePassLib.csproj" />
     <ProjectReference Include="..\KeePass.Core\KeePass.Core.csproj" />
+    <!-- Required for Windows platform implementation tests (WO-028). -->
+    <ProjectReference Include="..\KeePass\KeePass.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -256,6 +256,11 @@
     <Compile Include="Native\NativeMethods.Unix.cs" />
     <Compile Include="Native\NativeProgressDialog.cs" />
     <Compile Include="Native\ShellLinkEx.cs" />
+    <Compile Include="Platform\WindowsAutoTypeService.cs" />
+    <Compile Include="Platform\WindowsClipboardService.cs" />
+    <Compile Include="Platform\WindowsCredentialStore.cs" />
+    <Compile Include="Platform\WindowsPlatformIntegration.cs" />
+    <Compile Include="Platform\WindowsScreenProtectionService.cs" />
     <Compile Include="Plugins\PlgxCache.cs" />
     <Compile Include="Plugins\PlgxCsprojLoader.cs" />
     <Compile Include="Plugins\PlgxPluginInfo.cs" />
