@@ -106,7 +106,7 @@ namespace KeePassLib.Cryptography
 				byte[] pbHash = h.ComputeHash(pbKey);
 				Array.Copy(pbHash, m_pbKey, 32);
 				Array.Copy(pbHash, 32, m_pbIV, 0, 12);
-				MemUtil.ZeroByteArray(pbHash);
+				MemUtil.SecureZero(pbHash.AsSpan());
 			}
 
 				m_chacha20 = new ChaCha20Cipher(m_pbKey, m_pbIV, true);
@@ -167,14 +167,14 @@ namespace KeePassLib.Cryptography
 					m_salsa20.Dispose();
 				else if(m_alg == CrsAlgorithm.ArcFourVariant)
 				{
-					MemUtil.ZeroByteArray(m_pbState);
+					MemUtil.SecureZero(m_pbState.AsSpan());
 					m_i = 0;
 					m_j = 0;
 				}
 				else { Debug.Assert(false); }
 
-				if(m_pbKey != null) MemUtil.ZeroByteArray(m_pbKey);
-				if(m_pbIV != null) MemUtil.ZeroByteArray(m_pbIV);
+				if(m_pbKey != null) MemUtil.SecureZero(m_pbKey.AsSpan());
+				if(m_pbIV != null) MemUtil.SecureZero(m_pbIV.AsSpan());
 
 				m_bDisposed = true;
 			}

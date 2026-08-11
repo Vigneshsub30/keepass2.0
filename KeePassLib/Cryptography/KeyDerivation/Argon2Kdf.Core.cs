@@ -161,17 +161,17 @@ namespace KeePassLib.Cryptography.KeyDerivation
 
 			byte[] pbBlockHash = new byte[NbPreHashSeedLength];
 			Array.Copy(pbH0, pbBlockHash, pbH0.Length);
-			MemUtil.ZeroByteArray(pbH0);
+			MemUtil.SecureZero(pbH0.AsSpan());
 
 			FillFirstBlocks(ctx, pbBlockHash, h);
-			MemUtil.ZeroByteArray(pbBlockHash);
+			MemUtil.SecureZero(pbBlockHash.AsSpan());
 
 			FillMemoryBlocks(ctx);
 
 			byte[] pbOut = FinalHash(ctx, cbOut, h);
 
 			h.Clear();
-			MemUtil.ZeroArray<ulong>(ctx.Mem);
+			MemUtil.SecureZero<ulong>(ctx.Mem.AsSpan());
 			return pbOut;
 		}
 
@@ -273,7 +273,7 @@ namespace KeePassLib.Cryptography.KeyDerivation
 				ibOut += 64 / 2;
 				cbToProduce -= 64 / 2;
 
-				MemUtil.ZeroByteArray(pbHash);
+				MemUtil.SecureZero(pbHash.AsSpan());
 			}
 
 			using(Blake2b hOut = new Blake2b(cbToProduce))
@@ -281,10 +281,10 @@ namespace KeePassLib.Cryptography.KeyDerivation
 				byte[] pbHash = hOut.ComputeHash(pbOutBuffer);
 				Array.Copy(pbHash, 0, pbOut, ibOut, cbToProduce);
 
-				MemUtil.ZeroByteArray(pbHash);
+				MemUtil.SecureZero(pbHash.AsSpan());
 			}
 
-			MemUtil.ZeroByteArray(pbOutBuffer);
+			MemUtil.SecureZero(pbOutBuffer.AsSpan());
 		}
 
 #if !ARGON2_G_INLINED
@@ -403,7 +403,7 @@ namespace KeePassLib.Cryptography.KeyDerivation
 				LoadBlock(ctx.Mem, (l * ctx.LaneLength + 1UL) * NbBlockSizeInQW, pbBlock);
 			}
 
-			MemUtil.ZeroByteArray(pbBlock);
+			MemUtil.SecureZero(pbBlock.AsSpan());
 		}
 
 		private static ulong IndexAlpha(Argon2Ctx ctx, Argon2ThreadInfo ti,
@@ -569,9 +569,9 @@ namespace KeePassLib.Cryptography.KeyDerivation
 					++uPrev;
 				}
 
-				MemUtil.ZeroArray<ulong>(pbR);
-				MemUtil.ZeroArray<ulong>(pbTmp);
-				if(pbAddrInputZero != null) MemUtil.ZeroArray<ulong>(pbAddrInputZero);
+				MemUtil.SecureZero<ulong>(pbR.AsSpan());
+				MemUtil.SecureZero<ulong>(pbTmp.AsSpan());
+				if(pbAddrInputZero != null) MemUtil.SecureZero<ulong>(pbAddrInputZero.AsSpan());
 			}
 			catch(Exception) { Debug.Assert(false); }
 
@@ -674,8 +674,8 @@ namespace KeePassLib.Cryptography.KeyDerivation
 			byte[] pbOut = new byte[cbOut];
 			Blake2bLong(pbOut, cbOut, pbBlockHashBytes, (int)NbBlockSize, h);
 
-			MemUtil.ZeroArray<ulong>(pqBlockHash);
-			MemUtil.ZeroByteArray(pbBlockHashBytes);
+			MemUtil.SecureZero<ulong>(pqBlockHash.AsSpan());
+			MemUtil.SecureZero(pbBlockHashBytes.AsSpan());
 			return pbOut;
 		}
 	}

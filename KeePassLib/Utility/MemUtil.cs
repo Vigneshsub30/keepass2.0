@@ -23,6 +23,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 
 #if KeePassLibSD
@@ -209,12 +210,42 @@ namespace KeePassLib.Utility
 		/// </summary>
 		/// <param name="pbArray">Input array. All bytes of this array
 		/// will be set to zero.</param>
+		/// <summary>
+		/// Securely zeroes a byte span using
+		/// <see cref="CryptographicOperations.ZeroMemory"/>, which is
+		/// guaranteed not to be elided as a dead store by the JIT optimizer.
+		/// Prefer this over <see cref="ZeroByteArray"/> for any buffer that
+		/// contains key material, plaintext, or other sensitive data.
+		/// </summary>
 		[MethodImpl(MioNoOptimize)]
+		public static void SecureZero(Span<byte> buffer)
+		{
+			if(buffer.IsEmpty) return;
+			CryptographicOperations.ZeroMemory(buffer);
+		}
+
+		/// <summary>
+		/// Securely zeroes a span of any unmanaged value type (e.g.
+		/// <c>ulong[]</c> used in Argon2 intermediate buffers) by reinterpreting
+		/// the span as bytes and delegating to
+		/// <see cref="CryptographicOperations.ZeroMemory"/>.
+		/// </summary>
+		[MethodImpl(MioNoOptimize)]
+		public static void SecureZero<T>(Span<T> buffer) where T : unmanaged
+		{
+			if(buffer.IsEmpty) return;
+			CryptographicOperations.ZeroMemory(MemoryMarshal.AsBytes(buffer));
+		}
+
+		/// <summary>
+		/// Zero out all bytes in an array.
+		/// </summary>
+		[Obsolete("Use SecureZero(Span<byte>) instead — CryptographicOperations.ZeroMemory " +
+			"guarantees the zeroing is not elided as a dead store by the JIT optimizer.")]
 		public static void ZeroByteArray(byte[] pbArray)
 		{
 			if(pbArray == null) { Debug.Assert(false); return; }
-
-			Array.Clear(pbArray, 0, pbArray.Length);
+			SecureZero(pbArray.AsSpan());
 		}
 
 		/// <summary>
@@ -222,11 +253,12 @@ namespace KeePassLib.Utility
 		/// </summary>
 		/// <param name="v">Input array.</param>
 		[MethodImpl(MioNoOptimize)]
-		public static void ZeroArray<T>(T[] v)
+		[Obsolete("Use SecureZero<T>(Span<T>) instead — CryptographicOperations.ZeroMemory " +
+			"guarantees the zeroing is not elided as a dead store by the JIT optimizer.")]
+		public static void ZeroArray<T>(T[] v) where T : unmanaged
 		{
 			if(v == null) { Debug.Assert(false); return; }
-
-			Array.Clear(v, 0, v.Length);
+			SecureZero<T>(v.AsSpan());
 		}
 
 		private static byte[] g_pbZero = null;

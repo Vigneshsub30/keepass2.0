@@ -187,12 +187,12 @@ namespace KeePassLib.Keys
 			{
 				Array.Copy(pbData, 0, pbAllData, p, pbData.Length);
 				p += pbData.Length;
-				MemUtil.ZeroByteArray(pbData);
+				MemUtil.SecureZero(pbData.AsSpan());
 			}
 			Debug.Assert(p == cbData);
 
 			byte[] pbHash = CryptoUtil.HashSha256(pbAllData);
-			MemUtil.ZeroByteArray(pbAllData);
+			MemUtil.SecureZero(pbAllData.AsSpan());
 			return pbHash;
 		}
 
@@ -206,9 +206,9 @@ namespace KeePassLib.Keys
 			{
 				byte[] pbOther = ckOther.CreateRawCompositeKey32();
 				bEqual = MemUtil.ArraysEqual(pbThis, pbOther);
-				MemUtil.ZeroByteArray(pbOther);
+				MemUtil.SecureZero(pbOther.AsSpan());
 			}
-			finally { MemUtil.ZeroByteArray(pbThis); }
+			finally { MemUtil.SecureZero(pbThis.AsSpan()); }
 
 			return bEqual;
 		}
@@ -263,8 +263,8 @@ namespace KeePassLib.Keys
 			}
 			finally
 			{
-				if(pbRaw32 != null) MemUtil.ZeroByteArray(pbRaw32);
-				if(pbTrf32 != null) MemUtil.ZeroByteArray(pbTrf32);
+				if(pbRaw32 != null) MemUtil.SecureZero(pbRaw32.AsSpan());
+				if(pbTrf32 != null) MemUtil.SecureZero(pbTrf32.AsSpan());
 			}
 
 			return pbRet;

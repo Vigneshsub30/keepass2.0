@@ -213,7 +213,7 @@ namespace KeePassLib.Security
 
 			byte[] pb = xb.ReadPlainText();
 			try { Init(bEnableProtection, pb, 0, pb.Length); }
-			finally { if(bEnableProtection) MemUtil.ZeroByteArray(pb); }
+			finally { if(bEnableProtection) MemUtil.SecureZero(pb.AsSpan()); }
 		}
 
 		private void Init(bool bEnableProtection, byte[] pbData, int iOffset,
@@ -356,7 +356,7 @@ namespace KeePassLib.Security
 			for(int i = 0; i < cb; ++i)
 				pbData[i] ^= pbPad[i];
 
-			MemUtil.ZeroByteArray(pbPad);
+			MemUtil.SecureZero(pbPad.AsSpan());
 			return pbData;
 		}
 
@@ -371,7 +371,7 @@ namespace KeePassLib.Security
 			if(m_bProtected)
 			{
 				h ^= 0x57851B93;
-				MemUtil.ZeroByteArray(pb);
+				MemUtil.SecureZero(pb.AsSpan());
 			}
 
 			lock(m_objSync) { m_oiHash = h; }
@@ -407,8 +407,8 @@ namespace KeePassLib.Security
 			}
 			finally
 			{
-				if(m_bProtected) MemUtil.ZeroByteArray(pbL);
-				if(other.m_bProtected && (pbR != null)) MemUtil.ZeroByteArray(pbR);
+				if(m_bProtected) MemUtil.SecureZero(pbL.AsSpan());
+				if(other.m_bProtected && (pbR != null)) MemUtil.SecureZero(pbR.AsSpan());
 			}
 
 			return bEq;
@@ -432,7 +432,7 @@ namespace KeePassLib.Security
 				Array.Copy(pb, 0, pbAll, i, 32);
 				i += 32;
 
-				MemUtil.ZeroByteArray(pb);
+				MemUtil.SecureZero(pb.AsSpan());
 			}
 			catch(Exception) { Debug.Assert(false); }
 
@@ -453,7 +453,7 @@ namespace KeePassLib.Security
 			Debug.Assert(i == pbAll.Length);
 
 			byte[] pbHash = CryptoUtil.HashSha256(pbAll);
-			MemUtil.ZeroByteArray(pbAll);
+			MemUtil.SecureZero(pbAll.AsSpan());
 			return pbHash;
 		}
 	}
