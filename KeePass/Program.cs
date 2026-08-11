@@ -190,6 +190,29 @@ namespace KeePass
 			}
 		}
 
+		private static IServiceProvider g_serviceProvider = null;
+
+		/// <summary>
+		/// The application-scoped DI service provider.  Populated during startup
+		/// by <see cref="App.AppHostBuilder.Build"/>.  <c>null</c> before startup
+		/// completes; use <see cref="Config"/>, <see cref="FileFormatPool"/>, etc.
+		/// for compatibility when the container is not yet available.
+		/// </summary>
+		public static IServiceProvider Services
+		{
+			get { return g_serviceProvider; }
+		}
+
+		/// <summary>
+		/// Sets the application service provider.  Called once from
+		/// <c>Program.Main</c> after <see cref="App.AppHostBuilder.Build"/>.
+		/// </summary>
+		public static void SetServices(IServiceProvider sp)
+		{
+			if(sp == null) throw new ArgumentNullException("sp");
+			g_serviceProvider = sp;
+		}
+
 		private static KPTranslation g_kpTranslation = null;
 		public static KPTranslation Translation
 		{
@@ -676,6 +699,11 @@ namespace KeePass
 			CustomResourceManager.Override(typeof(KeePass.Properties.Resources));
 
 			AppConfigSerializer.CreateBackupIfNecessary();
+
+			// Build the DI container.  The FileFormatPool is populated by the
+			// FileFormatPool property getter, so ensure it exists before building.
+			AppHostBuilder host = new AppHostBuilder(g_appConfig, Program.FileFormatPool);
+			Program.SetServices(host.Build());
 
 			AceSections s = AppConfigEx.GetEnabledNonEnforcedSections();
 			if((s != AceSections.None) && !g_appConfig.Meta.PreferUserConfiguration)

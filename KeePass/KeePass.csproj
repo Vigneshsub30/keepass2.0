@@ -27,10 +27,14 @@
   <ItemGroup>
     <ProjectReference Include="..\KeePassLib\KeePassLib.csproj" />
     <ProjectReference Include="..\KeePass.Core\KeePass.Core.csproj" />
+    <!-- Unix platform implementations referenced so AppHostBuilder can register
+         MacPlatformIntegration / LinuxPlatformIntegration on non-Windows hosts. -->
+    <ProjectReference Include="..\KeePass.Platform.Unix\KeePass.Platform.Unix.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 
@@ -38,6 +42,7 @@
   <ItemGroup>
     <Compile Include="App\AppDefs.cs" />
     <Compile Include="App\AppHelp.cs" />
+    <Compile Include="App\AppHostBuilder.cs" />
     <Compile Include="App\AppIcons.cs" />
     <Compile Include="App\AppPolicy.cs" />
     <Compile Include="App\Configuration\AceApplication.cs" />
