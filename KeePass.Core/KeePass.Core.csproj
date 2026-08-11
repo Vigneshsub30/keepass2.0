@@ -21,4 +21,10 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Domain types (PwDatabase, IOConnectionInfo, etc.) are needed by
+         IUICommandService and other service interfaces. -->
+    <ProjectReference Include="..\KeePassLib\KeePassLib.csproj" />
+  </ItemGroup>
+
 </Project>

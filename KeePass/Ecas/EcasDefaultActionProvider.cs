@@ -25,6 +25,7 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 
+using KeePass.Core.Services;
 using KeePass.DataExchange;
 using KeePass.Forms;
 using KeePass.Native;
@@ -61,7 +62,37 @@ namespace KeePass.Ecas
 		private const uint IdMbaAbort = 1;
 		private const uint IdMbaCmd = 2;
 
-		public EcasDefaultActionProvider()
+		// Platform-neutral replacements for MessageBoxIcon enum values.
+		// These match the uint casts used in the original serialised trigger XML
+		// so changing them would break existing trigger configurations.
+		private const uint IconNone        = 0;   // MessageBoxIcon.None
+		private const uint IconInformation = 64;  // MessageBoxIcon.Information
+		private const uint IconQuestion    = 32;  // MessageBoxIcon.Question
+		private const uint IconWarning     = 48;  // MessageBoxIcon.Warning
+		private const uint IconError       = 16;  // MessageBoxIcon.Error
+
+		// Platform-neutral replacements for MessageBoxButtons enum values.
+		private const uint BtnsOK       = 0; // MessageBoxButtons.OK
+		private const uint BtnsOKCancel = 1; // MessageBoxButtons.OKCancel
+		private const uint BtnsYesNo    = 4; // MessageBoxButtons.YesNo
+
+		// Platform-neutral UI service injected at construction time.
+		private readonly IUICommandService m_uiService;
+
+		/// <summary>
+		/// Initialises the action provider using the supplied
+		/// <paramref name="uiService"/>.  When <c>null</c> the legacy
+		/// <see cref="Program.MainForm"/> path is used as a fallback so that
+		/// existing code that calls <c>new EcasDefaultActionProvider()</c>
+		/// continues to work.
+		/// </summary>
+		public EcasDefaultActionProvider(IUICommandService uiService = null)
+		{
+			m_uiService = uiService ?? new KeePass.Services.WinFormsUICommandService();
+			InitActions();
+		}
+
+		private void InitActions()
 		{
 			m_actions.Add(new EcasActionType(new PwUuid(new byte[] {
 				0xDA, 0xE5, 0xF8, 0x3B, 0x07, 0x30, 0x4C, 0x13,
@@ -190,21 +221,18 @@ namespace KeePass.Ecas
 				KPRes.ShowMessageBox, PwIcon.UserCommunication, new EcasParameter[] {
 					new EcasParameter(KPRes.MainInstruction, EcasValueType.String, null),
 					new EcasParameter(KPRes.Text, EcasValueType.String, null),
-					new EcasParameter(KPRes.Icon, EcasValueType.EnumStrings,
-						new EcasEnum(new EcasEnumItem[] {
-							new EcasEnumItem((uint)MessageBoxIcon.None, KPRes.None),
-							new EcasEnumItem((uint)MessageBoxIcon.Information, "i"),
-							new EcasEnumItem((uint)MessageBoxIcon.Question, "?"),
-							new EcasEnumItem((uint)MessageBoxIcon.Warning, KPRes.Warning),
-							new EcasEnumItem((uint)MessageBoxIcon.Error, KPRes.Error) })),
-					new EcasParameter(KPRes.Buttons, EcasValueType.EnumStrings,
-						new EcasEnum(new EcasEnumItem[] {
-							new EcasEnumItem((uint)MessageBoxButtons.OK,
-								KPRes.Ok),
-							new EcasEnumItem((uint)MessageBoxButtons.OKCancel,
-								KPRes.Ok + "/" + KPRes.Cancel),
-							new EcasEnumItem((uint)MessageBoxButtons.YesNo,
-								KPRes.Yes + "/" + KPRes.No) })),
+				new EcasParameter(KPRes.Icon, EcasValueType.EnumStrings,
+					new EcasEnum(new EcasEnumItem[] {
+						new EcasEnumItem(IconNone,        KPRes.None),
+						new EcasEnumItem(IconInformation, "i"),
+						new EcasEnumItem(IconQuestion,    "?"),
+						new EcasEnumItem(IconWarning,     KPRes.Warning),
+						new EcasEnumItem(IconError,       KPRes.Error) })),
+				new EcasParameter(KPRes.Buttons, EcasValueType.EnumStrings,
+					new EcasEnum(new EcasEnumItem[] {
+						new EcasEnumItem(BtnsOK,       KPRes.Ok),
+						new EcasEnumItem(BtnsOKCancel, KPRes.Ok + "/" + KPRes.Cancel),
+						new EcasEnumItem(BtnsYesNo,    KPRes.Yes + "/" + KPRes.No) })),
 					new EcasParameter(KPRes.ButtonDefault, EcasValueType.EnumStrings,
 						new EcasEnum(new EcasEnumItem[] {
 							new EcasEnumItem(0, KPRes.Button + " 1"),
@@ -260,7 +288,7 @@ namespace KeePass.Ecas
 				RemoveToolBarButton));
 		}
 
-		private static void ExecuteShellCmd(EcasAction a, EcasContext ctx)
+		private void ExecuteShellCmd(EcasAction a, EcasContext ctx)
 		{
 			string strCmd = EcasUtil.GetParamPath(a.Parameters, 0, false);
 			string strArgs = EcasUtil.GetParamString(a.Parameters, 1, true, true);
@@ -274,7 +302,7 @@ namespace KeePass.Ecas
 			try
 			{
 				PwEntry pe = null;
-				try { pe = Program.MainForm.GetSelectedEntry(false); }
+				try { pe = m_uiService.GetSelectedEntry(false); }
 				catch(Exception) { Debug.Assert(false); }
 
 				strCmd = WinUtil.CompileUrl(strCmd, pe, true, null, false);
@@ -315,14 +343,14 @@ namespace KeePass.Ecas
 
 				if((p != null) && bWait)
 				{
-					Program.MainForm.UIBlockInteraction(true);
+					m_uiService.SetInteractionBlocked(true);
 					MessageService.ExternalIncrementMessageCount();
 
 					try { p.WaitForExit(); }
 					catch(Exception) { Debug.Assert(false); }
 
 					MessageService.ExternalDecrementMessageCount();
-					Program.MainForm.UIBlockInteraction(false);
+					m_uiService.SetInteractionBlocked(false);
 				}
 			}
 			catch(Exception ex) { throw new ExtendedException(strCmd, ex); }
@@ -333,7 +361,7 @@ namespace KeePass.Ecas
 			}
 		}
 
-		private static void ChangeTriggerOnOff(EcasAction a, EcasContext ctx)
+		private void ChangeTriggerOnOff(EcasAction a, EcasContext ctx)
 		{
 			string strName = EcasUtil.GetParamString(a.Parameters, 0, true);
 			uint uState = EcasUtil.GetParamUInt(a.Parameters, 1);
@@ -357,7 +385,7 @@ namespace KeePass.Ecas
 			else { Debug.Assert(false); }
 		}
 
-		private static void OpenDatabaseFile(EcasAction a, EcasContext ctx)
+		private void OpenDatabaseFile(EcasAction a, EcasContext ctx)
 		{
 			string strPath = EcasUtil.GetParamPath(a.Parameters, 0, true);
 			if(string.IsNullOrEmpty(strPath)) return;
@@ -370,7 +398,12 @@ namespace KeePass.Ecas
 
 			CompositeKey ck = KeyFromParams(a, 3, 4, 5, ioc);
 
-			Program.MainForm.OpenDatabase(ioc, ck, ioc.IsLocalFile());
+			m_uiService.OpenDatabase(ioc, ck, ioc.IsLocalFile());
+		}
+
+		private void SaveDatabaseFile(EcasAction a, EcasContext ctx)
+		{
+			m_uiService.SaveActiveDatabase();
 		}
 
 		private static CompositeKey KeyFromParams(EcasAction a, int iPassword,
@@ -388,12 +421,7 @@ namespace KeePass.Ecas
 				ioc, false, false);
 		}
 
-		private static void SaveDatabaseFile(EcasAction a, EcasContext ctx)
-		{
-			Program.MainForm.UIFileSave(false);
-		}
-
-		private static void SyncDatabaseFile(EcasAction a, EcasContext ctx)
+		private void SyncDatabaseFile(EcasAction a, EcasContext ctx)
 		{
 			string[] vPaths = EcasUtil.GetParamPaths(a.Parameters, 0, true);
 			if((vPaths == null) || (vPaths.Length == 0)) return;
@@ -403,8 +431,7 @@ namespace KeePass.Ecas
 			bool bOnErrorSilent = EcasUtil.GetParamBool(a.Parameters, 3);
 			bool bOnErrorContinue = EcasUtil.GetParamBool(a.Parameters, 4);
 
-			MainForm mf = Program.MainForm;
-			PwDatabase pd = mf.ActiveDatabase;
+			PwDatabase pd = m_uiService.GetActiveDatabase();
 			if((pd == null) || !pd.IsOpen) return;
 
 			List<IOConnectionInfo> l = new List<IOConnectionInfo>();
@@ -415,12 +442,13 @@ namespace KeePass.Ecas
 			}
 			if(l.Count == 0) return;
 
+			MainForm mf = Program.MainForm;
 			bool? ob = ImportUtil.Synchronize(pd, mf, l.ToArray(), false, mf,
 				bOnErrorSilent, bOnErrorContinue);
-			mf.UpdateUISyncPost(ob);
+			if(mf != null) mf.UpdateUISyncPost(ob);
 		}
 
-		private static IOConnectionInfo IOFromParameters(string strPath,
+		private IOConnectionInfo IOFromParameters(string strPath,
 			string strUser, string strPassword)
 		{
 			IOConnectionInfo ioc = IOConnectionInfo.FromPath(strPath);
@@ -430,7 +458,7 @@ namespace KeePass.Ecas
 
 			// Try to complete it using the MRU list; this will especially
 			// retrieve the CredSaveMode of the MRU item (if one exists)
-			ioc = Program.MainForm.CompleteConnectionInfoUsingMru(ioc);
+			ioc = m_uiService.CompleteConnectionInfoUsingMru(ioc);
 
 			// Override the password using the trigger value; do not change
 			// the CredSaveMode anymore (otherwise e.g. values retrieved
@@ -442,9 +470,9 @@ namespace KeePass.Ecas
 			return MainForm.CompleteConnectionInfo(ioc, false, true, true, false);
 		}
 
-		private static void ImportIntoCurrentDatabase(EcasAction a, EcasContext ctx)
+		private void ImportIntoCurrentDatabase(EcasAction a, EcasContext ctx)
 		{
-			PwDatabase pd = Program.MainForm.ActiveDatabase;
+			PwDatabase pd = m_uiService.GetActiveDatabase();
 			if((pd == null) || !pd.IsOpen) return;
 
 			string strPath = EcasUtil.GetParamPath(a.Parameters, 0, true);
@@ -481,11 +509,14 @@ namespace KeePass.Ecas
 			finally
 			{
 				if(ob.HasValue)
-					Program.MainForm.UpdateUI(false, null, true, null, true, null, false);
+			{
+				MainForm mf = Program.MainForm;
+				if(mf != null) mf.UpdateUI(false, null, true, null, true, null, false);
+			}
 			}
 		}
 
-		private static void ExportDatabaseFile(EcasAction a, EcasContext ctx)
+		private void ExportDatabaseFile(EcasAction a, EcasContext ctx)
 		{
 			string strPath = EcasUtil.GetParamPath(a.Parameters, 0, true);
 			// if(string.IsNullOrEmpty(strPath)) return; // Allow no-file exports
@@ -494,7 +525,7 @@ namespace KeePass.Ecas
 			string strGroup = EcasUtil.GetParamString(a.Parameters, 2, true);
 			string strTag = EcasUtil.GetParamString(a.Parameters, 3, true);
 
-			PwDatabase pd = Program.MainForm.ActiveDatabase;
+			PwDatabase pd = m_uiService.GetActiveDatabase();
 			if((pd == null) || !pd.IsOpen) return;
 
 			PwGroup pg = pd.RootGroup;
@@ -535,12 +566,12 @@ namespace KeePass.Ecas
 			ExportUtil.Export(pei, strFormat, ioc);
 		}
 
-		private static void CloseDatabaseFile(EcasAction a, EcasContext ctx)
+		private void CloseDatabaseFile(EcasAction a, EcasContext ctx)
 		{
-			Program.MainForm.CloseDocument(null, false, false, true, true);
+			m_uiService.CloseActiveDatabase(true);
 		}
 
-		private static void ActivateDatabaseTab(EcasAction a, EcasContext ctx)
+		private void ActivateDatabaseTab(EcasAction a, EcasContext ctx)
 		{
 			string strName = EcasUtil.GetParamPath(a.Parameters, 0, true);
 			bool bEmptyName = string.IsNullOrEmpty(strName);
@@ -548,7 +579,8 @@ namespace KeePass.Ecas
 			uint uSel = EcasUtil.GetParamUInt(a.Parameters, 1, 0);
 			PwDatabase pdSel = ctx.Properties.Get<PwDatabase>(EcasProperty.Database);
 
-			DocumentManagerEx dm = Program.MainForm.DocumentManager;
+			DocumentManagerEx dm = m_uiService.GetDocumentManager() as DocumentManagerEx;
+			if(dm == null) return;
 			foreach(PwDocument doc in dm.Documents)
 			{
 				if(doc.Database == null) { Debug.Assert(false); continue; }
@@ -573,7 +605,7 @@ namespace KeePass.Ecas
 				if(bEmptyName || ((ioc != null) && (ioc.Path.IndexOf(strName,
 					StrUtil.CaseIgnoreCmp) >= 0)))
 				{
-					Program.MainForm.MakeDocumentActive(doc);
+					m_uiService.MakeDocumentActive(doc);
 					break;
 				}
 			}
@@ -587,12 +619,12 @@ namespace KeePass.Ecas
 				Thread.Sleep((int)uTimeSpan);
 		}
 
-		private static void ExecuteGlobalAutoType(EcasAction a, EcasContext ctx)
+		private void ExecuteGlobalAutoType(EcasAction a, EcasContext ctx)
 		{
-			Program.MainForm.ExecuteGlobalAutoType();
+			m_uiService.ExecuteGlobalAutoType();
 		}
 
-		private static void ExecuteSelectedAutoType(EcasAction a, EcasContext ctx)
+		private void ExecuteSelectedAutoType(EcasAction a, EcasContext ctx)
 		{
 			try
 			{
@@ -603,41 +635,42 @@ namespace KeePass.Ecas
 				string strSeq = EcasUtil.GetParamString(a.Parameters, 0, false);
 				if(string.IsNullOrEmpty(strSeq)) strSeq = null;
 
-				PwEntry pe = Program.MainForm.GetSelectedEntry(true);
+				PwEntry pe = m_uiService.GetSelectedEntry(true);
 				if(pe == null) return;
-				PwDatabase pd = Program.MainForm.DocumentManager.SafeFindContainerOf(pe);
+				DocumentManagerEx dm = m_uiService.GetDocumentManager() as DocumentManagerEx;
+				PwDatabase pd = (dm != null) ? dm.SafeFindContainerOf(pe) : null;
 
+				MainForm mf = Program.MainForm;
 				IntPtr hFg = NativeMethods.GetForegroundWindowHandle();
 				if(GlobalWindowManager.HasWindowEx(hFg))
-					AutoType.PerformIntoPreviousWindow(Program.MainForm, pe,
-						pd, strSeq);
+					AutoType.PerformIntoPreviousWindow(mf, pe, pd, strSeq);
 				else AutoType.PerformIntoCurrentWindow(pe, pd, strSeq);
 			}
 			catch(Exception) { Debug.Assert(false); }
 		}
 
-		private static void ShowEntriesByTag(EcasAction a, EcasContext ctx)
+		private void ShowEntriesByTag(EcasAction a, EcasContext ctx)
 		{
 			string strTag = EcasUtil.GetParamString(a.Parameters, 0, true);
-			Program.MainForm.ShowEntriesByTag(strTag, false);
+			m_uiService.ShowEntriesByTag(strTag);
 		}
 
-		private static void AddToolBarButton(EcasAction a, EcasContext ctx)
+		private void AddToolBarButton(EcasAction a, EcasContext ctx)
 		{
 			string strID = EcasUtil.GetParamString(a.Parameters, 0, true);
 			string strName = EcasUtil.GetParamString(a.Parameters, 1, true);
 			string strDesc = EcasUtil.GetParamString(a.Parameters, 2, true);
 
-			Program.MainForm.AddCustomToolBarButton(strID, strName, strDesc);
+			m_uiService.AddCustomToolBarButton(strID, strName, strDesc);
 		}
 
-		private static void RemoveToolBarButton(EcasAction a, EcasContext ctx)
+		private void RemoveToolBarButton(EcasAction a, EcasContext ctx)
 		{
 			string strID = EcasUtil.GetParamString(a.Parameters, 0, true);
-			Program.MainForm.RemoveCustomToolBarButton(strID);
+			m_uiService.RemoveCustomToolBarButton(strID);
 		}
 
-		private static void ShowMessageBox(EcasAction a, EcasContext ctx)
+		private void ShowMessageBox(EcasAction a, EcasContext ctx)
 		{
 			VistaTaskDialog vtd = new VistaTaskDialog();
 
@@ -648,33 +681,38 @@ namespace KeePass.Ecas
 			if(!string.IsNullOrEmpty(strText)) vtd.Content = strText;
 
 			uint uIcon = EcasUtil.GetParamUInt(a.Parameters, 2, 0);
-			if(uIcon == (uint)MessageBoxIcon.Information)
+			if(uIcon == IconInformation)
 				vtd.SetIcon(VtdIcon.Information);
-			else if(uIcon == (uint)MessageBoxIcon.Question)
+			else if(uIcon == IconQuestion)
 				vtd.SetIcon(VtdCustomIcon.Question);
-			else if(uIcon == (uint)MessageBoxIcon.Warning)
+			else if(uIcon == IconWarning)
 				vtd.SetIcon(VtdIcon.Warning);
-			else if(uIcon == (uint)MessageBoxIcon.Error)
+			else if(uIcon == IconError)
 				vtd.SetIcon(VtdIcon.Error);
-			else { Debug.Assert(uIcon == (uint)MessageBoxIcon.None); }
+			else { Debug.Assert(uIcon == IconNone); }
 
 			vtd.CommandLinks = false;
 
+			// Button IDs use DialogResult int values for round-trip stability
+			// with existing serialised trigger XML.
+			const int DrOk     = (int)DialogResult.OK;     // 1
+			const int DrCancel = (int)DialogResult.Cancel; // 2
+
 			uint uBtns = EcasUtil.GetParamUInt(a.Parameters, 3, 0);
 			bool bCanCancel = false;
-			if(uBtns == (uint)MessageBoxButtons.OKCancel)
+			if(uBtns == BtnsOKCancel)
 			{
-				vtd.AddButton((int)DialogResult.OK, KPRes.Ok, null);
-				vtd.AddButton((int)DialogResult.Cancel, KPRes.Cancel, null);
+				vtd.AddButton(DrOk,     KPRes.Ok,     null);
+				vtd.AddButton(DrCancel, KPRes.Cancel, null);
 				bCanCancel = true;
 			}
-			else if(uBtns == (uint)MessageBoxButtons.YesNo)
+			else if(uBtns == BtnsYesNo)
 			{
-				vtd.AddButton((int)DialogResult.OK, KPRes.YesCmd, null);
-				vtd.AddButton((int)DialogResult.Cancel, KPRes.NoCmd, null);
+				vtd.AddButton(DrOk,     KPRes.YesCmd, null);
+				vtd.AddButton(DrCancel, KPRes.NoCmd,  null);
 				bCanCancel = true;
 			}
-			else vtd.AddButton((int)DialogResult.OK, KPRes.Ok, null);
+			else vtd.AddButton(DrOk, KPRes.Ok, null);
 
 			uint uDef = EcasUtil.GetParamUInt(a.Parameters, 4, 0);
 			ReadOnlyCollection<VtdButton> lButtons = vtd.Buttons;
@@ -717,10 +755,8 @@ namespace KeePass.Ecas
 
 			uint uActCondID = EcasUtil.GetParamUInt(a.Parameters, 5, 0);
 
-			bool bDrY = ((dr == (int)DialogResult.OK) ||
-				(dr == (int)DialogResult.Yes));
-			bool bDrN = ((dr == (int)DialogResult.Cancel) ||
-				(dr == (int)DialogResult.No));
+			bool bDrY = ((dr == DrOk) || (dr == (int)DialogResult.Yes));
+			bool bDrN = ((dr == DrCancel) || (dr == (int)DialogResult.No));
 
 			bool bPerformAction = (((uActCondID == IdMbcY) && bDrY) ||
 				((uActCondID == IdMbcN) && bDrN));

@@ -378,6 +378,7 @@
     <Compile Include="Services\DatabaseSessionCoordinator.cs" />
     <Compile Include="Services\WinFormsDialogService.cs" />
     <Compile Include="Services\WinFormsMessageService.cs" />
+    <Compile Include="Services\WinFormsUICommandService.cs" />
     <Compile Include="Util\AppLocator.cs" />
     <Compile Include="Util\AutoType.cs" />
     <Compile Include="Util\ChildProcessesSnapshot.cs" />

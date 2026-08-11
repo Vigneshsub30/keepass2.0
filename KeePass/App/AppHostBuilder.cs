@@ -112,9 +112,14 @@ namespace KeePass.App
 			// ── Platform integration (WO-026, WO-028, WO-029) ────────────────
 			RegisterPlatformIntegration(services);
 
-			// ── UI services (WO-030) ──────────────────────────────────────────
-			services.AddSingleton<IMessageService, WinFormsMessageService>();
-			services.AddSingleton<IDialogService, WinFormsDialogService>();
+		// ── UI services (WO-030) ──────────────────────────────────────────
+		services.AddSingleton<IMessageService, WinFormsMessageService>();
+		services.AddSingleton<IDialogService, WinFormsDialogService>();
+
+		// ── UI command service (WO-037) ───────────────────────────────────
+		// IUICommandService abstracts Program.MainForm calls from the Ecas
+		// trigger system and other application-layer services.
+		services.AddSingleton<IUICommandService, WinFormsUICommandService>();
 
 			// ── Image service ─────────────────────────────────────────────────
 			// NullImageService until a Windows-native implementation is added.

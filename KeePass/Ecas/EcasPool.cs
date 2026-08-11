@@ -65,7 +65,16 @@ namespace KeePass.Ecas
 		{
 			m_lEventProviders.Add(new EcasDefaultEventProvider());
 			m_lConditionProviders.Add(new EcasDefaultConditionProvider());
-			m_lActionProviders.Add(new EcasDefaultActionProvider());
+
+			// Resolve IUICommandService from the DI container when available;
+			// fall back to the WinForms implementation constructed inline.
+			KeePass.Core.Services.IUICommandService uiSvc = null;
+			IServiceProvider sp = Program.Services;
+			if(sp != null)
+				uiSvc = sp.GetService(typeof(KeePass.Core.Services.IUICommandService))
+					as KeePass.Core.Services.IUICommandService;
+
+			m_lActionProviders.Add(new EcasDefaultActionProvider(uiSvc));
 		}
 
 		public void AddEventProvider(EcasEventProvider p)
