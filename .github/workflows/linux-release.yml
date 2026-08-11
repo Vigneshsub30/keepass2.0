@@ -1,0 +1,114 @@
+name: Linux Release
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version number (e.g. 2.61.1)"
+        required: true
+        default: "2.61.1"
+
+permissions:
+  contents: write
+
+jobs:
+  build-packages:
+    name: Build Linux Packages
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    env:
+      KEEPASS_VERSION: ${{ github.event.inputs.version || github.ref_name }}
+      OUTPUT_DIR: ${{ github.workspace }}/artifacts/linux
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.x"
+
+      - name: Strip leading 'v' from version
+        run: |
+          VER="${KEEPASS_VERSION#v}"
+          echo "KEEPASS_VERSION=${VER}" >> "${GITHUB_ENV}"
+
+      - name: Install packaging tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ruby ruby-dev rpm libfuse2
+          sudo gem install fpm --no-document
+          # Download appimagetool
+          wget -q \
+            "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage" \
+            -O /usr/local/bin/appimagetool
+          chmod +x /usr/local/bin/appimagetool
+
+      # ── Build ──────────────────────────────────────────────────────────── #
+      - name: Build Linux binaries
+        run: bash linux/build-linux.sh
+
+      # ── .deb packages ──────────────────────────────────────────────────── #
+      - name: Package .deb (amd64)
+        run: bash linux/package-deb.sh linux-x64
+
+      - name: Package .deb (arm64)
+        run: bash linux/package-deb.sh linux-arm64
+
+      # ── .rpm packages ──────────────────────────────────────────────────── #
+      - name: Package .rpm (x86_64)
+        run: bash linux/package-rpm.sh linux-x64
+
+      - name: Package .rpm (aarch64)
+        run: bash linux/package-rpm.sh linux-arm64
+
+      # ── AppImage ───────────────────────────────────────────────────────── #
+      - name: Package AppImage
+        run: bash linux/package-appimage.sh
+
+      # ── Verification ───────────────────────────────────────────────────── #
+      - name: Verify .deb contents
+        run: |
+          for DEB in "${OUTPUT_DIR}"/*.deb; do
+            echo "==> ${DEB}"
+            dpkg-deb --contents "${DEB}" | head -20
+            dpkg-deb --info "${DEB}" | grep -E "Package|Version|Architecture"
+          done
+
+      - name: Verify .rpm contents
+        run: |
+          for RPM in "${OUTPUT_DIR}"/*.rpm; do
+            echo "==> ${RPM}"
+            rpm -qlp "${RPM}" | head -20
+            rpm -qip "${RPM}" | grep -E "Name|Version|Architecture"
+          done
+
+      - name: Validate .desktop file
+        run: |
+          sudo apt-get install -y desktop-file-utils
+          desktop-file-validate linux/org.keepass.desktop
+
+      - name: Verify AppImage
+        run: |
+          APPIMAGE="${OUTPUT_DIR}/KeePass-${KEEPASS_VERSION}-x86_64.AppImage"
+          if [[ -f "${APPIMAGE}" ]]; then
+            "${APPIMAGE}" --appimage-extract >/dev/null
+            ls squashfs-root/
+            rm -rf squashfs-root
+          fi
+
+      # ── Upload artifacts ───────────────────────────────────────────────── #
+      - name: Upload Linux packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: KeePass-linux-${{ env.KEEPASS_VERSION }}
+          path: |
+            ${{ env.OUTPUT_DIR }}/*.deb
+            ${{ env.OUTPUT_DIR }}/*.rpm
+            ${{ env.OUTPUT_DIR }}/*.AppImage
+          retention-days: 30

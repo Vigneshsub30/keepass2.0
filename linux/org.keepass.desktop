@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=KeePass
+Comment=Password Manager and Safe
+Exec=/opt/keepass/KeePass.Desktop.Avalonia %f
+Icon=keepass
+Categories=Utility;Security;
+MimeType=application/x-keepass2;
+StartupWMClass=keepass
+Terminal=false
+Keywords=password;security;encryption;vault;
