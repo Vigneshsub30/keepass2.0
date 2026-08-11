@@ -21,6 +21,7 @@ using System;
 using System.Drawing;
 using System.IO;
 
+using KeePass.Core.Services;
 using KeePass.Resources;
 
 using KeePassLib;
@@ -84,9 +85,52 @@ namespace KeePass.DataExchange
 			get { return false; }
 		}
 
-		public virtual Image SmallIcon
+		/// <summary>
+		/// Small icon representing this format, encoded as a platform-neutral
+		/// <see cref="ImageData"/> value.  Returns <see cref="ImageData.Empty"/>
+		/// when the format has no dedicated icon.
+		///
+		/// WinForms consumers that need a <see cref="System.Drawing.Image"/>
+		/// should call <see cref="GetSmallIconAsImage"/> instead.
+		///
+		/// <b>Breaking change (WO-027):</b> previously returned
+		/// <c>System.Drawing.Image</c>.  Plugin authors must update overrides
+		/// to return <see cref="ImageData"/> — use the protected helper
+		/// <see cref="ImageDataFromResource"/> to wrap an existing resource image.
+		/// </summary>
+		public virtual ImageData SmallIcon
 		{
-			get { return null; }
+			get { return ImageData.Empty; }
+		}
+
+		/// <summary>
+		/// Compatibility adapter for WinForms consumers.  Decodes
+		/// <see cref="SmallIcon"/> into a <see cref="System.Drawing.Image"/>.
+		/// Returns <c>null</c> when <see cref="SmallIcon"/> is empty.
+		/// </summary>
+		public Image GetSmallIconAsImage()
+		{
+			ImageData d = this.SmallIcon;
+			if(d == null || d.IsEmpty) return null;
+			using(MemoryStream ms = new MemoryStream(d.Data))
+				return Image.FromStream(ms);
+		}
+
+		/// <summary>
+		/// Helper for subclass overrides: converts a <see cref="System.Drawing.Image"/>
+		/// resource into an <see cref="ImageData"/> value encoded as PNG.
+		/// Returns <see cref="ImageData.Empty"/> when <paramref name="image"/>
+		/// is <c>null</c>.
+		/// </summary>
+		protected static ImageData ImageDataFromResource(Image image)
+		{
+			if(image == null) return ImageData.Empty;
+			using(MemoryStream ms = new MemoryStream())
+			{
+				image.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+				return new ImageData(ms.ToArray(), KeePass.Core.Services.ImageFormat.Png,
+					image.Width, image.Height);
+			}
 		}
 
 		/// <summary>

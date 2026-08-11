@@ -32,4 +32,11 @@
     <ProjectReference Include="..\KeePass.Core\KeePass.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Image fixture files for IImageService contract tests. -->
+    <EmbeddedResource Include="Fixtures\Images\test16x16.png" />
+    <EmbeddedResource Include="Fixtures\Images\test32x32.png" />
+    <EmbeddedResource Include="Fixtures\Images\test16.ico" />
+  </ItemGroup>
+
 </Project>

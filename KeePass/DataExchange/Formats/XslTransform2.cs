@@ -18,7 +18,7 @@
 */
 
 using System;
-using System.Drawing;
+using KeePass.Core.Services;
 using System.IO;
 using System.Text;
 using System.Windows.Forms;
@@ -46,9 +46,9 @@ namespace KeePass.DataExchange.Formats
 		public override string FormatName { get { return KPRes.XslExporter; } }
 		public override string ApplicationGroup { get { return KPRes.General; } }
 
-		public override Image SmallIcon
+		public override ImageData SmallIcon
 		{
-			get { return FileIcons.GetImageForExtension("xsl", null); }
+			get { return ImageDataFromResource(FileIcons.GetImageForExtension("xsl", null)); }
 		}
 
 		public override bool Export(PwExportInfo pwExportInfo, Stream sOutput,

@@ -19,7 +19,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using KeePass.Core.Services;
 using System.IO;
 using System.Text;
 
@@ -44,9 +44,9 @@ namespace KeePass.DataExchange.Formats
 		public override string DefaultExtension { get { return "csv|tsv|tab|txt|asc"; } }
 		public override string ApplicationGroup { get { return KPRes.General; } }
 
-		public override Image SmallIcon
+		public override ImageData SmallIcon
 		{
-			get { return KeePass.Properties.Resources.B16x16_Wizard; }
+			get { return ImageDataFromResource(KeePass.Properties.Resources.B16x16_Wizard); }
 		}
 
 		public override void Import(PwDatabase pdStorage, Stream sInput,

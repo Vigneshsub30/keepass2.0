@@ -19,7 +19,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using KeePass.Core.Services;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -46,9 +46,9 @@ namespace KeePass.DataExchange.Formats
 		public override bool ImportAppendsToRootGroupOnly { get { return true; } }
 		public override bool RequiresFile { get { return false; } }
 
-		public override Image SmallIcon
+		public override ImageData SmallIcon
 		{
-			get { return KeePass.Properties.Resources.B16x16_View_Detailed; }
+			get { return ImageDataFromResource(KeePass.Properties.Resources.B16x16_View_Detailed); }
 		}
 
 		public override void Import(PwDatabase pdStorage, Stream sInput,

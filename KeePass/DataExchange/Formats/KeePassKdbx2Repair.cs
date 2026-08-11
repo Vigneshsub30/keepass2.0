@@ -19,7 +19,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using KeePass.Core.Services;
 using System.IO;
 using System.Text;
 using System.Windows.Forms;
@@ -51,9 +51,9 @@ namespace KeePass.DataExchange.Formats
 		public override bool RequiresKey { get { return true; } }
 		public override bool SupportsUuids { get { return true; } }
 
-		public override Image SmallIcon
+		public override ImageData SmallIcon
 		{
-			get { return KeePass.Properties.Resources.B16x16_KeePass; }
+			get { return ImageDataFromResource(KeePass.Properties.Resources.B16x16_KeePass); }
 		}
 
 		public override bool TryBeginImport()

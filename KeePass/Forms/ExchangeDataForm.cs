@@ -138,7 +138,7 @@ namespace KeePass.Forms
 				lvi.Group = grp.Group;
 				lvi.Tag = f;
 
-				img = f.SmallIcon;
+				img = f.GetSmallIconAsImage();
 				if(img == null)
 				{
 					string strExt = f.DefaultExtension;
