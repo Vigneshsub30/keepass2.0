@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection.PortableExecutable;
 using System.Text;
 
 using Microsoft.CodeAnalysis;
@@ -39,14 +40,28 @@ namespace KeePass.Tests.Platform
 				=> new CompileResult(false, errs, null);
 		}
 
+		// Returns true only for managed PE assemblies; filters out native DLLs
+		// (e.g. coreclr.dll, clrjit.dll) that share the .dll extension on Windows
+		// and Linux but contain no CLI metadata — Roslyn emits CS0009 for them.
+		private static bool IsManagedAssembly(string path)
+		{
+			try
+			{
+				using var stream = File.OpenRead(path);
+				using var reader = new PEReader(stream);
+				return reader.HasMetadata;
+			}
+			catch { return false; }
+		}
+
 		private static CompileResult Compile(
 			IEnumerable<string> sourceFiles,
 			string outputDll)
 		{
 			string runtimeDir = Path.GetDirectoryName(typeof(object).Assembly.Location)!;
 			var refs = Directory.GetFiles(runtimeDir, "*.dll")
-				.Select(f => { try { return MetadataReference.CreateFromFile(f); } catch { return null; } })
-				.Where(r => r != null)
+				.Where(IsManagedAssembly)
+				.Select(f => MetadataReference.CreateFromFile(f))
 				.Cast<MetadataReference>()
 				.ToList();
 

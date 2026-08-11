@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.PortableExecutable;
 using System.Text;
 
 using Microsoft.CodeAnalysis;
@@ -71,16 +72,16 @@ namespace KeePass.Plugins
 				return PlgxCompilationResult.Failure(
 					new[] { PlgxDiagnostic.Error(null, 0, 0, "No source files to compile.") });
 
-			// ── Resolve references ─────────────────────────────────── //
-			var refs = new List<MetadataReference>();
+		// ── Resolve references ─────────────────────────────────── //
+		var refs = new List<MetadataReference>();
 
-			// Add all .NET runtime framework assemblies.
-			string runtimeDir = Path.GetDirectoryName(typeof(object).Assembly.Location)!;
-			foreach (string dll in Directory.GetFiles(runtimeDir, "*.dll"))
-			{
-				try { refs.Add(MetadataReference.CreateFromFile(dll)); }
-				catch { /* skip unreachable assemblies */ }
-			}
+		// Add all managed .NET runtime framework assemblies.
+		// IsManagedAssembly pre-filters native DLLs (e.g. coreclr.dll, clrjit.dll)
+		// that share the .dll extension on Windows and Linux but contain no managed
+		// metadata — passing them to Roslyn would produce CS0009 errors during emit.
+		string runtimeDir = Path.GetDirectoryName(typeof(object).Assembly.Location)!;
+		foreach (string dll in Directory.GetFiles(runtimeDir, "*.dll").Where(IsManagedAssembly))
+			refs.Add(MetadataReference.CreateFromFile(dll));
 
 			// Add caller-supplied references (host exe, cached dependency DLLs, etc.).
 			foreach (string refPath in referencedAssemblyPaths)
@@ -126,13 +127,31 @@ namespace KeePass.Plugins
 				return PlgxCompilationResult.Failure(diagnostics);
 			}
 
-			File.WriteAllBytes(outputAssemblyPath, ms.ToArray());
-			return PlgxCompilationResult.Success(outputAssemblyPath);
-		}
+		File.WriteAllBytes(outputAssemblyPath, ms.ToArray());
+		return PlgxCompilationResult.Success(outputAssemblyPath);
 	}
 
 	/// <summary>
-	/// A single compiler diagnostic (error or warning) from the Roslyn PLGX pipeline.
+	/// Returns <c>true</c> when <paramref name="path"/> points to a managed PE
+	/// assembly (i.e. contains a CLI metadata header).  Returns <c>false</c> for
+	/// native DLLs such as coreclr.dll or clrjit.dll, which share the .dll
+	/// extension on Windows and Linux but would cause CS0009 errors if passed to
+	/// Roslyn as metadata references.
+	/// </summary>
+	private static bool IsManagedAssembly(string path)
+	{
+		try
+		{
+			using var stream = File.OpenRead(path);
+			using var reader = new PEReader(stream);
+			return reader.HasMetadata;
+		}
+		catch { return false; }
+	}
+}
+
+/// <summary>
+/// A single compiler diagnostic (error or warning) from the Roslyn PLGX pipeline.
 	/// </summary>
 	public sealed class PlgxDiagnostic
 	{
