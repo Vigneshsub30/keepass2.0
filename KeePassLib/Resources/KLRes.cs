@@ -35,5 +35,31 @@ namespace KeePassLib.Resources
 		{
 			get { return KLRes.UnknownError; }
 		}
+
+		/// <summary>
+		/// Error surfaced when the post-commit integrity check finds the vault
+		/// file missing or empty after a transactional save.  Includes
+		/// {0} = original file path.
+		/// </summary>
+		public static string VaultFileMissingAfterSave =>
+			"The vault file is missing or empty after saving. " +
+			"KeePass was unable to confirm the write succeeded.\r\n\r\n" +
+			"File: {0}\r\n\r\n" +
+			"Recovery: restore your vault from the most recent backup " +
+			"(File \u2192 Open \u2192 Recent Files), or locate a backup " +
+			"copy in the same directory with a .tmp extension.";
+
+		/// <summary>
+		/// Error surfaced when the post-commit integrity check detects a
+		/// truncated or corrupted vault file (header signature mismatch).
+		/// Includes {0} = original file path.
+		/// </summary>
+		public static string VaultFileCorruptAfterSave =>
+			"The vault file appears corrupted after saving " +
+			"(header signature mismatch). " +
+			"The on-disk content may be incomplete.\r\n\r\n" +
+			"File: {0}\r\n\r\n" +
+			"Recovery: restore your vault from a backup before the last save, " +
+			"or contact support with this message.";
 	}
 }

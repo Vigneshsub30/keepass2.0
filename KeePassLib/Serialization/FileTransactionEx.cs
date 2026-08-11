@@ -265,17 +265,38 @@ namespace KeePassLib.Serialization
 				//	throw new UnauthorizedAccessException();
 			}
 
-			if(!TxfMove())
-			{
-				if(bBaseExists) IOConnection.DeleteFile(m_iocBase);
-				IOConnection.RenameFile(m_iocTemp, m_iocBase);
-			}
+		if(!TxfMove())
+		{
+			if(bBaseExists) IOConnection.DeleteFile(m_iocBase);
+			IOConnection.RenameFile(m_iocTemp, m_iocBase);
+		}
 	#if !KeePassUAP
-		else { Debug.Assert(pbSec != null); } // TxF success => NTFS => has ACL
+	else { Debug.Assert(pbSec != null); } // TxF success => NTFS => has ACL
 #endif
 
+		// Post-commit integrity check: verify the committed file exists and
+		// contains at least enough bytes to hold a valid KDBX header.
+		// This detects write-back cache issues, filesystem errors, and
+		// zero-byte writes that would silently corrupt the user's vault.
+		// Only applies to local files; remote files are verified by the
+		// caller via AceApplication.VerifyWrittenFileAfterSaving.
+		if(m_iocBase.IsLocalFile())
+		{
 			try
 			{
+				PostCommitIntegrityCheck(m_iocBase.Path);
+			}
+			catch(Exception exIntegrity)
+			{
+				g_log.LogError(exIntegrity,
+					"FileTransactionEx: post-commit integrity check failed for {Path}",
+					m_iocBase.Path);
+				throw;
+			}
+		}
+
+		try
+		{
 				// If File.GetCreationTimeUtc fails, it may return a
 				// date with year 1601, and Unix times start in 1970,
 				// so testing for 1971 should ensure validity;
@@ -563,6 +584,68 @@ namespace KeePassLib.Serialization
 				}
 			}
 			catch(Exception) { Debug.Assert(false); }
+		}
+
+		/// <summary>
+		/// Verifies that a committed file exists, is non-empty, and starts
+		/// with a plausible KDBX header signature.  Throws on any failure so
+		/// the caller can surface a recovery-oriented error to the user.
+		/// </summary>
+		/// <param name="strPath">Absolute local path of the committed file.</param>
+		internal static void PostCommitIntegrityCheck(string strPath)
+		{
+			// Read the first 12 bytes — enough to hold the two KDBX u32 signature
+			// words (8 bytes) plus the version word (4 bytes).  We deliberately
+			// avoid loading the whole file so that the check is cheap for large vaults.
+			const int MinHeaderBytes = 12;
+
+			FileInfo fi;
+			try { fi = new FileInfo(strPath); }
+			catch(Exception exFi)
+			{
+				throw new InvalidOperationException(
+					string.Format(KeePassLib.Resources.KLRes.VaultFileMissingAfterSave, strPath),
+					exFi);
+			}
+
+			if(!fi.Exists || fi.Length < MinHeaderBytes)
+			{
+				throw new InvalidOperationException(
+					string.Format(KeePassLib.Resources.KLRes.VaultFileMissingAfterSave, strPath));
+			}
+
+			// Read header bytes with a short-circuit: if the file starts with the
+			// KDBX signature (0x9AA2D903, 0xB54BFB67 in little-endian) we are done.
+			// Any other content is allowed for non-KDBX files (e.g. XML exports).
+			byte[] pbHeader = new byte[MinHeaderBytes];
+			int nRead;
+			using(FileStream fs = new FileStream(strPath, FileMode.Open,
+				FileAccess.Read, FileShare.Read, MinHeaderBytes, FileOptions.None))
+			{
+				nRead = fs.Read(pbHeader, 0, MinHeaderBytes);
+			}
+
+			if(nRead < MinHeaderBytes)
+			{
+				throw new InvalidOperationException(
+					string.Format(KeePassLib.Resources.KLRes.VaultFileCorruptAfterSave, strPath));
+			}
+
+			// Check KDBX signature only when the file extension is .kdbx or .kdb.
+			string strExt = (UrlUtil.GetExtension(strPath) ?? string.Empty).ToLowerInvariant();
+			if(strExt == "kdbx" || strExt == "kdb")
+			{
+				// KDBX primary signature: 0x9AA2D903 LE = { 0x03, 0xD9, 0xA2, 0x9A }
+				// KDBX secondary signature for KDBX: 0xB54BFB67 LE = { 0x67, 0xFB, 0x4B, 0xB5 }
+				// KDB secondary signature:           0xB54BFB65 LE = { 0x65, 0xFB, 0x4B, 0xB5 }
+				bool bPrimary = (pbHeader[0] == 0x03 && pbHeader[1] == 0xD9 &&
+				                 pbHeader[2] == 0xA2 && pbHeader[3] == 0x9A);
+				if(!bPrimary)
+				{
+					throw new InvalidOperationException(
+						string.Format(KeePassLib.Resources.KLRes.VaultFileCorruptAfterSave, strPath));
+				}
+			}
 		}
 	}
 }

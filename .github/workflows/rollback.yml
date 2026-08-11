@@ -1,0 +1,167 @@
+name: Rollback Release
+
+# Manual workflow to roll back from a bad stable or beta release.
+# The operator selects the bad release tag and the good target tag;
+# the workflow re-publishes the good release assets under a new
+# "rollback/<bad-tag>" tag and updates the version-info manifest so
+# that the in-app update check immediately offers the rolled-back version.
+#
+# Protection:
+#   The "production" environment is required, enforcing a mandatory
+#   reviewer approval before any step executes.
+
+on:
+  workflow_dispatch:
+    inputs:
+      bad_release_tag:
+        description: >
+          Tag of the release being rolled back (e.g. v2.62.0 or beta-abc1234).
+          This release will be marked as a pre-release to suppress it.
+        required: true
+        type: string
+      target_release_tag:
+        description: >
+          Tag of the good release to restore (e.g. v2.61.1).
+          All assets from this release will be re-attached under the rollback tag.
+        required: true
+        type: string
+      rollback_reason:
+        description: >
+          Short description of why this rollback was triggered.
+          Appears in the GitHub Release notes.
+        required: true
+        type: string
+      update_version_manifest:
+        description: >
+          Push an updated version-info manifest so that users on the bad
+          release are offered the rollback version via the in-app update check.
+        required: false
+        default: 'true'
+        type: string
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  rollback:
+    name: Roll Back ${{ inputs.bad_release_tag }} → ${{ inputs.target_release_tag }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production   # Requires manual approval
+
+    steps:
+      - name: Validate inputs
+        run: |
+          if [ "${{ inputs.bad_release_tag }}" = "${{ inputs.target_release_tag }}" ]; then
+            echo "::error::bad_release_tag and target_release_tag must differ."
+            exit 1
+          fi
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ------------------------------------------------------------------ #
+      # 1. Download all assets from the good (target) release               #
+      # ------------------------------------------------------------------ #
+      - name: Download assets from target release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TARGET_TAG="${{ inputs.target_release_tag }}"
+          ASSET_DIR="rollback-assets"
+          mkdir -p "$ASSET_DIR"
+
+          echo "Fetching assets from release $TARGET_TAG …"
+          gh release download "$TARGET_TAG" --dir "$ASSET_DIR"
+
+          echo "Assets downloaded:"
+          ls -lh "$ASSET_DIR"
+
+      # ------------------------------------------------------------------ #
+      # 2. Create the rollback release tag and publish assets               #
+      # ------------------------------------------------------------------ #
+      - name: Create rollback release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BAD_TAG="${{ inputs.bad_release_tag }}"
+          TARGET_TAG="${{ inputs.target_release_tag }}"
+          ROLLBACK_TAG="rollback/${BAD_TAG}"
+          ASSET_DIR="rollback-assets"
+
+          NOTES="## Rollback: ${BAD_TAG} → ${TARGET_TAG}
+
+          **Reason:** ${{ inputs.rollback_reason }}
+
+          This release re-publishes the verified assets from **${TARGET_TAG}**.
+          Users should upgrade immediately to this version.
+
+          ### Affected release
+          The release tagged \`${BAD_TAG}\` has been demoted to a pre-release.
+          Do not install or retain that version.
+
+          ### Recovery
+          See the rollback runbooks in \`docs/runbooks/\` for platform-specific
+          step-by-step instructions."
+
+          gh release create "$ROLLBACK_TAG" \
+            --title "Rollback ${BAD_TAG} to ${TARGET_TAG}" \
+            --notes "$NOTES" \
+            --latest \
+            "$ASSET_DIR"/*
+
+      # ------------------------------------------------------------------ #
+      # 3. Demote the bad release to pre-release                            #
+      # ------------------------------------------------------------------ #
+      - name: Demote bad release to pre-release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release edit "${{ inputs.bad_release_tag }}" \
+            --prerelease \
+            --latest=false \
+            --notes-append $'\n---\n> ⚠️ **This release has been rolled back.** '\
+          'See the rollback release for details.'
+
+      # ------------------------------------------------------------------ #
+      # 4. (Optional) Update version-info manifest                          #
+      # ------------------------------------------------------------------ #
+      - name: Update version-info manifest
+        if: inputs.update_version_manifest == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TARGET_TAG="${{ inputs.target_release_tag }}"
+
+          # Strip the leading 'v' from the tag to get a bare semver string.
+          VERSION="${TARGET_TAG#v}"
+
+          echo "Updating version-info manifest to ${VERSION} …"
+          pwsh -File Build/rollback/update-version-info.ps1 \
+            -Version "$VERSION" \
+            -OutputDir "version-info-out"
+
+          # Attach the updated manifest to the rollback release as an
+          # additional artifact so signers can publish it externally.
+          ROLLBACK_TAG="rollback/${{ inputs.bad_release_tag }}"
+          if compgen -G "version-info-out/*" > /dev/null; then
+            gh release upload "$ROLLBACK_TAG" version-info-out/* --clobber
+          fi
+
+      # ------------------------------------------------------------------ #
+      # 5. Summary                                                           #
+      # ------------------------------------------------------------------ #
+      - name: Print summary
+        run: |
+          echo "### Rollback complete" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Field | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Bad release | \`${{ inputs.bad_release_tag }}\` (demoted to pre-release) |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Restored from | \`${{ inputs.target_release_tag }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Rollback tag | \`rollback/${{ inputs.bad_release_tag }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Reason | ${{ inputs.rollback_reason }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Manifest updated | ${{ inputs.update_version_manifest }} |" >> "$GITHUB_STEP_SUMMARY"
