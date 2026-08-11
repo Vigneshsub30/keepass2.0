@@ -445,6 +445,8 @@ namespace KeePass.Forms
 				m_nLockTimerMax);
 			m_workspaceLockCoordinator.OnLockRequested += OnWorkspaceLockRequested;
 
+			m_clipboardService = new Services.ClipboardCredentialService(m_nClipClearMax);
+
 			IpcBroadcast.StartServer();
 
 			HotKeyManager.Initialize(this);

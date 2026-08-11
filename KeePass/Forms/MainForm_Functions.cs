@@ -144,6 +144,11 @@ namespace KeePass.Forms
 		private int m_nClipClearMax = 0;
 		private int m_nClipClearCur = -1;
 
+		/// <summary>
+		/// Extracted service for clipboard credential auto-clear countdown.
+		/// </summary>
+		private Services.ClipboardCredentialService m_clipboardService = null;
+
 		private readonly string m_strNeverExpires = KPRes.NeverExpires;
 		private readonly string m_strStatusReady = KPRes.Ready;
 		private readonly string m_strNoneP = "(" + KPRes.None + ")";
