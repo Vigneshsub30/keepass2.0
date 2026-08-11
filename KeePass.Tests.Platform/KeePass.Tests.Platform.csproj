@@ -29,7 +29,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Core platform abstractions. -->
+    <!-- Domain types (PwEntry, PwGroup) for projection mapper tests. -->
+    <ProjectReference Include="..\KeePassLib\KeePassLib.csproj" />
+    <!-- Core platform abstractions and projection types. -->
     <ProjectReference Include="..\KeePass.Core\KeePass.Core.csproj" />
     <!-- Unix (macOS and Linux) platform service implementations. -->
     <ProjectReference Include="..\KeePass.Platform.Unix\KeePass.Platform.Unix.csproj" />
