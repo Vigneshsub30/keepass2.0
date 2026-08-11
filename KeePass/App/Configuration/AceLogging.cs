@@ -32,5 +32,14 @@ namespace KeePass.App.Configuration
 
 		[DefaultValue(false)]
 		public bool Enabled { get; set; }
+
+		/// <summary>
+		/// When <see langword="true"/>, structured plugin lifecycle events
+		/// (load attempts, admissions, rejections, unloads, errors) are
+		/// written to the plugin audit log in the application data directory.
+		/// Opt-in per BR-21.
+		/// </summary>
+		[DefaultValue(false)]
+		public bool PluginAuditEnabled { get; set; }
 	}
 }

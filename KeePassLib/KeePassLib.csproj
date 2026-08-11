@@ -102,6 +102,9 @@
     <Compile Include="Native\SimpleStat.cs" />
     <Compile Include="Plugins\IApplicationHost.cs" />
     <Compile Include="Plugins\IMainWindowService.cs" />
+    <Compile Include="Plugins\IPluginAuditLogger.cs" />
+    <Compile Include="Plugins\NullPluginAuditLogger.cs" />
+    <Compile Include="Plugins\PluginAuditEntry.cs" />
     <Compile Include="Plugins\PluginInspectionResult.cs" />
     <Compile Include="Plugins\PluginMenuCommand.cs" />
     <Compile Include="PwCustomIcon.cs" />
