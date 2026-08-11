@@ -41,6 +41,14 @@ namespace KeePass.Platform
         public PlatformId PlatformId => PlatformId.Windows;
 
         /// <inheritdoc/>
+        /// <remarks>Always <c>true</c> on Windows.</remarks>
+        public bool SupportsAlwaysOnTop => true;
+
+        /// <inheritdoc/>
+        /// <remarks>Always <c>false</c> on Windows — the OS enforces minimum sizes.</remarks>
+        public bool RequiresWindowMinSizeEnforcement => false;
+
+        /// <inheritdoc/>
         public IClipboardService Clipboard { get; }
 
         /// <inheritdoc/>

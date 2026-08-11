@@ -216,12 +216,13 @@ namespace KeePassLib.Cryptography.KeyDerivation
 				IntPtr cbHash = new IntPtr(cbOut);
 				IntPtr pZ = IntPtr.Zero;
 
-				bool b = false;
-				if(NativeLib.IsUnix())
-				{
-					if(!MonoWorkarounds.IsRequired(100004)) return null;
-
-					try
+			bool b = false;
+			if(NativeLib.IsUnix())
+			{
+				// Workaround #100004 retired: native libargon2 is always preferred on Unix.
+				// The workaround was introduced because Mono's managed Argon2 was slow;
+				// on .NET 10 the native library is still the fastest option.
+				try
 					{
 						b = (NativeMethods.argon2_hash_u0(t, m, uParallel,
 							nbMsg.Data, cbMsg, nbSalt.Data, cbSalt,

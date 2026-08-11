@@ -1,3 +1,5 @@
+using System;
+
 using KeePass.Core.Platform;
 
 namespace KeePass.Platform.Unix.Linux
@@ -17,6 +19,23 @@ namespace KeePass.Platform.Unix.Linux
         public PlatformId PlatformId => PlatformId.Linux;
 
         /// <inheritdoc/>
+        /// <remarks>
+        /// Returns <c>false</c> on the Cinnamon desktop environment, where the
+        /// always-on-top window flag is silently ignored by the window manager
+        /// (replaces MonoWorkarounds #1716).  Returns <c>true</c> on all other
+        /// Linux DEs.
+        /// </remarks>
+        public bool SupportsAlwaysOnTop { get; }
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// Always <c>true</c> on Linux — some desktop environments do not
+        /// enforce minimum window dimensions set by the application
+        /// (replaces MonoWorkarounds #686017).
+        /// </remarks>
+        public bool RequiresWindowMinSizeEnforcement => true;
+
+        /// <inheritdoc/>
         public IClipboardService Clipboard { get; }
 
         /// <inheritdoc/>
@@ -31,15 +50,17 @@ namespace KeePass.Platform.Unix.Linux
         public IScreenProtectionService ScreenProtection { get; }
 
         private LinuxPlatformIntegration(
+            bool supportsAlwaysOnTop,
             IClipboardService clipboard,
             ICredentialStore credentialStore,
             IAutoTypeService autoType,
             IScreenProtectionService screenProtection)
         {
-            Clipboard        = clipboard;
-            CredentialStore  = credentialStore;
-            AutoType         = autoType;
-            ScreenProtection = screenProtection;
+            SupportsAlwaysOnTop = supportsAlwaysOnTop;
+            Clipboard           = clipboard;
+            CredentialStore     = credentialStore;
+            AutoType            = autoType;
+            ScreenProtection    = screenProtection;
         }
 
         /// <summary>
@@ -50,10 +71,32 @@ namespace KeePass.Platform.Unix.Linux
         public static LinuxPlatformIntegration Create()
         {
             return new LinuxPlatformIntegration(
-                clipboard:        new LinuxClipboardService(),
-                credentialStore:  new LinuxSecretStore(),
-                autoType:         new NullAutoTypeService(),
-                screenProtection: new NullScreenProtectionService());
+                supportsAlwaysOnTop: !IsCinnamonDesktop(),
+                clipboard:           new LinuxClipboardService(),
+                credentialStore:     new LinuxSecretStore(),
+                autoType:            new NullAutoTypeService(),
+                screenProtection:    new NullScreenProtectionService());
+        }
+
+        /// <summary>
+        /// Returns <c>true</c> when the current desktop session is Cinnamon.
+        /// Checks <c>XDG_CURRENT_DESKTOP</c> for "X-Cinnamon" and
+        /// <c>GDMSESSION</c> / <c>DESKTOP_SESSION</c> for "cinnamon",
+        /// mirroring the detection logic that was previously in
+        /// <c>NativeLib.GetDesktopType()</c>.
+        /// </summary>
+        private static bool IsCinnamonDesktop()
+        {
+            string xdg = (Environment.GetEnvironmentVariable("XDG_CURRENT_DESKTOP") ?? string.Empty).Trim();
+            if(xdg.Equals("X-Cinnamon", StringComparison.OrdinalIgnoreCase)) return true;
+
+            string gdm = (Environment.GetEnvironmentVariable("GDMSESSION") ?? string.Empty).Trim();
+            if(gdm.Equals("cinnamon", StringComparison.OrdinalIgnoreCase)) return true;
+
+            string ds = (Environment.GetEnvironmentVariable("DESKTOP_SESSION") ?? string.Empty).Trim();
+            if(ds.Equals("cinnamon", StringComparison.OrdinalIgnoreCase)) return true;
+
+            return false;
         }
     }
 }

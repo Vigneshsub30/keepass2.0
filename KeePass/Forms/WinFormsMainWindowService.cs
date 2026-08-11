@@ -89,7 +89,7 @@ namespace KeePass.Forms
 			bool bResult = false;
 			m_form.Invoke((System.Windows.Forms.MethodInvoker)delegate
 			{
-				bResult = m_form.UIFileSaveAll(false);
+				bResult = m_form.UIFileSave(false);
 			});
 			return bResult;
 		}

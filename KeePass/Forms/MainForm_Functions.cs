@@ -349,8 +349,7 @@ namespace KeePass.Forms
 
 			Program.TriggerSystem.RaiseEvent(EcasEventIDs.AppExit);
 
-			MonoWorkarounds.Release(this);
-			GlobalWindowManager.CustomizeFormHandleCreated(this, false, false);
+		GlobalWindowManager.CustomizeFormHandleCreated(this, false, false);
 
 			m_nClipClearCur = -1;
 			if(Program.Config.Security.ClipboardClearOnExit)
@@ -617,16 +616,11 @@ namespace KeePass.Forms
 
 			DwmUtil.EnableWindowPeekPreview(this);
 
-			bool bFormShownRaised = false;
-			if(MonoWorkarounds.IsRequired(801414))
-				bFormShownRaised = MonoWorkarounds.ExchangeFormShownRaised(this, false);
+		// Workarounds #801414 and ExchangeFormShownRaised retired: dead on .NET 10.
 
-			// Compact the title again (it could be that a translator used
-			// a string in KPRes that is too long to be displayed)
-			this.Text = StrUtil.CompactString3Dots(strTitle, cchTitle);
-
-			if(MonoWorkarounds.IsRequired(801414))
-				MonoWorkarounds.ExchangeFormShownRaised(this, bFormShownRaised);
+		// Compact the title again (it could be that a translator used
+		// a string in KPRes that is too long to be displayed)
+		this.Text = StrUtil.CompactString3Dots(strTitle, cchTitle);
 
 			strNtf = StrUtil.EncodeToolTipText(strNtf);
 			m_ntfTray.Text = StrUtil.CompactString3Dots(strNtf, cchNtf);
@@ -736,7 +730,7 @@ namespace KeePass.Forms
 		private void UpdateUIGroupState(MainAppState sMain, bool bMenuVisible,
 			bool bContextMenu)
 		{
-			if(MonoWorkarounds.IsRequired(4190280862U)) bMenuVisible = true;
+			// Workaround #4190280862 (Mono tree node right-click) retired: dead on .NET 10.
 
 			MainAppState s = (sMain ?? GetMainAppState());
 
@@ -3458,8 +3452,8 @@ namespace KeePass.Forms
 
 		private void AssignMenuShortcuts()
 		{
-			bool bMoveMono = MonoWorkarounds.IsRequired(1245);
-			Keys kMoveMod = (bMoveMono ? (Keys.Control | Keys.Shift) : Keys.Alt);
+		// Workaround #1245 (Mono key events) retired: dead on .NET 10.
+		Keys kMoveMod = Keys.Alt;
 
 			UIUtil.AssignShortcut(m_menuFileNew, Keys.Control | Keys.N);
 			UIUtil.AssignShortcut(m_menuFileOpenLocal, Keys.Control | Keys.O);
@@ -3474,14 +3468,10 @@ namespace KeePass.Forms
 
 			UIUtil.AssignShortcut(m_menuGroupDelete, Keys.Delete, null, true);
 
-			UIUtil.AssignShortcut(m_menuGroupMoveToTop, (bMoveMono ?
-				Keys.F5 : Keys.Home) | kMoveMod, null, true);
-			UIUtil.AssignShortcut(m_menuGroupMoveOneUp, (bMoveMono ?
-				Keys.F6 : Keys.Up) | kMoveMod, null, true);
-			UIUtil.AssignShortcut(m_menuGroupMoveOneDown, (bMoveMono ?
-				Keys.F7 : Keys.Down) | kMoveMod, null, true);
-			UIUtil.AssignShortcut(m_menuGroupMoveToBottom, (bMoveMono ?
-				Keys.F8 : Keys.End) | kMoveMod, null, true);
+		UIUtil.AssignShortcut(m_menuGroupMoveToTop, Keys.Home | kMoveMod, null, true);
+		UIUtil.AssignShortcut(m_menuGroupMoveOneUp, Keys.Up | kMoveMod, null, true);
+		UIUtil.AssignShortcut(m_menuGroupMoveOneDown, Keys.Down | kMoveMod, null, true);
+		UIUtil.AssignShortcut(m_menuGroupMoveToBottom, Keys.End | kMoveMod, null, true);
 			// UIUtil.AssignShortcut(m_menuGroupSort, Keys.Control | Keys.Decimal);
 			// UIUtil.AssignShortcut(m_menuGroupSortRec, Keys.Control | Keys.Shift | Keys.Decimal); // (Control+)Shift+Decimal = Delete
 			UIUtil.AssignShortcut(m_menuGroupExpand, Keys.Control | Keys.Multiply);
@@ -3509,14 +3499,10 @@ namespace KeePass.Forms
 			UIUtil.AssignShortcut(m_menuEntrySelectAll, Keys.Control | Keys.A,
 				null, true);
 
-			UIUtil.AssignShortcut(m_menuEntryMoveToTop, (bMoveMono ?
-				Keys.F5 : Keys.Home) | kMoveMod, null, true);
-			UIUtil.AssignShortcut(m_menuEntryMoveOneUp, (bMoveMono ?
-				Keys.F6 : Keys.Up) | kMoveMod, null, true);
-			UIUtil.AssignShortcut(m_menuEntryMoveOneDown, (bMoveMono ?
-				Keys.F7 : Keys.Down) | kMoveMod, null, true);
-			UIUtil.AssignShortcut(m_menuEntryMoveToBottom, (bMoveMono ?
-				Keys.F8 : Keys.End) | kMoveMod, null, true);
+		UIUtil.AssignShortcut(m_menuEntryMoveToTop, Keys.Home | kMoveMod, null, true);
+		UIUtil.AssignShortcut(m_menuEntryMoveOneUp, Keys.Up | kMoveMod, null, true);
+		UIUtil.AssignShortcut(m_menuEntryMoveOneDown, Keys.Down | kMoveMod, null, true);
+		UIUtil.AssignShortcut(m_menuEntryMoveToBottom, Keys.End | kMoveMod, null, true);
 
 			UIUtil.AssignShortcut(m_menuEntryCompare2, Keys.Control | Keys.D, null, true);
 			UIUtil.AssignShortcut(m_menuEntryCompareMark, Keys.Control | Keys.Shift | Keys.D,
@@ -4250,7 +4236,7 @@ namespace KeePass.Forms
 			foreach(Image img in m_lTabImages) img.Dispose();
 			m_lTabImages.Clear();
 
-			bool bImgs = !MonoWorkarounds.IsRequired(891029);
+			bool bImgs = true; // Workaround #891029 (Mono tab images) retired: dead on .NET 10.
 
 			List<TabPage> lPages = new List<TabPage>();
 			for(int i = 0; i < m_docMgr.Documents.Count; ++i)
@@ -4509,7 +4495,7 @@ namespace KeePass.Forms
 		private void MinimizeAtStartIfEnabled(bool bFormLoading)
 		{
 			// See also https://sourceforge.net/p/keepass/bugs/2416/
-			if(MonoWorkarounds.IsRequired(1418)) return;
+			// Workaround #1418 (Mono minimizing form during load) retired: dead on .NET 10.
 
 			if(Program.Config.Application.Start.MinimizedAndLocked ||
 				(Program.CommandLineArgs[AppDefs.CommandLineOptions.Minimize] != null))
@@ -4654,8 +4640,7 @@ namespace KeePass.Forms
 			if(vEntries == null) { Debug.Assert(false); return; }
 			if(vEntries.Length == 0) return;
 
-			if(MonoWorkarounds.IsRequired(1690) && (m_lvEntries.Items.Count != 0))
-				UIUtil.SetFocusedItem(m_lvEntries, m_lvEntries.Items[0], false);
+		// Workaround #1690 (Mono ListView item removal) retired: dead on .NET 10.
 
 			++m_uBlockEntrySelectionEvent;
 			m_lvEntries.BeginUpdateEx();
@@ -4839,17 +4824,12 @@ namespace KeePass.Forms
 
 		private bool HandleMoveKeyEvent(KeyEventArgs e, bool bDown, bool bEntry)
 		{
-			// Mono does not raise key events while Alt is down
-			bool bMoveMod = e.Alt;
-			if(MonoWorkarounds.IsRequired(1245)) bMoveMod = (e.Control && e.Shift);
-			if(!bMoveMod) return false;
+		// Workaround #1245 (Mono key events with Alt) retired: dead on .NET 10.
+		bool bMoveMod = e.Alt;
+		if(!bMoveMod) return false;
 
-			// Mono raises key events *after* changing the selection,
-			// thus we cannot use any navigation keys
-			Keys[] vMove = new Keys[] { Keys.Home, Keys.Up, Keys.Down, Keys.End };
-			if(MonoWorkarounds.IsRequired(1245))
-				vMove = new Keys[] { Keys.F5, Keys.F6, Keys.F7, Keys.F8 };
-			int m = Array.IndexOf<Keys>(vMove, e.KeyCode);
+		Keys[] vMove = new Keys[] { Keys.Home, Keys.Up, Keys.Down, Keys.End };
+		int m = Array.IndexOf<Keys>(vMove, e.KeyCode);
 			if(m < 0) return false;
 
 			if(bDown)
@@ -6451,21 +6431,7 @@ namespace KeePass.Forms
 
 		protected override void SetVisibleCore(bool value)
 		{
-			if(MonoWorkarounds.IsRequired(3574233558U))
-			{
-				if(!value && m_bFormShown && (this.WindowState ==
-					FormWindowState.Minimized))
-				{
-					// Mono destroys window when trying to hide minimized
-					// window; so, restore it before hiding
-					RestoreWindowEx();
-					Application.DoEvents();
-					Thread.Sleep(250);
-				}
-
-				if(m_bFormShown) m_menuMain.Visible = value;
-			}
-
+			// Workaround #3574233558 (Mono minimize/render) retired: dead on .NET 10.
 			base.SetVisibleCore(value);
 		}
 

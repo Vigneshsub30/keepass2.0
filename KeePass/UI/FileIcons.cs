@@ -142,7 +142,8 @@ namespace KeePass.UI
 			}
 			catch(Exception) { Debug.Assert(false); }
 
-			if((img == null) && !MonoWorkarounds.IsRequired(100003))
+			// Workaround #100003 (Mono Icon.ExtractAssociatedIcon) retired: dead on .NET 10.
+		if(img == null)
 			{
 				img = UIUtil.GetFileIcon(strPath, sz.Width, sz.Height);
 				bImgIsNew = true;

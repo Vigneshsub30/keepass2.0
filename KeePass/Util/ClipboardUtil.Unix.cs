@@ -56,19 +56,7 @@ namespace KeePass.Util
 
 		private static string GetStringU()
 		{
-			if(MonoWorkarounds.IsRequired(1613))
-			{
-				// string strGtk = GtkGetString();
-				// if(strGtk != null) return strGtk;
-
-				// string str = NativeLib.RunConsoleApp("xclip",
-				//	"-out -selection clipboard");
-				// if(str != null) return str;
-
-				string str = NativeLib.RunConsoleApp("xsel",
-					"--output --clipboard", null, XSelFlags);
-				if(str != null) return str;
-			}
+			// Workaround #1613 (Mono clipboard via xsel) retired: dead on .NET 10.
 
 			try
 			{
@@ -82,40 +70,7 @@ namespace KeePass.Util
 
 		private static void SetStringU(string str)
 		{
-			if(MonoWorkarounds.IsRequired(1613))
-			{
-				// if(GtkSetString(str)) return;
-
-				// string r = NativeLib.RunConsoleApp("xclip",
-				//	"-in -selection clipboard", str);
-				// if(r != null) return;
-
-				if(string.IsNullOrEmpty(str))
-				{
-					// xsel with an empty input can hang, thus use --clear
-					if(NativeLib.RunConsoleApp("xsel", "--clear --primary",
-						null, XSelFlags) != null)
-					{
-						NativeLib.RunConsoleApp("xsel", "--clear --clipboard",
-							null, XSelFlags);
-						return;
-					}
-
-					try { Clipboard.Clear(); }
-					catch(Exception) { Debug.Assert(false); }
-					return;
-				}
-
-				// xsel does not support --primary and --clipboard together
-				if(NativeLib.RunConsoleApp("xsel", "--input --primary",
-					str, XSelFlags) != null)
-				{
-					NativeLib.RunConsoleApp("xsel", "--input --clipboard",
-						str, XSelFlags);
-					return;
-				}
-			}
-
+			// Workaround #1613 (Mono clipboard via xsel) retired: dead on .NET 10.
 			try
 			{
 				if(string.IsNullOrEmpty(str)) Clipboard.Clear();

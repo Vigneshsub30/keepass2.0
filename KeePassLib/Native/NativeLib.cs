@@ -430,36 +430,10 @@ namespace KeePassLib.Native
 
 		private static void EnsureNoBom(StreamWriter sw)
 		{
-			if(sw == null) { Debug.Assert(false); return; }
-			if(!MonoWorkarounds.IsRequired(1219)) return;
-
-			try
-			{
-				Encoding enc = sw.Encoding;
-				if(enc == null) { Debug.Assert(false); return; }
-				byte[] pbBom = enc.GetPreamble();
-				if((pbBom == null) || (pbBom.Length == 0)) return;
-
-				// For Mono >= 4.0 (using Microsoft's reference source)
-				try
-				{
-					FieldInfo fi = typeof(StreamWriter).GetField("haveWrittenPreamble",
-						BindingFlags.Instance | BindingFlags.NonPublic);
-					if(fi != null)
-					{
-						fi.SetValue(sw, true);
-						return;
-					}
-				}
-				catch(Exception) { Debug.Assert(false); }
-
-				// For Mono < 4.0
-				FieldInfo fiPD = typeof(StreamWriter).GetField("preamble_done",
-					BindingFlags.Instance | BindingFlags.NonPublic);
-				if(fiPD != null) fiPD.SetValue(sw, true);
-				else { Debug.Assert(false); }
-			}
-			catch(Exception) { Debug.Assert(false); }
+			// Workaround #1219 (Mono prepends BOM to StdIn) retired: dead on .NET 10.
+			// .NET 10's StreamWriter does not write a BOM unless the encoding
+			// is configured with a BOM; no reflection hack is required.
+			if(sw == null) { Debug.Assert(false); }
 		}
 #endif
 
@@ -597,22 +571,8 @@ namespace KeePassLib.Native
 		{
 			if(strData == null) { Debug.Assert(false); return string.Empty; }
 
-			if(MonoWorkarounds.IsRequired(3471228285U) && IsUnix())
-			{
-				string str = strData;
-
-				str = str.Replace("\\", "\\\\");
-				str = str.Replace("\"", "\\\"");
-
-				// Whether '\'' needs to be encoded depends on the context
-				// (e.g. surrounding quotes); as we do not know what the
-				// caller does with the returned string, we assume that
-				// it will be used in a context where '\'' must not be
-				// encoded; this behavior is documented
-				// str = str.Replace("\'", "\\\'");
-
-				return str;
-			}
+			// Workaround #3471228285 (Mono-specific shell arg encoding) retired: dead on .NET 10.
+			// .NET 10's Process.Start uses posix_spawn and handles quoting natively.
 
 			// SHELLEXECUTEINFOW structure documentation:
 			// https://docs.microsoft.com/en-us/windows/desktop/api/shellapi/ns-shellapi-shellexecuteinfow
@@ -662,15 +622,7 @@ namespace KeePassLib.Native
 
 			Debug.Assert(StrUtil.Count(strArgs, "\"") == StrUtil.Count(strArgs, "\\\""));
 
-			if(MonoWorkarounds.IsRequired(3471228285U) && IsUnix())
-			{
-				string str = strArgs;
-
-				str = str.Replace("\\\"", "\"");
-				str = str.Replace("\\\\", "\\");
-
-				return str;
-			}
+			// Workaround #3471228285 (Mono-specific shell arg decoding) retired: dead on .NET 10.
 
 			StringBuilder sb = new StringBuilder();
 			int i = 0;
@@ -773,26 +725,12 @@ namespace KeePassLib.Native
 
 			if(IsUnix())
 			{
-				if(MonoWorkarounds.IsRequired(19836) && string.IsNullOrEmpty(strArgs))
-				{
-					if(Regex.IsMatch(strFile, "^[a-zA-Z][a-zA-Z0-9\\+\\-\\.]*:",
-						RegexOptions.Singleline) ||
-						strFile.EndsWith(".html", StrUtil.CaseIgnoreCmp))
-					{
-						bool bMacOS = (GetPlatformID() == PlatformID.MacOSX);
+				// Workaround #19836 (Mono Process.Start couldn't open URLs) retired: dead on .NET 10.
+				// .NET 10's Process.Start with UseShellExecute=true invokes xdg-open/open natively.
 
-						strArgs = "\"" + EncodeDataToArgs(strFile) + "\"";
-						strFile = (bMacOS ? "open" : "xdg-open");
-					}
-				}
-
-				// Mono's Process.Start method replaces '\\' by '/',
-				// which may cause a different file to be executed;
-				// therefore, we refuse to start such files
-				if(strFile.Contains("\\") && MonoWorkarounds.IsRequired(190417))
-					throw new ArgumentException(KLRes.PathBackslash);
-
-				strFile = strFile.Replace("\\", "\\\\"); // If WA not required
+				// Workaround #190417 (Mono Process.Start replaced '\\' with '/') retired: dead on .NET 10.
+				// Always escape backslashes and quotes for the Unix shell.
+				strFile = strFile.Replace("\\", "\\\\");
 				strFile = strFile.Replace("\"", "\\\"");
 			}
 

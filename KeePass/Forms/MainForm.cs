@@ -119,7 +119,7 @@ namespace KeePass.Forms
 
 			if(!Program.DesignMode)
 			{
-				if(MonoWorkarounds.IsRequired(891029)) m_tabMain.Height += 5;
+				// Workaround #891029 (Mono tab height) retired: dead on .NET 10.
 
 				SuspendLayoutScope sls = new SuspendLayoutScope(false,
 					m_menuMain, m_ctxGroupList, m_ctxPwList, m_ctxTray);
@@ -140,7 +140,8 @@ namespace KeePass.Forms
 		private bool m_bFormLoadCalled = false;
 		private void OnFormLoad(object sender, EventArgs e)
 		{
-			if(m_bFormLoadCalled && MonoWorkarounds.IsRequired(3574233558U)) return;
+			// Workaround #3574233558 (Mono window minimize/render) retired: dead on .NET 10.
+		if(m_bFormLoadCalled) return;
 			m_bFormLoadCalled = true;
 			m_bFormLoaded = false;
 
@@ -154,8 +155,7 @@ namespace KeePass.Forms
 				m_splitHorizontal, m_splitHorizontal.Panel1, m_splitHorizontal.Panel2,
 				m_splitVertical, m_splitVertical.Panel1, m_splitVertical.Panel2
 			};
-			if(MonoWorkarounds.IsRequired(2247))
-				vSls = MemUtil.Mid(vSls, 1, vSls.Length - 1);
+		// Workaround #2247 (Mono form size increases on ResumeLayout) retired: dead on .NET 10.
 			SuspendLayoutScope sls = new SuspendLayoutScope(true, vSls);
 
 			GlobalWindowManager.CustomizeControl(this);
@@ -314,7 +314,7 @@ namespace KeePass.Forms
 			if((sizeX != AppDefs.InvalidWindowValue) &&
 				(sizeY != AppDefs.InvalidWindowValue) && bWndValid)
 			{
-				if(MonoWorkarounds.IsRequired(686017))
+				if(Program.Platform.RequiresWindowMinSizeEnforcement)
 				{
 					sizeX = Math.Max(250, sizeX);
 					sizeY = Math.Max(250, sizeY);
@@ -322,7 +322,7 @@ namespace KeePass.Forms
 
 				this.Size = new Size(sizeX, sizeY);
 			}
-			if(MonoWorkarounds.IsRequired(686017))
+			if(Program.Platform.RequiresWindowMinSizeEnforcement)
 				this.MinimumSize = new Size(250, 250);
 
 			Rectangle rectRestWindow = new Rectangle(wndX, wndY,
@@ -372,8 +372,7 @@ namespace KeePass.Forms
 				new SortCommandHandler(this.SortPasswordList));
 			m_lvgmMenu = new ListViewGroupingMenu(m_menuViewEntryListGrouping, this);
 
-			if(MonoWorkarounds.IsRequired(1716) && (NativeLib.GetDesktopType() ==
-				DesktopType.Cinnamon))
+			if(!Program.Platform.SupportsAlwaysOnTop)
 			{
 				mw.AlwaysOnTop = false;
 				UIUtil.SetEnabledFast(false, m_menuViewAlwaysOnTop);
@@ -417,7 +416,7 @@ namespace KeePass.Forms
 			{
 				double dSplitPos = mw.SplitterHorizontalFrac;
 				if(dSplitPos == double.Epsilon) dSplitPos = 0.8333;
-				if(MonoWorkarounds.IsRequired(686017))
+				if(Program.Platform.RequiresWindowMinSizeEnforcement)
 					m_splitHorizontal.Panel1MinSize = 35;
 				m_splitHorizontal.SplitterDistanceFrac = dSplitPos;
 
@@ -465,8 +464,7 @@ namespace KeePass.Forms
 
 			// Workaround for .NET ToolStrip height bug;
 			// https://sourceforge.net/p/keepass/discussion/329220/thread/19e7c256/
-			Debug.Assert((m_toolMain.Height == 25) || DpiUtil.ScalingRequired ||
-				MonoWorkarounds.IsRequired(100001));
+			Debug.Assert((m_toolMain.Height == 25) || DpiUtil.ScalingRequired);
 			m_toolMain.LockHeight(true);
 
 			UpdateFindProfilesMenu(m_menuFindProfiles, true);
@@ -478,7 +476,6 @@ namespace KeePass.Forms
 			UpdateEntryMoveMenu(m_dynMoveToGroupCtx, true);
 
 			ApplyUICustomizations();
-			MonoWorkarounds.ApplyTo(this);
 			UpdateTrayIcon(false);
 			UpdateUIState(false);
 
@@ -546,12 +543,7 @@ namespace KeePass.Forms
 		{
 			m_bFormShown = true;
 
-			if(MonoWorkarounds.IsRequired(620618))
-			{
-				PwGroup pg = GetCurrentEntries();
-				UpdateColumnsEx(false);
-				UpdateUI(false, null, false, null, true, pg, false);
-			}
+			// Workaround #620618 (Mono ListView column headers) retired: dead on .NET 10.
 
 			EnsureAlwaysOnTopOpt();
 			MinimizeAtStartIfEnabled(false);
@@ -1191,13 +1183,7 @@ namespace KeePass.Forms
 				if(dlg.RequiresUIReinitialize)
 				{
 					UIUtil.Initialize(true);
-
-					if(MonoWorkarounds.IsRequired())
-					{
-						m_menuMain.Invalidate();
-						m_toolMain.Invalidate();
-						m_statusMain.Invalidate();
-					}
+					// Workaround #IsRequired() (Mono UI invalidation) retired: dead on .NET 10.
 				}
 
 				GlobalWindowManager.CustomizeFormHandleCreated(this, null, true);
@@ -1575,18 +1561,14 @@ namespace KeePass.Forms
 					NotifyUserActivity(); // Unclosable dialog = activity
 				else if(IsAtLeastOneFileOpen())
 				{
-					long lCurTicks = utcNow.Ticks;
-					if((lCurTicks >= m_lLockAtTicks) || (lCurTicks >= m_lLockAtGlobalTicks))
-					{
-						bool bBlock = MonoWorkarounds.IsRequired(1527);
-						if(bBlock) BlockMainTimer(true);
-
-						if(Program.Config.Security.WorkspaceLocking.ExitInsteadOfLockingAfterTime)
-							OnFileExit(sender, e);
-						else LockAllDocuments(); // Might exit instead of locking
-
-						if(bBlock) BlockMainTimer(false);
-					}
+				long lCurTicks = utcNow.Ticks;
+				if((lCurTicks >= m_lLockAtTicks) || (lCurTicks >= m_lLockAtGlobalTicks))
+				{
+					// Workaround #1527 (Mono timer 100% CPU) retired: dead on .NET 10.
+					if(Program.Config.Security.WorkspaceLocking.ExitInsteadOfLockingAfterTime)
+						OnFileExit(sender, e);
+					else LockAllDocuments(); // Might exit instead of locking
+				}
 				}
 
 				if(bAuto && (GlobalWindowManager.WindowCount == 0))
@@ -2147,26 +2129,17 @@ namespace KeePass.Forms
 					// https://sourceforge.net/p/keepass/discussion/329220/thread/d45a3b38e8/
 					EnsureAlwaysOnTopOpt();
 
-					if(MonoWorkarounds.IsRequired(1760))
-					{
-						Control c = UIUtil.GetActiveControl(this);
-						if(((c == null) || (c == this)) && (m_cLastActive != null))
-							UIUtil.SetFocus(m_cLastActive, this, false);
-					}
-				}
+				// Workaround #1760 (Mono input focus not restored) retired: dead on .NET 10.
 			}
-			catch(Exception) { Debug.Assert(false); }
-			finally { m_bInFormActivated = false; }
 		}
+		catch(Exception) { Debug.Assert(false); }
+		finally { m_bInFormActivated = false; }
+	}
 
-		private void OnFormDeactivate(object sender, EventArgs e)
-		{
-			if(MonoWorkarounds.IsRequired(1760))
-			{
-				Control c = UIUtil.GetActiveControl(this);
-				if((c != null) && (c != this)) m_cLastActive = c;
-			}
-		}
+	private void OnFormDeactivate(object sender, EventArgs e)
+	{
+		// Workaround #1760 (Mono input focus not restored) retired: dead on .NET 10.
+	}
 
 		private void OnToolsTriggers(object sender, EventArgs e)
 		{

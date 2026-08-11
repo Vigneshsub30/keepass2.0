@@ -16,6 +16,12 @@ namespace KeePass.Tests.Platform
     {
         public PlatformId PlatformId { get; set; } = PlatformId.Windows;
 
+        /// <summary>Defaults to <c>true</c> (always-on-top works on Windows).</summary>
+        public bool SupportsAlwaysOnTop { get; set; } = true;
+
+        /// <summary>Defaults to <c>false</c> (Windows enforces min sizes natively).</summary>
+        public bool RequiresWindowMinSizeEnforcement { get; set; } = false;
+
         public IClipboardService     Clipboard        { get; set; }
         public ICredentialStore      CredentialStore  { get; set; }
         public IAutoTypeService      AutoType         { get; set; }

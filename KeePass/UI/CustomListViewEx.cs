@@ -185,7 +185,7 @@ namespace KeePass.UI
 			if(!UIUtil.GetGroupsEnabled(this)) return false;
 			if(this.MultiSelect) return false;
 
-			if(MonoWorkarounds.IsRequired(836428016)) return false;
+			// Workaround #836428016 (Mono ListView group header) retired: dead on .NET 10.
 
 			ListViewItem lvi = this.FocusedItem;
 			if(lvi != null)

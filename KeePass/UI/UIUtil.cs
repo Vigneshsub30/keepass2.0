@@ -2822,9 +2822,10 @@ namespace KeePass.UI
 					catch(Exception) { Debug.Assert(false); }
 				};
 
-				if(tb.InvokeRequired || MonoWorkarounds.IsRequired(373134))
-					tb.Invoke(f);
-				else f();
+			// Workaround #373134 (Mono InvokeRequired incorrect) retired: dead on .NET 10.
+			if(tb.InvokeRequired)
+				tb.Invoke(f);
+			else f();
 			}
 			catch(Exception) { Debug.Assert(false); }
 		}
@@ -3196,8 +3197,8 @@ namespace KeePass.UI
 		{
 			if(cTab == null) { Debug.Assert(false); return null; }
 
-			int qSize = cTab.ItemSize.Height - 3;
-			if(MonoWorkarounds.IsRequired()) qSize -= 1;
+		// Workaround #IsRequired() (Mono tab size) retired: dead on .NET 10.
+		int qSize = cTab.ItemSize.Height - 3;
 			if(qSize < 4) { Debug.Assert(false); return null; }
 
 			const int dyTrans = 3;

@@ -103,15 +103,8 @@ namespace KeePass.UI
 		{
 			try
 			{
-				bool bNtf = true;
-				if(NativeLib.GetPlatformID() == PlatformID.MacOSX)
-					bNtf = !MonoWorkarounds.IsRequired(1574);
-				else
-				{
-					DesktopType t = NativeLib.GetDesktopType();
-					if((t == DesktopType.Unity) || (t == DesktopType.Pantheon))
-						bNtf = !MonoWorkarounds.IsRequired(1354);
-				}
+		// Workarounds #1574 and #1354 (Mono NotifyIcon finalizer throws) retired: dead on .NET 10.
+			bool bNtf = true;
 
 				if(bNtf) m_ntf = new NotifyIcon(container);
 			}

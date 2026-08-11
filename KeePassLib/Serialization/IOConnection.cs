@@ -201,27 +201,7 @@ namespace KeePassLib.Serialization
 		{
 			base.Dispose(disposing);
 
-			if(disposing && MonoWorkarounds.IsRequired(10163) && m_bWrite &&
-				!m_bDisposed)
-			{
-				try
-				{
-					Stream s = this.BaseStream;
-					Type t = s.GetType();
-					if(t.Name == "WebConnectionStream")
-					{
-						PropertyInfo pi = t.GetProperty("Request",
-							BindingFlags.Instance | BindingFlags.NonPublic);
-						if(pi != null)
-						{
-							WebRequest wr = (pi.GetValue(s, null) as WebRequest);
-							if(wr != null)
-								IOConnection.DisposeResponse(wr.GetResponse(), false);
-						}
-					}
-				}
-				catch(Exception exDisp) { IOConnection.g_log.LogWarning(exDisp, "IocStream.Dispose: failed to close underlying web response"); }
-			}
+			// Workaround #10163 (Mono WebRequest missing GetResponse) retired: dead on .NET 10.
 
 			m_bDisposed = true;
 		}
@@ -230,9 +210,7 @@ namespace KeePassLib.Serialization
 		{
 			if(s == null) { Debug.Assert(false); return null; }
 
-			if(MonoWorkarounds.IsRequired(10163) && s.CanWrite)
-				return new IocStream(s);
-
+			// Workaround #10163 retired: always return the stream unwrapped.
 			return s;
 		}
 	}
@@ -564,12 +542,11 @@ namespace KeePassLib.Serialization
 		{
 			PrepareWebAccess(ioc);
 
-			IOWebClient wc = new IOWebClient(ioc);
+		IOWebClient wc = new IOWebClient(ioc);
 
-			if((ioc.UserName.Length > 0) || (ioc.Password.Length > 0))
+		if((ioc.UserName.Length > 0) || (ioc.Password.Length > 0))
 				wc.Credentials = new NetworkCredential(ioc.UserName, ioc.Password);
-			else if(MonoWorkarounds.IsRequired(688007))
-				wc.Credentials = new NetworkCredential("anonymous", string.Empty);
+			// Workaround #688007 (Mono required anonymous credentials) retired: dead on .NET 10.
 
 			ConfigureWebClient(wc);
 			return wc;
@@ -583,8 +560,7 @@ namespace KeePassLib.Serialization
 
 			if((ioc.UserName.Length > 0) || (ioc.Password.Length > 0))
 				req.Credentials = new NetworkCredential(ioc.UserName, ioc.Password);
-			else if(MonoWorkarounds.IsRequired(688007))
-				req.Credentials = new NetworkCredential("anonymous", string.Empty);
+			// Workaround #688007 (Mono required anonymous credentials) retired: dead on .NET 10.
 
 			ConfigureWebRequest(req, ioc);
 			return req;

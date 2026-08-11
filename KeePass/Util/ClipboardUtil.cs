@@ -217,8 +217,8 @@ namespace KeePass.Util
 				// seems to avoid this. On Kubuntu 23.04, 3 iterations /
 				// 25 ms (in total) seem to be sufficient. For safety, we do
 				// more.
-				if((NativeLib.GetDesktopType() == DesktopType.Kde) &&
-					!MonoWorkarounds.IsRequired(1613))
+			// Workaround #1613 always returned false; condition simplified.
+			if(NativeLib.GetDesktopType() == DesktopType.Kde)
 				{
 					int tStart = Environment.TickCount;
 					for(int i = 0; i < 6; ++i) GetText();

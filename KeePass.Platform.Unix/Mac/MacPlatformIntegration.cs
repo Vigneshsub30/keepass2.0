@@ -19,6 +19,14 @@ namespace KeePass.Platform.Unix.Mac
         public PlatformId PlatformId => PlatformId.MacOS;
 
         /// <inheritdoc/>
+        /// <remarks>Always <c>true</c> on macOS — the window manager honours the flag.</remarks>
+        public bool SupportsAlwaysOnTop => true;
+
+        /// <inheritdoc/>
+        /// <remarks>Always <c>false</c> on macOS — the OS enforces minimum sizes.</remarks>
+        public bool RequiresWindowMinSizeEnforcement => false;
+
+        /// <inheritdoc/>
         public IClipboardService Clipboard { get; }
 
         /// <inheritdoc/>

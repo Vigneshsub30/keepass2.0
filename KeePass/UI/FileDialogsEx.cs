@@ -413,7 +413,7 @@ namespace KeePass.UI
 
 		private string PreShowDialog()
 		{
-			MonoWorkarounds.EnsureRecentlyUsedValid();
+			// EnsureRecentlyUsedValid (workaround #1358) retired: dead on .NET 10.
 
 			string strPrevWorkDir = WinUtil.GetWorkingDirectory();
 

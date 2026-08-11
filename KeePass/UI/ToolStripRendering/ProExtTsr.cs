@@ -108,11 +108,7 @@ namespace KeePass.UI.ToolStripRendering
 
 		protected override void OnRenderItemCheck(ToolStripItemImageRenderEventArgs e)
 		{
-			if(MonoWorkarounds.IsRequired())
-			{
-				base.OnRenderItemCheck(e);
-				return;
-			}
+		// Workaround #IsRequired() (Mono item check rendering) retired: dead on .NET 10.
 
 			Image imgToDispose = null;
 			try

@@ -55,12 +55,8 @@ namespace KeePass.UI.ToolStripRendering
 			// try { bVisualStyles = VisualStyleRenderer.IsSupported; }
 			// catch(Exception) { Debug.Assert(false); bVisualStyles = false; }
 
-			// Various drawing bugs under Mono (gradients too light, incorrect
-			// painting of popup menus, paint method not invoked for disabled
-			// items, ...)
-			bool bMono = MonoWorkarounds.IsRequired();
-
-			return (!UIUtil.IsHighContrast && !bMono);
+		// Workaround #IsRequired() (Mono ToolStrip rendering) retired: dead on .NET 10.
+		return !UIUtil.IsHighContrast;
 		}
 
 		public override ToolStripRenderer CreateInstance()

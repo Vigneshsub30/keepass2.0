@@ -363,25 +363,7 @@ namespace KeePass.App.Configuration
 				aceInt.HotKeyEntryMenu = (long)Keys.None;
 			}
 
-			if(MonoWorkarounds.IsRequired(1378))
-			{
-				AceWorkspaceLocking aceWL = aceSec.WorkspaceLocking;
-				aceWL.LockOnSessionSwitch = false;
-				aceWL.LockOnSuspend = false;
-				aceWL.LockOnRemoteControlChange = false;
-			}
-
-			if(MonoWorkarounds.IsRequired(1418))
-			{
-				aceMW.MinimizeAfterOpeningDatabase = false;
-				aceApp.Start.MinimizedAndLocked = false;
-			}
-
-			if(MonoWorkarounds.IsRequired(1976))
-			{
-				aceMW.FocusQuickFindOnRestore = false;
-				aceMW.FocusQuickFindOnUntray = false;
-			}
+			// Workarounds #1378, #1418, #1976 (Mono config adjustments) retired: dead on .NET 10.
 		}
 
 		internal void OnSavePre()

@@ -39,6 +39,7 @@ using System.Xml;
 
 using KeePass.App;
 using KeePass.App.Configuration;
+using KeePass.Core.Platform;
 using KeePass.DataExchange;
 using KeePass.Ecas;
 using KeePass.Forms;
@@ -213,6 +214,27 @@ namespace KeePass
 			g_serviceProvider = sp;
 		}
 
+		/// <summary>
+		/// Returns the <see cref="IPlatformIntegration"/> registered in the DI
+		/// container, or <see cref="FallbackPlatformIntegration.Instance"/> if
+		/// the container is not yet available.
+		///
+		/// <para>Used by WinForms code that cannot receive the dependency through
+		/// constructor injection.  Prefer constructor injection in new code.</para>
+		/// </summary>
+		public static IPlatformIntegration Platform
+		{
+			get
+			{
+				IServiceProvider sp = g_serviceProvider;
+				if(sp == null) return FallbackPlatformIntegration.Instance;
+
+				IPlatformIntegration platform = (IPlatformIntegration)sp.GetService(
+					typeof(IPlatformIntegration));
+				return platform ?? FallbackPlatformIntegration.Instance;
+			}
+		}
+
 		private static KPTranslation g_kpTranslation = null;
 		public static KPTranslation Translation
 		{
@@ -331,14 +353,6 @@ namespace KeePass
 			if(g_cmdLineArgs[AppDefs.CommandLineOptions.Debug] != null)
 				PwDefs.DebugMode = true;
 
-			// Before loading the configuration
-			string strWa = g_cmdLineArgs[AppDefs.CommandLineOptions.WorkaroundDisable];
-			if(!string.IsNullOrEmpty(strWa))
-				MonoWorkarounds.SetEnabled(strWa, false);
-			strWa = g_cmdLineArgs[AppDefs.CommandLineOptions.WorkaroundEnable];
-			if(!string.IsNullOrEmpty(strWa))
-				MonoWorkarounds.SetEnabled(strWa, true);
-
 			try
 			{
 				DpiUtil.ConfigureProcess();
@@ -346,7 +360,7 @@ namespace KeePass
 				Application.SetCompatibleTextRenderingDefault(false);
 				Application.DoEvents(); // Required
 			}
-			catch(Exception) { Debug.Assert(MonoWorkarounds.IsRequired(106)); }
+			catch(Exception) { Debug.Assert(false); }
 
 #if DEBUG
 			string strInitialWorkDir = WinUtil.GetWorkingDirectory();
@@ -663,7 +677,6 @@ namespace KeePass
 
 			InitEnvSecurity();
 			// InitEnvWorkarounds();
-			MonoWorkarounds.Initialize();
 
 			// Do not run as AppX, because of compatibility problems
 			if(WinUtil.IsAppX) throw new PlatformNotSupportedException();
@@ -751,7 +764,6 @@ namespace KeePass
 			}
 
 			EnableThemingInScope.StaticDispose();
-			MonoWorkarounds.Terminate();
 
 #if KP_DEVSNAP
 			if(g_bAsmResReg)

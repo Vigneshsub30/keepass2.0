@@ -99,22 +99,14 @@ namespace KeePass.UI
 		{
 			if(g_vTags != null) return;
 
-			// When running under Mono, replace bold and italic text
-			// by underlined text, which is rendered correctly (in
-			// contrast to bold and italic text)
-			string strOvrS = null, strOvrE = null;
-			if(MonoWorkarounds.IsRequired(1632))
-			{
-				strOvrS = "\\ul ";
-				strOvrE = "\\ul0 ";
-			}
+		// Workaround #1632 (Mono bold/italic rendering) retired: dead on .NET 10.
 
-			g_vTags = new List<RtfbTag>
-			{
-				new RtfbTag(null, (strOvrS ?? "\\b "), true, FontStyle.Bold),
-				new RtfbTag(null, (strOvrE ?? "\\b0 "), false, FontStyle.Bold),
-				new RtfbTag(null, (strOvrS ?? "\\i "), true, FontStyle.Italic),
-				new RtfbTag(null, (strOvrE ?? "\\i0 "), false, FontStyle.Italic),
+		g_vTags = new List<RtfbTag>
+		{
+			new RtfbTag(null, "\\b ", true, FontStyle.Bold),
+			new RtfbTag(null, "\\b0 ", false, FontStyle.Bold),
+			new RtfbTag(null, "\\i ", true, FontStyle.Italic),
+			new RtfbTag(null, "\\i0 ", false, FontStyle.Italic),
 				new RtfbTag(null, "\\ul ", true, FontStyle.Underline),
 				new RtfbTag(null, "\\ul0 ", false, FontStyle.Underline),
 				new RtfbTag(null, "\\strike ", true, FontStyle.Strikeout),
@@ -245,11 +237,11 @@ namespace KeePass.UI
 			string strText = m_sb.ToString();
 			bool bURtf = MayGetURtf(rtb);
 
-			// Workaround for encoding bugs in Windows and Mono;
-			// Windows: https://sourceforge.net/p/keepass/bugs/1780/
-			// Mono: https://bugzilla.novell.com/show_bug.cgi?id=586901
-			Dictionary<char, string> dEnc = new Dictionary<char, string>();
-			if(bURtf || MonoWorkarounds.IsRequired(586901))
+		// Workaround for encoding bug in Windows;
+		// Windows: https://sourceforge.net/p/keepass/bugs/1780/
+		// Workaround #586901 (Mono RTF Unicode) retired: dead on .NET 10.
+		Dictionary<char, string> dEnc = new Dictionary<char, string>();
+		if(bURtf)
 			{
 				StringBuilder sbEnc = new StringBuilder();
 
@@ -300,9 +292,7 @@ namespace KeePass.UI
 				strRtf = strRtf.Replace(rTag.IdCode, rTag.RtfCode);
 			}
 
-			if(bBracesBalanced && MonoWorkarounds.IsRequired(2449941153U))
-				strRtf = Regex.Replace(strRtf,
-					@"(\\)(\{[\u0020-\u005B\u005D-z\w\s]*?)(\})", "$1$2$1$3");
+		// Workaround #2449941153 (Mono RTF brace escape) retired: dead on .NET 10.
 
 			strRtf = StrUtil.RtfFix(strRtf);
 

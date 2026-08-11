@@ -337,13 +337,9 @@ namespace KeePass.Forms
 
 			m_cdxSecurityOptions = new CheckedLVItemDXList(m_lvSecurityOptions, true);
 
-			bool? obNoSEv = null; // Allow read-only by enforced config
-			string strSEvSuffix = string.Empty;
-			if(MonoWorkarounds.IsRequired(1378))
-			{
-				obNoSEv = true;
-				strSEvSuffix = " (" + KPRes.UnsupportedByMono + ")";
-			}
+		// Workaround #1378 (Mono SystemEvents) retired: dead on .NET 10.
+		bool? obNoSEv = null; // Allow read-only by enforced config
+		string strSEvSuffix = string.Empty;
 
 			bool? obNoWin = null; // Allow read-only by enforced config
 			if(NativeLib.IsUnix()) obNoWin = true;
@@ -443,10 +439,9 @@ namespace KeePass.Forms
 		{
 			m_strInitialTsRenderer = Program.Config.UI.ToolStripRenderer;
 
-			bool? obNoMin = null;
-			if(MonoWorkarounds.IsRequired(1418)) obNoMin = true;
-			bool? obNoFocus = null;
-			if(MonoWorkarounds.IsRequired(1976)) obNoFocus = true;
+		// Workarounds #1418, #1976 (Mono form minimize/focus) retired: dead on .NET 10.
+		bool? obNoMin = null;
+		bool? obNoFocus = null;
 
 			m_lvGuiOptions.Columns.Add(KPRes.Options); // Resize below
 
@@ -602,9 +597,9 @@ namespace KeePass.Forms
 
 			if(AppConfigEx.IsOptionEnforced(Program.Config.UI, "StandardFont"))
 				m_fcgList.Enabled = false;
-			if(AppConfigEx.IsOptionEnforced(Program.Config.UI, "PasswordFont") ||
-				MonoWorkarounds.IsRequired(5795))
-				m_fcgPassword.Enabled = false;
+		// Workaround #5795 (Mono text incomplete) retired: dead on .NET 10.
+		if(AppConfigEx.IsOptionEnforced(Program.Config.UI, "PasswordFont"))
+			m_fcgPassword.Enabled = false;
 		}
 
 		private void LoadIntegrationOptions()
@@ -642,10 +637,10 @@ namespace KeePass.Forms
 
 		private void LoadAdvancedOptions()
 		{
-			bool? obNoMin = null;
-			if(MonoWorkarounds.IsRequired(1418)) obNoMin = true;
+		// Workaround #1418 (Mono form minimize) retired: dead on .NET 10.
+		bool? obNoMin = null;
 
-			m_lvAdvanced.Columns.Add(string.Empty); // Resize below
+		m_lvAdvanced.Columns.Add(string.Empty); // Resize below
 
 			m_cdxAdvanced = new CheckedLVItemDXList(m_lvAdvanced, true);
 

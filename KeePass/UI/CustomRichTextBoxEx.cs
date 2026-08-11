@@ -60,12 +60,8 @@ namespace KeePass.UI
 
 				if(!Program.DesignMode)
 				{
-					// Mono throws an exception when trying to get the
-					// Multiline property while constructing the object
-					if(!MonoWorkarounds.IsRequired())
-					{
-						if(this.Multiline) cp.Style |= NativeMethods.ES_WANTRETURN;
-					}
+				// Workaround for MonoWorkarounds.IsRequired() Mono multiline retired.
+				if(this.Multiline) cp.Style |= NativeMethods.ES_WANTRETURN;
 				}
 
 				return cp;
@@ -401,8 +397,7 @@ namespace KeePass.UI
 
 					if(bHandled)
 					{
-						if(MonoWorkarounds.IsRequired(100002))
-							OnTextChanged(EventArgs.Empty);
+				// Workaround #100002 (Mono TextChanged) retired: dead on .NET 10.
 						return true;
 					}
 				}
@@ -659,10 +654,8 @@ namespace KeePass.UI
 
 		private void MonoRedrawOnScroll()
 		{
-			if(!g_obForceRedrawOnScroll.HasValue)
-				g_obForceRedrawOnScroll = MonoWorkarounds.IsRequired(1366);
-
-			if(g_obForceRedrawOnScroll.Value) Invalidate();
+			// Workaround #1366 (Mono RichTextBox scroll drawing) retired: dead on .NET 10.
+			// g_obForceRedrawOnScroll is always false; no redraw needed.
 		}
 
 		protected override void OnLinkClicked(LinkClickedEventArgs e)
@@ -672,12 +665,12 @@ namespace KeePass.UI
 				string str = e.LinkText;
 				if(string.IsNullOrEmpty(str)) { Debug.Assert(false); return; }
 
-				// Open the URL if no handler has been associated with
-				// the LinkClicked event;
-				// if(this.LinkClicked == null) WinUtil.OpenUrl(str, null);
-				string strEv = (MonoWorkarounds.IsRequired() ? "LinkClickedEvent" :
-					"EVENT_LINKACTIVATE");
-				FieldInfo fi = typeof(RichTextBox).GetField(strEv,
+			// Open the URL if no handler has been associated with
+			// the LinkClicked event;
+			// if(this.LinkClicked == null) WinUtil.OpenUrl(str, null);
+			// Workaround #IsRequired() (Mono LinkClicked field name) retired: dead on .NET 10.
+			string strEv = "EVENT_LINKACTIVATE";
+			FieldInfo fi = typeof(RichTextBox).GetField(strEv,
 					BindingFlags.NonPublic | BindingFlags.Static);
 				object oEv = ((fi != null) ? fi.GetValue(null) : null);
 				if(oEv != null)

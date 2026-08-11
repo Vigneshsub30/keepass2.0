@@ -151,11 +151,9 @@ namespace KeePass.UI
 			// else { Debug.Assert(false); }
 			if(Program.Config.MainWindow.AlwaysOnTop) UIUtil.SetTopMost(form, true);
 
-			CustomizeForm(form);
+		CustomizeForm(form);
 
-			MonoWorkarounds.ApplyTo(form);
-
-			Debug.Assert(!(form is MainForm)); // MainForm calls the following itself
+		Debug.Assert(!(form is MainForm)); // MainForm calls the following itself
 			CustomizeFormHandleCreated(form, true, true);
 
 			if(GlobalWindowManager.WindowAdded != null)
@@ -184,9 +182,9 @@ namespace KeePass.UI
 						GlobalWindowManager.WindowRemoved(null, new GwmWindowEventArgs(
 							form, g_lWindows[i].Value));
 
-					MonoWorkarounds.Release(form);
+				// MonoWorkarounds.Release retired: dead on .NET 10.
 
-					Debug.Assert(!(form is MainForm)); // MainForm calls the following itself
+				Debug.Assert(!(form is MainForm)); // MainForm calls the following itself
 					CustomizeFormHandleCreated(form, false, false);
 
 #if DEBUG
