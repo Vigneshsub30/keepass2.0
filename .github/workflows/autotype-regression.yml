@@ -1,0 +1,218 @@
+name: Auto-Type Regression Gate
+
+# Guardrail metric: 0 regressions in Windows auto-type behavior (REQ-012).
+# This workflow blocks pull-request merge if any auto-type unit test fails.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      # Re-run whenever any auto-type source, test, or CI config changes.
+      - 'KeePass/Util/AutoType.cs'
+      - 'KeePass/Util/SendInputExt/**'
+      - 'KeePass/Util/Spr/**'
+      - 'KeePassLib/Collections/AutoTypeConfig.cs'
+      - 'KeePass/UI/DpiUtil.cs'
+      - 'KeePass.Tests.AutoType/**'
+      - '.github/workflows/autotype-regression.yml'
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      run_integration:
+        description: 'Run integration tests (requires desktop session)'
+        required: false
+        default: 'false'
+
+# Cancel previous runs on the same PR branch to avoid resource waste.
+concurrency:
+  group: autotype-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  checks: write      # required by dorny/test-reporter to post PR annotations
+  pull-requests: read
+
+jobs:
+  # ── Unit tests (headless — no GUI required) ─────────────────────────────
+  unit-tests:
+    name: Auto-Type Unit Tests / Windows
+    runs-on: windows-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: windows-nuget-${{ hashFiles('Directory.Packages.props') }}
+          restore-keys: windows-nuget-
+
+      - name: Set up .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore NuGet packages
+        run: dotnet restore KeePass.Tests.AutoType/KeePass.Tests.AutoType.csproj
+
+      - name: Build test project
+        run: >
+          dotnet build KeePass.Tests.AutoType/KeePass.Tests.AutoType.csproj
+          --configuration Release --no-restore
+
+      # Run all tests excluding those tagged as Integration or DPI
+      # (those require a live desktop session).
+      - name: Run unit tests
+        run: >
+          dotnet test KeePass.Tests.AutoType/KeePass.Tests.AutoType.csproj
+          --configuration Release
+          --no-build
+          --filter "Category!=Integration&Category!=DPI"
+          --logger "trx;LogFileName=autotype-unit-results.trx"
+          --results-directory TestResults
+          --verbosity normal
+
+      - name: Publish test results
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: Auto-Type Unit Tests
+          path: TestResults/autotype-unit-results.trx
+          reporter: dotnet-trx
+          fail-on-error: true
+          fail-on-empty: false
+
+      - name: Upload test result artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: autotype-unit-results
+          path: TestResults/autotype-unit-results.trx
+          retention-days: 30
+          if-no-files-found: warn
+
+  # ── DPI unit tests (pure-math, headless) ────────────────────────────────
+  dpi-unit-tests:
+    name: DPI Scaling Unit Tests / Windows
+    runs-on: windows-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: windows-nuget-${{ hashFiles('Directory.Packages.props') }}
+          restore-keys: windows-nuget-
+
+      - name: Set up .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore NuGet packages
+        run: dotnet restore KeePass.Tests.AutoType/KeePass.Tests.AutoType.csproj
+
+      - name: Build test project
+        run: >
+          dotnet build KeePass.Tests.AutoType/KeePass.Tests.AutoType.csproj
+          --configuration Release --no-restore
+
+      # Run only tests in DpiUtilUnitTests (pure-math, no desktop session needed).
+      - name: Run DPI scaling unit tests
+        run: >
+          dotnet test KeePass.Tests.AutoType/KeePass.Tests.AutoType.csproj
+          --configuration Release
+          --no-build
+          --filter "FullyQualifiedName~DpiUtilUnitTests"
+          --logger "trx;LogFileName=dpi-unit-results.trx"
+          --results-directory TestResults
+          --verbosity normal
+
+      - name: Upload DPI golden data comparison report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dpi-unit-results
+          path: |
+            TestResults/dpi-unit-results.trx
+            KeePass.Tests.AutoType/TestData/DPI/dpi-scaling-golden.json
+          retention-days: 30
+          if-no-files-found: warn
+
+  # ── Integration tests (requires Windows desktop session) ────────────────
+  # These tests exercise keystroke synthesis and real form DPI measurements.
+  # They run only on workflow_dispatch with run_integration=true OR on
+  # self-hosted runners that expose a Windows desktop session.
+  integration-tests:
+    name: Auto-Type Integration Tests / Windows Desktop
+    runs-on: windows-latest
+    timeout-minutes: 15
+    # Only run integration tests when explicitly requested.
+    if: >
+      github.event_name == 'workflow_dispatch' &&
+      github.event.inputs.run_integration == 'true'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore and build
+        run: >
+          dotnet build KeePass.Tests.AutoType/KeePass.Tests.AutoType.csproj
+          --configuration Release
+
+      - name: Run integration and DPI integration tests
+        run: >
+          dotnet test KeePass.Tests.AutoType/KeePass.Tests.AutoType.csproj
+          --configuration Release
+          --no-build
+          --filter "Category=Integration|Category=DPI"
+          --logger "trx;LogFileName=integration-results.trx"
+          --results-directory TestResults
+          --verbosity normal
+        # Allow infrastructure failures (no desktop session) without
+        # blocking the overall workflow; the step's exit code is inspected
+        # in the next step to distinguish test failures from infra failures.
+        continue-on-error: true
+        id: run_integration
+
+      - name: Check integration test exit code
+        run: |
+          if ("${{ steps.run_integration.outcome }}" -eq "failure") {
+            Write-Error "Integration tests failed — check test results artifact for details."
+            exit 1
+          }
+        shell: pwsh
+
+      - name: Publish integration test results
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: Auto-Type Integration Tests
+          path: TestResults/integration-results.trx
+          reporter: dotnet-trx
+          fail-on-error: false
+          fail-on-empty: false
+
+      - name: Upload integration test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: autotype-integration-results
+          path: TestResults/integration-results.trx
+          retention-days: 30
+          if-no-files-found: warn
