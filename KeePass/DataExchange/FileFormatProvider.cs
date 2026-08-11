@@ -95,17 +95,34 @@ namespace KeePass.DataExchange
 		}
 
 		/// <summary>
+		/// Small icon as raw PNG bytes for platform-neutral consumers.
+		/// Returns <c>null</c> when the format has no dedicated icon.
+		/// Override this property (instead of <see cref="SmallIcon"/>) when
+		/// providing icon data from embedded PNG resources to avoid a
+		/// <c>System.Drawing</c> dependency.
+		/// The default implementation extracts bytes from <see cref="SmallIcon"/>
+		/// for backward compatibility with providers that already override
+		/// <see cref="SmallIcon"/>.  New providers should override this property
+		/// directly.
+		/// </summary>
+		public virtual byte[]? SmallIconData
+		{
+			get
+			{
+				ImageData d = SmallIcon;
+				return (d == null || d.IsEmpty) ? null : d.Data;
+			}
+		}
+
+		/// <summary>
 		/// Small icon representing this format, encoded as a platform-neutral
 		/// <see cref="ImageData"/> value.  Returns <see cref="ImageData.Empty"/>
 		/// when the format has no dedicated icon.
 		///
 		/// WinForms consumers that need a <see cref="System.Drawing.Image"/>
 		/// should call <see cref="GetSmallIconAsImage"/> instead.
-		///
-		/// <b>Breaking change (WO-027):</b> previously returned
-		/// <c>System.Drawing.Image</c>.  Plugin authors must update overrides
-		/// to return <see cref="ImageData"/> — use the protected helper
-		/// <see cref="ImageDataFromResource"/> to wrap an existing resource image.
+		/// New providers should override <see cref="SmallIconData"/> and provide
+		/// raw PNG bytes to avoid a <c>System.Drawing</c> dependency.
 		/// </summary>
 		public virtual ImageData SmallIcon
 		{
@@ -114,14 +131,14 @@ namespace KeePass.DataExchange
 
 		/// <summary>
 		/// Compatibility adapter for WinForms consumers.  Decodes
-		/// <see cref="SmallIcon"/> into a <see cref="System.Drawing.Image"/>.
-		/// Returns <c>null</c> when <see cref="SmallIcon"/> is empty.
+		/// <see cref="SmallIconData"/> into a <see cref="System.Drawing.Image"/>.
+		/// Returns <c>null</c> when <see cref="SmallIconData"/> is null or empty.
 		/// </summary>
-		public Image GetSmallIconAsImage()
+		public Image? GetSmallIconAsImage()
 		{
-			ImageData d = this.SmallIcon;
-			if(d == null || d.IsEmpty) return null;
-			using(MemoryStream ms = new MemoryStream(d.Data))
+			byte[]? data = SmallIconData;
+			if(data == null || data.Length == 0) return null;
+			using(MemoryStream ms = new MemoryStream(data))
 				return Image.FromStream(ms);
 		}
 
@@ -131,6 +148,14 @@ namespace KeePass.DataExchange
 		/// Returns <see cref="ImageData.Empty"/> when <paramref name="image"/>
 		/// is <c>null</c>.
 		/// </summary>
+		/// <remarks>
+		/// Prefer overriding <see cref="SmallIconData"/> with embedded PNG bytes
+		/// via <see cref="ImageDataFromPngBytes"/> to avoid a
+		/// <c>System.Drawing</c> dependency.
+		/// </remarks>
+		[Obsolete("Override SmallIconData and use ImageDataFromPngBytes to avoid " +
+			"a System.Drawing dependency. This method will be removed in a future " +
+			"version.", error: false)]
 		protected static ImageData ImageDataFromResource(Image image)
 		{
 			if(image == null) return ImageData.Empty;
@@ -140,6 +165,18 @@ namespace KeePass.DataExchange
 				return new ImageData(ms.ToArray(), KeePass.Core.Services.ImageFormat.Png,
 					image.Width, image.Height);
 			}
+		}
+
+		/// <summary>
+		/// Helper for subclass overrides: wraps raw PNG bytes in an
+		/// <see cref="ImageData"/> value for use as a <see cref="SmallIcon"/>.
+		/// Returns <see cref="ImageData.Empty"/> when <paramref name="pngBytes"/>
+		/// is <c>null</c> or empty.
+		/// </summary>
+		protected static ImageData ImageDataFromPngBytes(byte[]? pngBytes)
+		{
+			if(pngBytes == null || pngBytes.Length == 0) return ImageData.Empty;
+			return new ImageData(pngBytes, KeePass.Core.Services.ImageFormat.Png, 0, 0);
 		}
 
 		/// <summary>
