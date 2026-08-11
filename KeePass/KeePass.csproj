@@ -366,6 +366,7 @@
     <Compile Include="Plugins\IPluginHostV2.cs" />
     <Compile Include="Plugins\LegacyPluginHostAdapter.cs" />
     <Compile Include="Plugins\DefaultPluginHost.cs" />
+    <Compile Include="Plugins\PluginLoadContext.cs" />
     <Compile Include="Plugins\PluginMetadataInspector.cs" />
     <Compile Include="Plugins\PluginSignatureResult.cs" />
     <Compile Include="Plugins\PluginSignatureVerifier.cs" />

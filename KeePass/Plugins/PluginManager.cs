@@ -23,7 +23,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using System.Runtime.Remoting;
+using System.Runtime.Loader;
 using System.Text;
 using System.Windows.Forms;
 
@@ -297,12 +297,32 @@ namespace KeePass.Plugins
 					try { plugin.Interface.Terminate(); }
 					catch(Exception) { Debug.Assert(false); }
 				}
+
+				UnloadPluginALC(plugin.FilePath);
 			}
 
 			m_lPlugins.Clear();
 		}
 
-		private static Plugin CreatePluginInstance(string strFilePath,
+		/// <summary>
+		/// Unloads the <see cref="PluginLoadContext"/> associated with the
+		/// plugin at <paramref name="pluginFilePath"/>, if one exists.
+		/// </summary>
+		private void UnloadPluginALC(string pluginFilePath)
+		{
+			if(string.IsNullOrEmpty(pluginFilePath)) return;
+			lock(m_dictAlc)
+			{
+				if(m_dictAlc.TryGetValue(pluginFilePath, out PluginLoadContext alc))
+				{
+					try { alc.Unload(); }
+					catch(Exception) { Debug.Assert(false); }
+					m_dictAlc.Remove(pluginFilePath);
+				}
+			}
+		}
+
+		private Plugin CreatePluginInstance(string strFilePath,
 			string strTypeName)
 		{
 			Debug.Assert(strFilePath != null);
@@ -317,12 +337,49 @@ namespace KeePass.Plugins
 			}
 			else strType = strTypeName + "." + strTypeName + "Ext";
 
-			ObjectHandle oh = Activator.CreateInstanceFrom(strFilePath, strType);
+			// Load the plugin into its own collectible ALC so its private
+			// dependencies are isolated from other plugins and the host.
+			var alc = new PluginLoadContext(strFilePath);
+			Assembly asm = alc.LoadFromAssemblyPath(Path.GetFullPath(strFilePath));
 
-			Plugin plugin = (oh.Unwrap() as Plugin);
-			if(plugin == null) throw new FileLoadException();
+			Type t = asm.GetType(strType, throwOnError: false);
+			if(t == null)
+			{
+				// Scan all exported types for a Plugin-derived concrete type
+				// when the conventional name is not found.
+				foreach(Type exported in asm.GetExportedTypes())
+				{
+					if(!exported.IsAbstract && typeof(Plugin).IsAssignableFrom(exported))
+					{
+						t = exported;
+						break;
+					}
+				}
+			}
+
+			if(t == null)
+			{
+				alc.Unload();
+				throw new FileLoadException(
+					$"No Plugin-derived type found in {strFilePath}.");
+			}
+
+			Plugin plugin = (Activator.CreateInstance(t) as Plugin);
+			if(plugin == null)
+			{
+				alc.Unload();
+				throw new FileLoadException($"Could not create an instance of {t.FullName}.");
+			}
+
+			// Track the ALC so we can unload it when the plugin is removed.
+			lock(m_dictAlc) { m_dictAlc[strFilePath] = alc; }
 			return plugin;
 		}
+
+		// Dictionary of per-plugin AssemblyLoadContexts for lifecycle management.
+		private readonly System.Collections.Generic.Dictionary<string, PluginLoadContext>
+			m_dictAlc = new System.Collections.Generic.Dictionary<string, PluginLoadContext>(
+				StringComparer.OrdinalIgnoreCase);
 
 		private static bool Is1xPlugin(string strFile)
 		{
