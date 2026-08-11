@@ -131,11 +131,9 @@ namespace KeePass.Tests.Platform
 				case PlatformId.MacOS:
 					switch(capability)
 					{
-						case PlatformCapability.Clipboard:               return PlatformCapabilityTier.Full;
-						case PlatformCapability.CredentialStore:         return PlatformCapabilityTier.Full;
-						case PlatformCapability.ScreenCaptureProtection: return PlatformCapabilityTier.Partial;
-						case PlatformCapability.GlobalHotKeys:           return PlatformCapabilityTier.Partial;
-						default:                                         return PlatformCapabilityTier.Unsupported;
+						case PlatformCapability.Clipboard:       return PlatformCapabilityTier.Full;
+						case PlatformCapability.CredentialStore: return PlatformCapabilityTier.Full;
+						default:                                 return PlatformCapabilityTier.Unsupported;
 					}
 
 				case PlatformId.Linux:

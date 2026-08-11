@@ -36,9 +36,9 @@ namespace KeePass.Platform.Unix.Mac
                 case PlatformCapability.CredentialStore:         return PlatformCapabilityTier.Full; // Keychain
                 case PlatformCapability.AutoType:                return PlatformCapabilityTier.Unsupported;
                 case PlatformCapability.SecureDesktop:           return PlatformCapabilityTier.Unsupported;
-                case PlatformCapability.ScreenCaptureProtection: return PlatformCapabilityTier.Partial;
+                case PlatformCapability.ScreenCaptureProtection: return PlatformCapabilityTier.Unsupported;
                 case PlatformCapability.ProcessDacl:             return PlatformCapabilityTier.Unsupported;
-                case PlatformCapability.GlobalHotKeys:           return PlatformCapabilityTier.Partial;
+                case PlatformCapability.GlobalHotKeys:           return PlatformCapabilityTier.Unsupported;
                 default:                                         return PlatformCapabilityTier.Unsupported;
             }
         }
