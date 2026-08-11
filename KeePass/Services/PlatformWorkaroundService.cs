@@ -1,5 +1,3 @@
-using System.Windows.Forms;
-
 using KeePass.App.Configuration;
 
 using KeePassLib.Native;
@@ -13,6 +11,10 @@ namespace KeePass.Services
 	/// </summary>
 	public sealed class PlatformWorkaroundService : IPlatformWorkaroundService
 	{
+		// Keys.None == 0; use the literal to avoid a System.Windows.Forms
+		// dependency in this cross-platform service.
+		private const long NoHotKey = 0L;
+
 		/// <summary>Singleton for use-sites without a DI container.</summary>
 		public static readonly PlatformWorkaroundService Instance =
 			new PlatformWorkaroundService();
@@ -25,17 +27,17 @@ namespace KeePass.Services
 
 			// On Linux/macOS, disable Windows-only security and HotKey options
 			// that either cause errors or have no effect on non-Windows platforms.
-			AceSecurity aceSec   = config.Security;
+			AceSecurity    aceSec = config.Security;
 			AceIntegration aceInt = config.Integration;
 
-			aceSec.PreventScreenCapture      = false;
-			aceSec.MasterKeyOnSecureDesktop  = false;
+			aceSec.PreventScreenCapture     = false;
+			aceSec.MasterKeyOnSecureDesktop = false;
 
-			aceInt.HotKeyGlobalAutoType         = (long)Keys.None;
-			aceInt.HotKeyGlobalAutoTypePassword = (long)Keys.None;
-			aceInt.HotKeySelectedAutoType       = (long)Keys.None;
-			aceInt.HotKeyShowWindow             = (long)Keys.None;
-			aceInt.HotKeyEntryMenu              = (long)Keys.None;
+			aceInt.HotKeyGlobalAutoType         = NoHotKey;
+			aceInt.HotKeyGlobalAutoTypePassword = NoHotKey;
+			aceInt.HotKeySelectedAutoType       = NoHotKey;
+			aceInt.HotKeyShowWindow             = NoHotKey;
+			aceInt.HotKeyEntryMenu              = NoHotKey;
 		}
 	}
 }
