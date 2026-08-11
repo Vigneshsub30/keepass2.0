@@ -36,10 +36,14 @@ using KeePassLib.Native;
 using KeePassLib.Resources;
 using KeePassLib.Utility;
 
+using Microsoft.Extensions.Logging;
+
 namespace KeePassLib.Serialization
 {
 	public sealed class FileTransactionEx : IDisposable
 	{
+		private static readonly ILogger<FileTransactionEx> g_log =
+			KeePassLibLog.Logger<FileTransactionEx>();
 		private readonly bool m_bTransacted;
 		private IOConnectionInfo m_iocBase; // Null means disposed
 		private IOConnectionInfo m_iocTemp;
@@ -109,7 +113,7 @@ namespace KeePassLib.Serialization
 						m_bTransacted = false;
 					}
 				}
-				catch(Exception) { Debug.Assert(false); }
+				catch(Exception exTx) { g_log.LogWarning(exTx, "FileTransactionEx: transaction eligibility check failed for {Path}", m_iocBase.Path); }
 			}
 
 #if !KeePassUAP
@@ -166,7 +170,7 @@ namespace KeePassLib.Serialization
 
 				m_lToDelete.Clear();
 			}
-			catch(Exception) { Debug.Assert(false); }
+			catch(Exception exDel) { g_log.LogError(exDel, "FileTransactionEx: failed to delete temporary file(s)"); }
 		}
 
 		public Stream OpenWrite()
@@ -228,7 +232,7 @@ namespace KeePassLib.Serialization
 					FileAttributes faBase = File.GetAttributes(m_iocBase.Path);
 					bEfsEncrypted = ((long)(faBase & FileAttributes.Encrypted) != 0);
 					try { if(bEfsEncrypted) File.Decrypt(m_iocBase.Path); } // For TxF
-					catch(Exception) { Debug.Assert(false); }
+					catch(Exception exEfs) { g_log.LogWarning(exEfs, "FileTransactionEx: EFS decrypt failed for TxF on {Path}", m_iocBase.Path); }
 #endif
 					otCreation = File.GetCreationTimeUtc(m_iocBase.Path);
 					sStat = SimpleStat.Get(m_iocBase.Path);
@@ -268,7 +272,7 @@ namespace KeePassLib.Serialization
 				if(bEfsEncrypted)
 				{
 					try { File.Encrypt(m_iocBase.Path); }
-					catch(Exception) { Debug.Assert(false); }
+					catch(Exception exEnc) { g_log.LogWarning(exEnc, "FileTransactionEx: EFS re-encrypt failed after commit on {Path}", m_iocBase.Path); }
 				}
 
 				// File.SetAccessControl(m_iocBase.Path, secPrev);
@@ -288,7 +292,7 @@ namespace KeePassLib.Serialization
 				}
 #endif
 			}
-			catch(Exception) { Debug.Assert(false); }
+			catch(Exception exAcl) { g_log.LogError(exAcl, "FileTransactionEx: failed to restore metadata/ACL after commit on {Path}", m_iocBase.Path); }
 
 			if(bMadeUnhidden) UrlUtil.HideFile(m_iocBase.Path, true);
 		}
@@ -325,7 +329,7 @@ namespace KeePassLib.Serialization
 
 				return ((uFlags & NativeMethods.FILE_SUPPORTS_TRANSACTIONS) != 0);
 			}
-			catch(Exception) { Debug.Assert(false); }
+			catch(Exception exTxf) { g_log.LogWarning(exTxf, "FileTransactionEx: TxF support query failed"); }
 
 			return false;
 		}

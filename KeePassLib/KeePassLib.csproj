@@ -139,6 +139,7 @@
     <Compile Include="Utility\ExtendedException.cs" />
     <Compile Include="Utility\GfxUtil.cs" />
     <Compile Include="Utility\MemUtil.cs" />
+    <Compile Include="Utility\KeePassLibLog.cs" />
     <Compile Include="Utility\MessageService.cs" />
     <Compile Include="Native\NativeLib.cs" />
     <Compile Include="Cryptography\PasswordGenerator\PwGenerator.cs" />
@@ -154,6 +155,7 @@
        and FileInfo.SetAccessControl(FileSecurity) extension methods (FileSystemAclExtensions)
        which replaced the removed File.Get/SetAccessControl(string, …) overloads in .NET Core. -->
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="System.IO.FileSystem.AccessControl" />
   </ItemGroup>
 

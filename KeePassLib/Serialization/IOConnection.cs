@@ -37,6 +37,8 @@ using System.Security.Cryptography.X509Certificates;
 using KeePassLib.Native;
 using KeePassLib.Utility;
 
+using Microsoft.Extensions.Logging;
+
 namespace KeePassLib.Serialization
 {
 #if !KeePassLibSD
@@ -215,12 +217,10 @@ namespace KeePassLib.Serialization
 							WebRequest wr = (pi.GetValue(s, null) as WebRequest);
 							if(wr != null)
 								IOConnection.DisposeResponse(wr.GetResponse(), false);
-							else { Debug.Assert(false); }
 						}
-						else { Debug.Assert(false); }
 					}
 				}
-				catch(Exception) { Debug.Assert(false); }
+				catch(Exception exDisp) { IOConnection.g_log.LogWarning(exDisp, "IocStream.Dispose: failed to close underlying web response"); }
 			}
 
 			m_bDisposed = true;
@@ -239,6 +239,8 @@ namespace KeePassLib.Serialization
 
 	public static class IOConnection
 	{
+		internal static readonly ILogger g_log = KeePassLibLog.Logger(nameof(IOConnection));
+
 #if !KeePassLibSD
 		private static ProxyServerType m_pstProxyType = ProxyServerType.System;
 		private static string m_strProxyAddr = string.Empty;
@@ -352,7 +354,7 @@ namespace KeePassLib.Serialization
 				request.CachePolicy = new RequestCachePolicy(RequestCacheLevel.NoCacheNoStore);
 			}
 			catch(NotImplementedException) { }
-			catch(Exception) { Debug.Assert(false); }
+			catch(Exception exCache) { g_log.LogWarning(exCache, "IOConnection: failed to set cache policy on request for {Url}", request.RequestUri); }
 #endif
 
 			try
@@ -360,7 +362,7 @@ namespace KeePassLib.Serialization
 				IWebProxy prx;
 				if(GetWebProxy(out prx)) request.Proxy = prx;
 			}
-			catch(Exception) { Debug.Assert(false); }
+			catch(Exception exProxy) { g_log.LogWarning(exProxy, "IOConnection: failed to assign web proxy to request"); }
 
 #if !KeePassUAP
 			long? olTimeout = p.GetLong(IocKnownProperties.Timeout);
@@ -388,7 +390,7 @@ namespace KeePassLib.Serialization
 				wc.CachePolicy = new RequestCachePolicy(RequestCacheLevel.NoCacheNoStore);
 			}
 			catch(NotImplementedException) { }
-			catch(Exception) { Debug.Assert(false); }
+			catch(Exception exWcCache) { g_log.LogWarning(exWcCache, "IOConnection: failed to set cache policy on WebClient"); }
 #endif
 
 			try
@@ -396,7 +398,7 @@ namespace KeePassLib.Serialization
 				IWebProxy prx;
 				if(GetWebProxy(out prx)) wc.Proxy = prx;
 			}
-			catch(Exception) { Debug.Assert(false); }
+			catch(Exception exWcProxy) { g_log.LogWarning(exWcProxy, "IOConnection: failed to assign web proxy to WebClient"); }
 		}
 
 		private static bool GetWebProxy(out IWebProxy prx)
