@@ -555,25 +555,16 @@ namespace KeePass.Util
 				byte[] pbMsg = StrUtil.Utf8.GetBytes(strContent);
 				byte[] pbSig = Convert.FromBase64String(strSig);
 
-				using(SHA512Managed sha = new SHA512Managed())
+			using(RSA rsa = RSA.Create())
+			{
+				rsa.FromXmlString(strKey);
+
+				if(!rsa.VerifyData(pbMsg, pbSig, HashAlgorithmName.SHA512, RSASignaturePadding.Pkcs1))
 				{
-					using(RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
-					{
-						// Watching this code in the debugger may result in a
-						// CryptographicException when disposing the object
-						rsa.PersistKeyInCsp = false; // Default key
-						rsa.FromXmlString(strKey);
-						rsa.PersistKeyInCsp = false; // Loaded key
-
-						if(!rsa.VerifyData(pbMsg, sha, pbSig))
-						{
-							Debug.Assert(false);
-							return false;
-						}
-
-						rsa.PersistKeyInCsp = false;
-					}
+					Debug.Assert(false);
+					return false;
 				}
+			}
 			}
 			catch(Exception) { Debug.Assert(false); return false; }
 

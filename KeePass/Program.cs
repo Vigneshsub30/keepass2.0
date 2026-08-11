@@ -749,94 +749,9 @@ namespace KeePass
 
 		private static void InitAppContext()
 		{
-			try
-			{
-				Type t = typeof(string).Assembly.GetType("System.AppContext", false);
-				if(t == null) return; // Available in .NET >= 4.6
-
-				MethodInfo mi = t.GetMethod("SetSwitch", BindingFlags.Public |
-					BindingFlags.Static);
-				if(mi == null) { Debug.Assert(false); return; }
-
-				GAction<string, bool> f = delegate(string strSwitch, bool bValue)
-				{
-					mi.Invoke(null, new object[] { strSwitch, bValue });
-				};
-
-				f("Switch.System.Drawing.DontSupportPngFramesInIcons", false); // 4.6
-				f("Switch.System.Drawing.Printing.OptimizePrintPreview", true); // 4.6, optional
-				f("Switch.System.IO.BlockLongPaths", false); // 4.6.2
-				f("Switch.System.IO.Compression.DoNotUseNativeZipLibraryForDecompression", false); // 4.7.2
-				f("Switch.System.IO.Compression.ZipFile.UseBackslash", false); // 4.6.1
-				f("Switch.System.IO.UseLegacyPathHandling", false); // 4.6.2
-				f("Switch.System.Net.DontEnableSchUseStrongCrypto", false); // 4.6
-				f("Switch.System.Net.DontEnableSystemDefaultTlsVersions", false); // 4.7
-				f("Switch.System.Security.Cryptography.AesCryptoServiceProvider.DontCorrectlyResetDecryptor", false); // 4.6.2
-				f("Switch.System.Security.Cryptography.UseLegacyFipsThrow", false); // 4.8
-				f("Switch.System.Windows.Forms.DoNotLoadLatestRichEditControl", false); // 4.7
-				f("Switch.System.Windows.Forms.DoNotSupportSelectAllShortcutInMultilineTextBox", false); // 4.6.1
-				f("Switch.System.Windows.Forms.DontSupportReentrantFilterMessage", false); // 4.6.1
-				f("Switch.System.Windows.Forms.EnableVisualStyleValidation", false); // 4.8
-				// f("Switch.System.Windows.Forms.UseLegacyToolTipDisplay", false); // 4.8, optional
-				f("Switch.UseLegacyAccessibilityFeatures", false); // 4.7.1
-				f("Switch.UseLegacyAccessibilityFeatures.2", false); // 4.7.2
-				f("Switch.UseLegacyAccessibilityFeatures.3", false); // 4.8
-				f("Switch.UseLegacyAccessibilityFeatures.4", false); // 4.8 upd.
-
-#if DEBUG
-				if(NativeLib.IsUnix()) return;
-
-				// Check that the internal classes do not cache other values already
-
-				const BindingFlags bf = BindingFlags.Public | BindingFlags.NonPublic |
-					BindingFlags.Static;
-
-				GAction<Type, string, bool> fCheck = delegate(Type tClass,
-					string strProperty, bool bValue)
-				{
-					PropertyInfo pi = tClass.GetProperty(strProperty, bf);
-					string strFullName = tClass.FullName + "." + strProperty;
-					if(pi == null) { Debug.Assert(false, strFullName + " not found!"); return; }
-					Debug.Assert(((bool)pi.GetValue(null, null) == bValue),
-						strFullName + " returned an unexpected value!");
-				};
-
-				Type tM = typeof(string).Assembly.GetType( // mscorlib
-					"System.AppContextSwitches", false);
-				if(tM == null) { Debug.Assert(false); return; }
-
-				Type tS = typeof(GZipStream).Assembly.GetType( // System
-					"System.LocalAppContextSwitches", false);
-				if(tS == null) { Debug.Assert(false); return; }
-
-				Type tD = typeof(Image).Assembly.GetType(
-					"System.Drawing.LocalAppContextSwitches", false);
-				if(tD == null) { Debug.Assert(false); return; }
-
-				Type tW = typeof(ListViewItem).Assembly.GetType(
-					"System.Windows.Forms.LocalAppContextSwitches", false);
-				if(tW == null) { Debug.Assert(false); return; }
-
-				Type tA = typeof(ListViewItem).Assembly.GetType(
-					"System.AccessibilityImprovements", false);
-				if(tA == null) { Debug.Assert(false); return; }
-
-				fCheck(tD, "DontSupportPngFramesInIcons", false);
-				fCheck(tD, "OptimizePrintPreview", true);
-				fCheck(tM, "BlockLongPaths", false);
-				fCheck(tS, "DoNotUseNativeZipLibraryForDecompression", false);
-				fCheck(tM, "UseLegacyPathHandling", false);
-				fCheck(tS, "DontEnableSchUseStrongCrypto", false);
-				fCheck(tS, "DontEnableSystemDefaultTlsVersions", false);
-				fCheck(tM, "UseLegacyFipsThrow", false);
-				fCheck(tW, "DoNotLoadLatestRichEditControl", false);
-				fCheck(tW, "DoNotSupportSelectAllShortcutInMultilineTextBox", false);
-				fCheck(tW, "DontSupportReentrantFilterMessage", false);
-				fCheck(tW, "EnableVisualStyleValidation", false);
-				fCheck(tA, "Level4", true);
-#endif
-			}
-			catch(Exception) { Debug.Assert(false); }
+			// .NET Framework 4.x compatibility AppContext switches removed in WO-006.
+			// These were no-ops on .NET 10; the Debug validation block checked for
+			// internal .NET Framework types that do not exist on .NET Core.
 		}
 
 		// private static Mutex TrySingleInstanceLock(string strName, bool bInitiallyOwned)
@@ -1089,15 +1004,15 @@ namespace KeePass
 #if DEBUG
 			if(bEnable)
 			{
-				Debug.Listeners.Clear();
-				Debug.Listeners.AddRange(g_sTraceListeners.Pop());
+				Trace.Listeners.Clear();
+				Trace.Listeners.AddRange(g_sTraceListeners.Pop());
 			}
 			else
 			{
-				TraceListener[] v = new TraceListener[Debug.Listeners.Count];
-				Debug.Listeners.CopyTo(v, 0);
+				TraceListener[] v = new TraceListener[Trace.Listeners.Count];
+				Trace.Listeners.CopyTo(v, 0);
 				g_sTraceListeners.Push(v);
-				Debug.Listeners.Clear();
+				Trace.Listeners.Clear();
 			}
 #endif
 		}

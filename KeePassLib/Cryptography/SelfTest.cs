@@ -121,7 +121,7 @@ namespace KeePassLib.Cryptography
 			}
 #endif
 
-			try { MemUtil.DisposeIfPossible(new SHA256Managed()); }
+			try { MemUtil.DisposeIfPossible(SHA256.Create()); }
 			catch(Exception ex)
 			{
 				throw new ExtendedException("SHA-256", ex);
@@ -442,7 +442,7 @@ namespace KeePassLib.Cryptography
 			r.NextBytes(pbData);
 
 			byte[] pbH1;
-			using(SHA256Managed h1 = new SHA256Managed())
+			using(SHA256 h1 = SHA256.Create())
 			{
 				int i = 0;
 				while(i != pbData.Length)
@@ -456,7 +456,7 @@ namespace KeePassLib.Cryptography
 			}
 
 			byte[] pbH2;
-			using(SHA256Managed h2 = new SHA256Managed())
+			using(SHA256 h2 = SHA256.Create())
 			{
 				pbH2 = h2.ComputeHash(pbData);
 			}

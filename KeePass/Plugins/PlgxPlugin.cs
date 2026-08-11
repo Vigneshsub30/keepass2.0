@@ -29,7 +29,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Windows.Forms;
 
-using Microsoft.CSharp;
+// using Microsoft.CSharp; // Removed in WO-006: PLGX runtime compilation not supported on .NET 10
 // using Microsoft.VisualBasic;
 
 using KeePass.App;
@@ -323,7 +323,7 @@ namespace KeePass.Plugins
 
 				if(plgx.LogStream != null)
 				{
-					using(MD5CryptoServiceProvider md5 = new MD5CryptoServiceProvider())
+					using(MD5 md5 = MD5.Create())
 					{
 						byte[] pbMD5 = md5.ComputeHash(pbDecompressed);
 						plgx.LogStream.Write(MemUtil.ByteArrayToHexString(pbMD5));
@@ -630,19 +630,10 @@ namespace KeePass.Plugins
 				// check must be separate from the instantiation method
 				if(WinUtil.IsWindows9x) dictOpt.Clear();
 
-				CodeDomProvider cdp = null;
-				if(plgx.ProjectType == PlgxProjectType.CSharp)
-					cdp = ((dictOpt.Count == 0) ? new CSharpCodeProvider() :
-						CreateCscProvider(dictOpt));
-				// else if(plgx.ProjectType == PlgxProjectType.VisualBasic)
-				//	cdp = ((dictOpt.Count == 0) ? new VBCodeProvider() :
-				//		new VBCodeProvider(dictOpt));
-				else throw new InvalidOperationException();
-
-				cr = cdp.CompileAssemblyFromFile(plgx.CompilerParameters,
-					plgx.SourceFiles.ToArray());
-
-				bResult = ((cr.Errors == null) || !cr.Errors.HasErrors);
+			throw new PlatformNotSupportedException(
+				"PLGX runtime compilation is not supported on .NET 10. " +
+				"Repackage the plugin as a pre-compiled .dll assembly. " +
+				"See PLGX-MIGRATION.md at the repository root for migration guidance.");
 			}
 			catch(Exception) { }
 
@@ -704,15 +695,6 @@ namespace KeePass.Plugins
 
 			if(!dlg.ShowDialog())
 				MessageService.ShowWarning(strMsg + strFile);
-		}
-
-		// Windows 98 only supports the parameterless constructor, therefore
-		// the instantiation of the one with parameters must be in a separate
-		// method; check must be separate from the instantiation method
-		private static CodeDomProvider CreateCscProvider(IDictionary<string,
-			string> iOpts)
-		{
-			return new CSharpCodeProvider(iOpts);
 		}
 
 		private static string GetDefines()

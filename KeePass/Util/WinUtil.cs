@@ -721,6 +721,12 @@ namespace KeePass.Util
 
 		public static ulong GetMaxNetFrameworkVersion()
 		{
+#if !NETFRAMEWORK
+			// .NET Framework version detection is not applicable on .NET Core / .NET 5+.
+			// Return 0 to signal "not applicable"; callers that check (uInst != 0) will
+			// skip any .NET Framework version requirement enforcement.
+			return 0;
+#endif
 			ulong u = g_uFrameworkVersion;
 			if(u != 0) return u;
 

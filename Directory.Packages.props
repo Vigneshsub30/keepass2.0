@@ -24,5 +24,10 @@
 
     <!-- Available for future use to embed PDB source-mapping for debugging. -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.301" />
+
+    <!-- Test packages for KeePass.Tests (xUnit characterization tests). -->
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.8.1" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
   </ItemGroup>
 </Project>
