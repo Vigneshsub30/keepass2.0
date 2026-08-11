@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!--
   Coverlet run settings for XPlat Code Coverage collection.
-  Referenced by the CI workflow via: dotnet test --settings coverage.runsettings
+  Referenced by the CI workflow via the "settings" flag of dotnet test.
 
   Include scope: KeePassLib only (domain + cryptography).
   Excluded: KeePass.Tests, xUnit infrastructure, auto-generated Designer files.
