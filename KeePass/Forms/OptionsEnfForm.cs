@@ -199,8 +199,12 @@ namespace KeePass.Forms
 			fAddPolicy("ChangeMasterKeyNoKey", AppPolicyId.ChangeMasterKeyNoKey);
 			fAddPolicy("EditTriggers", AppPolicyId.EditTriggers);
 
-			lvg = AddGroup(KPRes.IOConnectionLong);
-			AddOption(aceSec, "SslCertsAcceptInvalid", lvg, KPRes.TlsCertsAcceptInvalid);
+		lvg = AddGroup("Plugins");
+		AddOption(aceSec, "LockPluginPublisherAllowList", lvg,
+			"Lock Plugin Publisher Allow-List (prevent user changes)");
+
+		lvg = AddGroup(KPRes.IOConnectionLong);
+		AddOption(aceSec, "SslCertsAcceptInvalid", lvg, KPRes.TlsCertsAcceptInvalid);
 
 			m_lvMain.EndUpdateEx();
 		}

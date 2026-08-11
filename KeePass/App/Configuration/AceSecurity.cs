@@ -49,6 +49,15 @@ namespace KeePass.App.Configuration
 			}
 		}
 
+		/// <summary>
+		/// When <c>true</c>, the <see cref="TrustedPluginPublishers"/> list is
+		/// locked and the user cannot add or remove entries via the Options dialog.
+		/// Intended to be set via the enforced configuration
+		/// (<c>keepass.enforced.config.xml</c>) by administrators.
+		/// </summary>
+		[DefaultValue(false)]
+		public bool LockPluginPublisherAllowList { get; set; }
+
 		private AceWorkspaceLocking m_wsl = new AceWorkspaceLocking();
 		public AceWorkspaceLocking WorkspaceLocking
 		{
