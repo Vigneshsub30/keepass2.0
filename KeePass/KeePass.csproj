@@ -36,6 +36,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Extensions.Options" />
+    <PackageReference Include="System.Reflection.MetadataLoadContext" />
   </ItemGroup>
 
   <!-- 401 KeePass-own .cs files -->
@@ -365,6 +366,7 @@
     <Compile Include="Plugins\IPluginHostV2.cs" />
     <Compile Include="Plugins\LegacyPluginHostAdapter.cs" />
     <Compile Include="Plugins\DefaultPluginHost.cs" />
+    <Compile Include="Plugins\PluginMetadataInspector.cs" />
     <Compile Include="Plugins\PluginManager.cs" />
     <Compile Include="Plugins\WinFormsPluginMenuAdapter.cs" />
     <Compile Include="Program.cs" />

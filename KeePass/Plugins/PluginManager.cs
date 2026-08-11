@@ -34,6 +34,7 @@ using KeePass.UI;
 using KeePass.Util;
 
 using KeePassLib;
+using KeePassLib.Plugins;
 using KeePassLib.Cryptography;
 using KeePassLib.Delegates;
 using KeePassLib.Interfaces;
@@ -197,6 +198,17 @@ namespace KeePass.Plugins
 				Exception exShowStd = null;
 				try
 				{
+					// Pre-execution metadata inspection — no plugin code runs yet.
+					PluginInspectionResult inspResult =
+						PluginMetadataInspector.Inspect(strFile);
+					if(!inspResult.IsAdmitted)
+					{
+						string reasons = string.Join("; ", inspResult.RejectionReasons);
+						MessageService.ShowWarning(KPRes.PluginLoadFailed,
+							strFile, reasons);
+						continue;
+					}
+
 					string strHash = Convert.ToBase64String(CryptoUtil.HashSha256(
 						strFile), Base64FormattingOptions.None);
 
