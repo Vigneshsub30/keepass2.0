@@ -561,8 +561,8 @@ namespace KeePass.App.Configuration
 					aceInt.ProxyPort, aceInt.ProxyAuthType, aceInt.ProxyUserName,
 					aceInt.ProxyPassword);
 
-			if((f & AceApplyFlags.Ssl) != AceApplyFlags.None)
-				IOConnection.SslCertsAcceptInvalid = aceSec.SslCertsAcceptInvalid;
+		// AceApplyFlags.Ssl / IOConnection.SslCertsAcceptInvalid removed (WO-090):
+		// the global TLS certificate bypass is gone; no substitution needed here.
 
 			if((f & AceApplyFlags.FileTransactions) != AceApplyFlags.None)
 				FileTransactionEx.ExtraSafe = aceApp.FileTxExtra;

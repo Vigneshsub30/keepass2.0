@@ -173,6 +173,17 @@ namespace KeePass.App.Configuration
 			set { m_bClearKeyCmdLineOpt = value; }
 		}
 
+		/// <summary>
+		/// Obsolete — this property is persisted for backwards compatibility with
+		/// existing configuration files but has NO effect at runtime.  The global
+		/// <c>ServicePointManager.ServerCertificateValidationCallback</c> bypass
+		/// was removed (WO-090) because it silently accepted all invalid TLS
+		/// certificates for the entire process, enabling man-in-the-middle attacks.
+		/// Use <see cref="CertificateExceptions"/> to allow specific hosts.
+		/// </summary>
+		[Obsolete("SslCertsAcceptInvalid is ignored at runtime. " +
+			"Use CertificateExceptions to allow specific host+thumbprint pairs. " +
+			"This property will be removed in a future version.")]
 		[DefaultValue(false)]
 		public bool SslCertsAcceptInvalid { get; set; }
 
@@ -182,6 +193,28 @@ namespace KeePass.App.Configuration
 		// https://keepass.info/help/v2_dev/customize.html#opt
 		[DefaultValue(false)]
 		public bool ProtectProcessWithDacl { get; set; }
+
+		/// <summary>
+		/// Per-host TLS certificate exceptions.  Each entry allows a specific
+		/// host to use a specific certificate (identified by its SHA-256 thumbprint)
+		/// even when the system TLS policy would normally reject it (e.g.
+		/// self-signed CA, expired certificate, hostname mismatch).
+		///
+		/// Entries are stored as <c>host::thumbprint</c> strings (lowercase hex,
+		/// no colon separators in the thumbprint).  The list is serialised to
+		/// keepass.config.xml and can be managed via
+		/// <see cref="KeePass.Util.CertificateExceptionStore"/>.
+		/// </summary>
+		public List<string> CertificateExceptions
+		{
+			get { return m_certExceptions; }
+			set
+			{
+				if(value == null) { System.Diagnostics.Debug.Assert(false); return; }
+				m_certExceptions = value;
+			}
+		}
+		private List<string> m_certExceptions = new List<string>();
 	}
 
 	public sealed class AceWorkspaceLocking

@@ -230,12 +230,10 @@ namespace KeePassLib.Serialization
 #if !KeePassUAP
 		private static bool? m_obDefaultExpect100Continue = null;
 
-		private static bool m_bSslCertsAcceptInvalid = false;
-		internal static bool SslCertsAcceptInvalid
-		{
-			// get { return m_bSslCertsAcceptInvalid; }
-			set { m_bSslCertsAcceptInvalid = value; }
-		}
+		// m_bSslCertsAcceptInvalid and SslCertsAcceptInvalid were removed (WO-090):
+		// the global ServicePointManager bypass that accepted all certificates is
+		// gone.  AceSecurity.SslCertsAcceptInvalid is now [Obsolete] and ignored;
+		// per-host certificate exceptions are handled by CertificateExceptionStore.
 #endif
 #endif
 
@@ -250,15 +248,11 @@ namespace KeePassLib.Serialization
 		public static event EventHandler<IOWebRequestEventArgs> IOWebRequestPre;
 
 #if !KeePassLibSD
-#if !KeePassUAP
-		// Allow self-signed certificates, expired certificates, etc.
-		private static bool AcceptCertificate(object sender,
-			X509Certificate certificate, X509Chain chain,
-			SslPolicyErrors sslPolicyErrors)
-		{
-			return true;
-		}
-#endif
+		// AcceptCertificate was removed (WO-090): the method returned true for
+		// all certificates regardless of errors, enabling MITM attacks.  Per-host
+		// certificate exceptions are now handled by CertificateExceptionStore in
+		// the KeePass application layer; IOConnection no longer installs any global
+		// ServerCertificateValidationCallback.
 
 		internal static void SetProxy(ProxyServerType pst, string strAddr,
 			string strPort, ProxyAuthType pat, string strUserName,
@@ -480,15 +474,9 @@ namespace KeePassLib.Serialization
 			IocProperties p = ((ioc != null) ? ioc.Properties : null);
 			if(p == null) { Debug.Assert(false); p = new IocProperties(); }
 
-			try
-			{
-				if(m_bSslCertsAcceptInvalid)
-					ServicePointManager.ServerCertificateValidationCallback =
-						IOConnection.AcceptCertificate;
-				else
-					ServicePointManager.ServerCertificateValidationCallback = null;
-			}
-			catch(Exception) { Debug.Assert(false); }
+			// Global ServerCertificateValidationCallback bypass removed (WO-090).
+			// Per-host certificate exceptions are handled by the application-layer
+			// CertificateExceptionStore; do not install any process-wide callback here.
 
 			try
 			{

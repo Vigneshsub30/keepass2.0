@@ -36,6 +36,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="Microsoft.Extensions.Options" />
     <PackageReference Include="System.Reflection.MetadataLoadContext" />
   </ItemGroup>
@@ -165,6 +166,7 @@
     <Compile Include="Forms\_Accessories.cs" />
     <Compile Include="Forms\AutoTypeCtxForm.cs" />
     <Compile Include="Forms\AutoTypeCtxForm.Designer.cs" />
+    <Compile Include="Forms\CertificateExceptionForm.cs" />
     <Compile Include="Forms\CharPickerForm.cs" />
     <Compile Include="Forms\CharPickerForm.Designer.cs" />
     <Compile Include="Forms\ColumnsForm.cs" />
@@ -444,6 +446,8 @@
     <Compile Include="Util\MultipleValues\MultipleValuesContext.cs" />
     <Compile Include="Util\MultipleValues\MultipleValuesEntryContext.cs" />
     <Compile Include="Util\MultipleValues\MultipleValuesEx.cs" />
+    <Compile Include="Util\CertificateExceptionStore.cs" />
+    <Compile Include="Util\CertificateValidationHandler.cs" />
     <Compile Include="Util\NetUtil.cs" />
     <Compile Include="Util\PrintUtil.cs" />
     <Compile Include="Util\PwGeneratorUtil.cs" />
