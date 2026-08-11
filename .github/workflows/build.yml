@@ -166,9 +166,13 @@ jobs:
           if-no-files-found: warn
 
       # ── Publish (self-contained, single-file where applicable) ───────────── #
-      # The main KeePass project targets net10.0-windows so it cross-compiles
-      # correctly on all runners when EnableWindowsTargeting=true (Directory.Build.props).
+      # KeePass/KeePass.csproj targets net10.0-windows (WinForms).  The Windows
+      # Desktop runtime packs (Microsoft.WindowsDesktop.App.WindowsForms) are
+      # only shipped for Windows RIDs, so self-contained publish for osx-* and
+      # linux-* fails with NETSDK1082.  Restrict to Windows runners until the
+      # Avalonia macOS/Linux head (WO-052) is implemented.
       - name: Publish — ${{ matrix.rid }}
+        if: runner.os == 'Windows'
         run: >
           dotnet publish KeePass/KeePass.csproj
           --configuration Release
@@ -179,10 +183,11 @@ jobs:
           /p:IncludeNativeLibrariesForSelfExtract=true
           /p:Version=${{ steps.version.outputs.version }}
 
-      # ── Smoke test (post-build, all platforms) ───────────────────────────── #
+      # ── Smoke test (post-build, Windows only until Avalonia head lands) ───── #
       # Runs the headless --smoke-test flag against the published binary.
       # A non-zero exit code fails the build, blocking artifact upload.
       - name: Smoke test — ${{ matrix.rid }}
+        if: runner.os == 'Windows'
         run: |
           if [ "${{ runner.os }}" = "Windows" ]; then
             "${{ env.ARTIFACT_DIR }}/publish/KeePass.exe" --smoke-test

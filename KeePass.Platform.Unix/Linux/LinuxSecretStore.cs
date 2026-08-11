@@ -42,6 +42,13 @@ namespace KeePass.Platform.Unix.Linux
         private const string AccountAttr = "account";
 
         /// <inheritdoc/>
+        /// <remarks>
+        /// Returns <c>true</c> only when <c>secret-tool</c> is on PATH *and* a
+        /// D-Bus session bus is running (indicated by the
+        /// <c>DBUS_SESSION_BUS_ADDRESS</c> environment variable).  Without an
+        /// active session bus secret-tool will fail at runtime even when the
+        /// binary is installed — as is the case on headless CI runners.
+        /// </remarks>
         public bool IsSupported
         {
             get
@@ -49,7 +56,12 @@ namespace KeePass.Platform.Unix.Linux
                 lock (_supportLock)
                 {
                     if (_supported == null)
-                        _supported = ProcessRunner.Run("which", "secret-tool") != null;
+                    {
+                        bool hasTool = ProcessRunner.Run("which", "secret-tool") != null;
+                        bool hasSession = !string.IsNullOrEmpty(
+                            Environment.GetEnvironmentVariable("DBUS_SESSION_BUS_ADDRESS"));
+                        _supported = hasTool && hasSession;
+                    }
                     return _supported.Value;
                 }
             }

@@ -70,7 +70,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results-windows
-          path: KeePass.Tests/TestResults/*.trx
+          # With --results-directory coverage the TRX lands in coverage/ not
+          # in KeePass.Tests/TestResults/, so we glob both locations.
+          path: |
+            coverage/test-results.trx
+            KeePass.Tests/TestResults/*.trx
           if-no-files-found: warn
 
       # ── Coverage reporting (WO-025) ─────────────────────────────────────────

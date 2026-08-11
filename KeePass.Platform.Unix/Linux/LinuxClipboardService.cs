@@ -159,21 +159,29 @@ namespace KeePass.Platform.Unix.Linux
 					return _backend;
 				}
 
-				// xsel is primary for X11; xclip is the fallback.
-				if(ProcessRunner.Run("which", "xsel") != null)
-				{
-					_backend = ClipBackend.Xsel;
-					return _backend;
-				}
-
-				if(ProcessRunner.Run("which", "xclip") != null)
-				{
-					_backend = ClipBackend.Xclip;
-					return _backend;
-				}
-
-				// Leave as Unknown — IsSupported returns false.
+			// X11 backends require an active display session.  Without DISPLAY
+			// set (e.g. in a headless CI runner) xclip and xsel silently fail
+			// to connect; pretend they are absent so IsSupported returns false.
+			string x11Display =
+				Environment.GetEnvironmentVariable("DISPLAY") ?? string.Empty;
+			if(x11Display.Length == 0)
 				return ClipBackend.Unknown;
+
+			// xsel is primary for X11; xclip is the fallback.
+			if(ProcessRunner.Run("which", "xsel") != null)
+			{
+				_backend = ClipBackend.Xsel;
+				return _backend;
+			}
+
+			if(ProcessRunner.Run("which", "xclip") != null)
+			{
+				_backend = ClipBackend.Xclip;
+				return _backend;
+			}
+
+			// Leave as Unknown — IsSupported returns false.
+			return ClipBackend.Unknown;
 			}
 		}
 
