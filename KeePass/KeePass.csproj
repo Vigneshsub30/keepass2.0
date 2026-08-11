@@ -391,6 +391,8 @@
     <Compile Include="Services\IMainFormFacade.cs" />
     <Compile Include="Services\IMruComparisonService.cs" />
     <Compile Include="Services\MruComparisonService.cs" />
+    <Compile Include="Services\IPlatformWorkaroundService.cs" />
+    <Compile Include="Services\PlatformWorkaroundService.cs" />
     <Compile Include="Services\ClipboardCredentialService.cs" />
     <Compile Include="Services\IWorkspaceLockService.cs" />
     <Compile Include="Services\WorkspaceLockCoordinator.cs" />

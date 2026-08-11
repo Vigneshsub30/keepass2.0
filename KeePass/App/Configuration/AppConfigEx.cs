@@ -351,19 +351,13 @@ namespace KeePass.App.Configuration
 			// config load.  Keeping the dedup here created a layer violation because
 			// config loading should not need to know about MruList.AddItem semantics.
 
-			if(NativeLib.IsUnix())
-			{
-				aceSec.PreventScreenCapture = false;
-				aceSec.MasterKeyOnSecureDesktop = false;
-
-				aceInt.HotKeyGlobalAutoType = (long)Keys.None;
-				aceInt.HotKeyGlobalAutoTypePassword = (long)Keys.None;
-				aceInt.HotKeySelectedAutoType = (long)Keys.None;
-				aceInt.HotKeyShowWindow = (long)Keys.None;
-				aceInt.HotKeyEntryMenu = (long)Keys.None;
-			}
-
-			// Workarounds #1378, #1418, #1976 (Mono config adjustments) retired: dead on .NET 10.
+			// Platform-specific config adjustments (Unix hot-key and secure-desktop
+			// overrides) were moved to PlatformWorkaroundService.ApplyConfigWorkarounds,
+			// called from Program.cs immediately after OnLoad returns.  Keeping them
+			// here created a config → platform-detection layer violation.
+			//
+			// Workarounds #1378, #1418, #1976 (Mono config adjustments) retired:
+			// dead on .NET 10.
 		}
 
 		internal void OnSavePre()

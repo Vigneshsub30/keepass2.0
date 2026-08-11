@@ -695,6 +695,11 @@ namespace KeePass
 			// it now runs here, in the application startup layer where it belongs.
 			MruInitializationService.Initialize(g_appConfig);
 
+			// Apply platform-specific config overrides (Unix hot-key and
+			// secure-desktop adjustments).  Moved from AppConfigEx.OnLoad to
+			// break the config->platform-detection layer violation.
+			KeePass.Services.PlatformWorkaroundService.Instance.ApplyConfigWorkarounds(g_appConfig);
+
 			if(g_appConfig.Logging.Enabled)
 				AppLogEx.Open(PwDefs.ShortProductName);
 
