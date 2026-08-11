@@ -1,0 +1,1644 @@
+E KeePassLib.Cryptography.CryptoRandom.GenerateRandom256Pre : System.EventHandler
+E KeePassLib.Serialization.IOConnection.IOAccessPre : System.EventHandler<KeePassLib.IOAccessEventArgs>
+E KeePassLib.Serialization.IOConnection.IOWebRequestPre : System.EventHandler<KeePassLib.IOWebRequestEventArgs>
+E KeePassLib.Utility.MessageService.MessageShowing : System.EventHandler<KeePassLib.Utility.MessageServiceEventArgs>
+F KeePassLib.AppRunFlags.DisableForms : KeePassLib.AppRunFlags [const]
+F KeePassLib.AppRunFlags.DoEvents : KeePassLib.AppRunFlags [const]
+F KeePassLib.AppRunFlags.GCKeepAlive : KeePassLib.AppRunFlags [const]
+F KeePassLib.AppRunFlags.GetStdOutput : KeePassLib.AppRunFlags [const]
+F KeePassLib.AppRunFlags.None : KeePassLib.AppRunFlags [const]
+F KeePassLib.AppRunFlags.WaitForExit : KeePassLib.AppRunFlags [const]
+F KeePassLib.AppRunFlags.value__ : System.Int32 []
+F KeePassLib.Collections.AutoTypeObfuscationOptions.None : KeePassLib.Collections.AutoTypeObfuscationOptions [const]
+F KeePassLib.Collections.AutoTypeObfuscationOptions.UseClipboard : KeePassLib.Collections.AutoTypeObfuscationOptions [const]
+F KeePassLib.Collections.AutoTypeObfuscationOptions.value__ : System.Int32 []
+F KeePassLib.Cryptography.CrsAlgorithm.ArcFourVariant : KeePassLib.Cryptography.CrsAlgorithm [const]
+F KeePassLib.Cryptography.CrsAlgorithm.ChaCha20 : KeePassLib.Cryptography.CrsAlgorithm [const]
+F KeePassLib.Cryptography.CrsAlgorithm.Count : KeePassLib.Cryptography.CrsAlgorithm [const]
+F KeePassLib.Cryptography.CrsAlgorithm.Null : KeePassLib.Cryptography.CrsAlgorithm [const]
+F KeePassLib.Cryptography.CrsAlgorithm.Salsa20 : KeePassLib.Cryptography.CrsAlgorithm [const]
+F KeePassLib.Cryptography.CrsAlgorithm.value__ : System.Int32 []
+F KeePassLib.Cryptography.KeyDerivation.AesKdf.ParamRounds : System.String [static readonly]
+F KeePassLib.Cryptography.KeyDerivation.AesKdf.ParamSeed : System.String [static readonly]
+F KeePassLib.Cryptography.KeyDerivation.Argon2Kdf.ParamAssocData : System.String [static readonly]
+F KeePassLib.Cryptography.KeyDerivation.Argon2Kdf.ParamIterations : System.String [static readonly]
+F KeePassLib.Cryptography.KeyDerivation.Argon2Kdf.ParamMemory : System.String [static readonly]
+F KeePassLib.Cryptography.KeyDerivation.Argon2Kdf.ParamParallelism : System.String [static readonly]
+F KeePassLib.Cryptography.KeyDerivation.Argon2Kdf.ParamSalt : System.String [static readonly]
+F KeePassLib.Cryptography.KeyDerivation.Argon2Kdf.ParamSecretKey : System.String [static readonly]
+F KeePassLib.Cryptography.KeyDerivation.Argon2Kdf.ParamVersion : System.String [static readonly]
+F KeePassLib.Cryptography.KeyDerivation.Argon2Type.D : KeePassLib.Cryptography.KeyDerivation.Argon2Type [const]
+F KeePassLib.Cryptography.KeyDerivation.Argon2Type.ID : KeePassLib.Cryptography.KeyDerivation.Argon2Type [const]
+F KeePassLib.Cryptography.KeyDerivation.Argon2Type.value__ : System.Int32 []
+F KeePassLib.Cryptography.PasswordGenerator.PasswordGeneratorType.CharSet : KeePassLib.Cryptography.PasswordGenerator.PasswordGeneratorType [const]
+F KeePassLib.Cryptography.PasswordGenerator.PasswordGeneratorType.Custom : KeePassLib.Cryptography.PasswordGenerator.PasswordGeneratorType [const]
+F KeePassLib.Cryptography.PasswordGenerator.PasswordGeneratorType.Pattern : KeePassLib.Cryptography.PasswordGenerator.PasswordGeneratorType [const]
+F KeePassLib.Cryptography.PasswordGenerator.PasswordGeneratorType.value__ : System.Int32 []
+F KeePassLib.Cryptography.PasswordGenerator.PwCharSet.Brackets : System.String [static readonly]
+F KeePassLib.Cryptography.PasswordGenerator.PwCharSet.Digits : System.String [static readonly]
+F KeePassLib.Cryptography.PasswordGenerator.PwCharSet.Latin1S : System.String [static readonly]
+F KeePassLib.Cryptography.PasswordGenerator.PwCharSet.LookAlike : System.String [static readonly]
+F KeePassLib.Cryptography.PasswordGenerator.PwCharSet.LowerCase : System.String [static readonly]
+F KeePassLib.Cryptography.PasswordGenerator.PwCharSet.LowerConsonants : System.String [static readonly]
+F KeePassLib.Cryptography.PasswordGenerator.PwCharSet.LowerHex : System.String [static readonly]
+F KeePassLib.Cryptography.PasswordGenerator.PwCharSet.LowerVowels : System.String [static readonly]
+F KeePassLib.Cryptography.PasswordGenerator.PwCharSet.PrintableAsciiSpecial : System.String [static readonly]
+F KeePassLib.Cryptography.PasswordGenerator.PwCharSet.Punctuation : System.String [static readonly]
+F KeePassLib.Cryptography.PasswordGenerator.PwCharSet.Special : System.String [static readonly]
+F KeePassLib.Cryptography.PasswordGenerator.PwCharSet.UpperCase : System.String [static readonly]
+F KeePassLib.Cryptography.PasswordGenerator.PwCharSet.UpperConsonants : System.String [static readonly]
+F KeePassLib.Cryptography.PasswordGenerator.PwCharSet.UpperHex : System.String [static readonly]
+F KeePassLib.Cryptography.PasswordGenerator.PwCharSet.UpperVowels : System.String [static readonly]
+F KeePassLib.Cryptography.PasswordGenerator.PwgError.InvalidCharSet : KeePassLib.Cryptography.PasswordGenerator.PwgError [const]
+F KeePassLib.Cryptography.PasswordGenerator.PwgError.InvalidPattern : KeePassLib.Cryptography.PasswordGenerator.PwgError [const]
+F KeePassLib.Cryptography.PasswordGenerator.PwgError.Success : KeePassLib.Cryptography.PasswordGenerator.PwgError [const]
+F KeePassLib.Cryptography.PasswordGenerator.PwgError.TooFewCharacters : KeePassLib.Cryptography.PasswordGenerator.PwgError [const]
+F KeePassLib.Cryptography.PasswordGenerator.PwgError.Unknown : KeePassLib.Cryptography.PasswordGenerator.PwgError [const]
+F KeePassLib.Cryptography.PasswordGenerator.PwgError.UnknownAlgorithm : KeePassLib.Cryptography.PasswordGenerator.PwgError [const]
+F KeePassLib.Cryptography.PasswordGenerator.PwgError.value__ : System.Int32 []
+F KeePassLib.DesktopType.Cinnamon : KeePassLib.DesktopType [const]
+F KeePassLib.DesktopType.Gnome : KeePassLib.DesktopType [const]
+F KeePassLib.DesktopType.Kde : KeePassLib.DesktopType [const]
+F KeePassLib.DesktopType.Lxde : KeePassLib.DesktopType [const]
+F KeePassLib.DesktopType.Mate : KeePassLib.DesktopType [const]
+F KeePassLib.DesktopType.None : KeePassLib.DesktopType [const]
+F KeePassLib.DesktopType.Pantheon : KeePassLib.DesktopType [const]
+F KeePassLib.DesktopType.Unity : KeePassLib.DesktopType [const]
+F KeePassLib.DesktopType.Windows : KeePassLib.DesktopType [const]
+F KeePassLib.DesktopType.Xfce : KeePassLib.DesktopType [const]
+F KeePassLib.DesktopType.value__ : System.Int32 []
+F KeePassLib.IOAccessType.Delete : KeePassLib.IOAccessType [const]
+F KeePassLib.IOAccessType.Exists : KeePassLib.IOAccessType [const]
+F KeePassLib.IOAccessType.Move : KeePassLib.IOAccessType [const]
+F KeePassLib.IOAccessType.None : KeePassLib.IOAccessType [const]
+F KeePassLib.IOAccessType.Read : KeePassLib.IOAccessType [const]
+F KeePassLib.IOAccessType.Write : KeePassLib.IOAccessType [const]
+F KeePassLib.IOAccessType.value__ : System.Int32 []
+F KeePassLib.Interfaces.LogStatusType.AdditionalInfo : KeePassLib.Interfaces.LogStatusType [const]
+F KeePassLib.Interfaces.LogStatusType.Error : KeePassLib.Interfaces.LogStatusType [const]
+F KeePassLib.Interfaces.LogStatusType.Info : KeePassLib.Interfaces.LogStatusType [const]
+F KeePassLib.Interfaces.LogStatusType.Warning : KeePassLib.Interfaces.LogStatusType [const]
+F KeePassLib.Interfaces.LogStatusType.value__ : System.Int32 []
+F KeePassLib.Keys.KeyValidationType.MasterPassword : KeePassLib.Keys.KeyValidationType [const]
+F KeePassLib.Keys.KeyValidationType.value__ : System.Int32 []
+F KeePassLib.Keys.UserKeyType.KeyFile : KeePassLib.Keys.UserKeyType [const]
+F KeePassLib.Keys.UserKeyType.None : KeePassLib.Keys.UserKeyType [const]
+F KeePassLib.Keys.UserKeyType.Other : KeePassLib.Keys.UserKeyType [const]
+F KeePassLib.Keys.UserKeyType.Password : KeePassLib.Keys.UserKeyType [const]
+F KeePassLib.Keys.UserKeyType.UserAccount : KeePassLib.Keys.UserKeyType [const]
+F KeePassLib.Keys.UserKeyType.value__ : System.Int32 []
+F KeePassLib.MemProtCmpMode.CustomOnly : KeePassLib.MemProtCmpMode [const]
+F KeePassLib.MemProtCmpMode.Full : KeePassLib.MemProtCmpMode [const]
+F KeePassLib.MemProtCmpMode.None : KeePassLib.MemProtCmpMode [const]
+F KeePassLib.MemProtCmpMode.value__ : System.Int32 []
+F KeePassLib.MemoryProtectionConfig.ProtectNotes : System.Boolean []
+F KeePassLib.MemoryProtectionConfig.ProtectPassword : System.Boolean []
+F KeePassLib.MemoryProtectionConfig.ProtectTitle : System.Boolean []
+F KeePassLib.MemoryProtectionConfig.ProtectUrl : System.Boolean []
+F KeePassLib.MemoryProtectionConfig.ProtectUserName : System.Boolean []
+F KeePassLib.ProxyAuthType.Auto : KeePassLib.ProxyAuthType [const]
+F KeePassLib.ProxyAuthType.Default : KeePassLib.ProxyAuthType [const]
+F KeePassLib.ProxyAuthType.Manual : KeePassLib.ProxyAuthType [const]
+F KeePassLib.ProxyAuthType.None : KeePassLib.ProxyAuthType [const]
+F KeePassLib.ProxyAuthType.value__ : System.Int32 []
+F KeePassLib.ProxyServerType.Manual : KeePassLib.ProxyServerType [const]
+F KeePassLib.ProxyServerType.None : KeePassLib.ProxyServerType [const]
+F KeePassLib.ProxyServerType.System : KeePassLib.ProxyServerType [const]
+F KeePassLib.ProxyServerType.value__ : System.Int32 []
+F KeePassLib.PwCompareOptions.IgnoreHistory : KeePassLib.PwCompareOptions [const]
+F KeePassLib.PwCompareOptions.IgnoreLastAccess : KeePassLib.PwCompareOptions [const]
+F KeePassLib.PwCompareOptions.IgnoreLastBackup : KeePassLib.PwCompareOptions [const]
+F KeePassLib.PwCompareOptions.IgnoreLastMod : KeePassLib.PwCompareOptions [const]
+F KeePassLib.PwCompareOptions.IgnoreParentGroup : KeePassLib.PwCompareOptions [const]
+F KeePassLib.PwCompareOptions.IgnoreTimes : KeePassLib.PwCompareOptions [const]
+F KeePassLib.PwCompareOptions.None : KeePassLib.PwCompareOptions [const]
+F KeePassLib.PwCompareOptions.NullEmptyEquivStd : KeePassLib.PwCompareOptions [const]
+F KeePassLib.PwCompareOptions.PropertiesOnly : KeePassLib.PwCompareOptions [const]
+F KeePassLib.PwCompareOptions.value__ : System.Int32 []
+F KeePassLib.PwCompressionAlgorithm.Count : KeePassLib.PwCompressionAlgorithm [const]
+F KeePassLib.PwCompressionAlgorithm.GZip : KeePassLib.PwCompressionAlgorithm [const]
+F KeePassLib.PwCompressionAlgorithm.None : KeePassLib.PwCompressionAlgorithm [const]
+F KeePassLib.PwCompressionAlgorithm.value__ : System.Int32 []
+F KeePassLib.PwDefs.AutoTypeStringPrefix : System.String [static readonly]
+F KeePassLib.PwDefs.Copyright : System.String [static readonly]
+F KeePassLib.PwDefs.DefaultAutoTypeSequence : System.String [static readonly]
+F KeePassLib.PwDefs.DefaultAutoTypeSequenceTan : System.String [static readonly]
+F KeePassLib.PwDefs.DefaultKeyEncryptionRounds : System.UInt64 [static readonly]
+F KeePassLib.PwDefs.DonationsUrl : System.String [static readonly]
+F KeePassLib.PwDefs.DtDefaultNow : System.DateTime [static readonly]
+F KeePassLib.PwDefs.FileVersion64 : System.UInt64 [static readonly]
+F KeePassLib.PwDefs.HelpUrl : System.String [static readonly]
+F KeePassLib.PwDefs.HiddenPassword : System.String [static readonly]
+F KeePassLib.PwDefs.HomepageUrl : System.String [static readonly]
+F KeePassLib.PwDefs.NotesField : System.String [const]
+F KeePassLib.PwDefs.PasswordField : System.String [const]
+F KeePassLib.PwDefs.PluginsUrl : System.String [static readonly]
+F KeePassLib.PwDefs.ProductName : System.String [static readonly]
+F KeePassLib.PwDefs.ShortProductName : System.String [static readonly]
+F KeePassLib.PwDefs.TanIndexField : System.String [static readonly]
+F KeePassLib.PwDefs.TanTitle : System.String [static readonly]
+F KeePassLib.PwDefs.TitleField : System.String [const]
+F KeePassLib.PwDefs.TranslationsUrl : System.String [static readonly]
+F KeePassLib.PwDefs.UrlField : System.String [const]
+F KeePassLib.PwDefs.UserNameField : System.String [const]
+F KeePassLib.PwDefs.Version32 : System.UInt32 [static readonly]
+F KeePassLib.PwDefs.VersionString : System.String [static readonly]
+F KeePassLib.PwDefs.VersionUrl : System.String [static readonly]
+F KeePassLib.PwEntry.EntryTouched : System.EventHandler<KeePassLib.ObjectTouchedEventArgs> [static]
+F KeePassLib.PwEntry.Touched : System.EventHandler<KeePassLib.ObjectTouchedEventArgs> []
+F KeePassLib.PwGroup.DefaultAutoTypeEnabled : System.Boolean [const]
+F KeePassLib.PwGroup.DefaultSearchingEnabled : System.Boolean [const]
+F KeePassLib.PwGroup.GroupTouched : System.EventHandler<KeePassLib.ObjectTouchedEventArgs> [static]
+F KeePassLib.PwGroup.Touched : System.EventHandler<KeePassLib.ObjectTouchedEventArgs> []
+F KeePassLib.PwIcon.Apple : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Archive : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.BlackBerry : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Book : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.CDRom : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Certificate : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Checked : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.ClipboardReady : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Clock : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Configuration : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Console : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Count : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Digicam : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Disk : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Drive : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.DriveWindows : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.EMail : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.EMailBox : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.EMailSearch : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Energy : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.EnergyCareful : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Expired : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Feather : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Folder : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.FolderOpen : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.FolderPackage : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Home : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Homebanking : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.IRCommunication : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Identity : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Info : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Key : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.List : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.LockOpen : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.MarkedDirectory : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Memory : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Money : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Monitor : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.MultiKeys : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.NetworkServer : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Note : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Notepad : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Package : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.PaperFlag : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.PaperLocked : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.PaperNew : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.PaperQ : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.PaperReady : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Parts : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Pen : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Printer : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.ProgramIcons : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Run : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Scanner : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Screen : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Settings : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Star : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.TerminalEncrypted : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Thumbnail : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Tool : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.TrashBin : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Tux : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.UserCommunication : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.UserKey : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Warning : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.Wiki : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.World : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.WorldComputer : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.WorldSocket : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.WorldStar : KeePassLib.PwIcon [const]
+F KeePassLib.PwIcon.value__ : System.Int32 []
+F KeePassLib.PwMergeMethod.CreateNewUuids : KeePassLib.PwMergeMethod [const]
+F KeePassLib.PwMergeMethod.KeepExisting : KeePassLib.PwMergeMethod [const]
+F KeePassLib.PwMergeMethod.None : KeePassLib.PwMergeMethod [const]
+F KeePassLib.PwMergeMethod.OverwriteExisting : KeePassLib.PwMergeMethod [const]
+F KeePassLib.PwMergeMethod.OverwriteIfNewer : KeePassLib.PwMergeMethod [const]
+F KeePassLib.PwMergeMethod.Synchronize : KeePassLib.PwMergeMethod [const]
+F KeePassLib.PwMergeMethod.value__ : System.Int32 []
+F KeePassLib.PwSearchMode.None : KeePassLib.PwSearchMode [const]
+F KeePassLib.PwSearchMode.Regular : KeePassLib.PwSearchMode [const]
+F KeePassLib.PwSearchMode.Simple : KeePassLib.PwSearchMode [const]
+F KeePassLib.PwSearchMode.XPath : KeePassLib.PwSearchMode [const]
+F KeePassLib.PwSearchMode.value__ : System.Int32 []
+F KeePassLib.PwUuid.UuidSize : System.UInt32 [const]
+F KeePassLib.PwUuid.Zero : KeePassLib.PwUuid [static readonly]
+F KeePassLib.ScaleTransformFlags.None : KeePassLib.ScaleTransformFlags [const]
+F KeePassLib.ScaleTransformFlags.UIIcon : KeePassLib.ScaleTransformFlags [const]
+F KeePassLib.ScaleTransformFlags.value__ : System.Int32 []
+F KeePassLib.Security.PbCryptFlags.Decrypt : KeePassLib.Security.PbCryptFlags [const]
+F KeePassLib.Security.PbCryptFlags.Encrypt : KeePassLib.Security.PbCryptFlags [const]
+F KeePassLib.Security.PbCryptFlags.None : KeePassLib.Security.PbCryptFlags [const]
+F KeePassLib.Security.PbCryptFlags.value__ : System.Int32 []
+F KeePassLib.Serialization.IOConnection.WrhMoveFileTo : System.String [static readonly]
+F KeePassLib.Serialization.IOConnection.WrmDeleteFile : System.String [static readonly]
+F KeePassLib.Serialization.IOConnection.WrmMoveFile : System.String [static readonly]
+F KeePassLib.Serialization.IOCredProtMode.None : KeePassLib.Serialization.IOCredProtMode [const]
+F KeePassLib.Serialization.IOCredProtMode.Obf : KeePassLib.Serialization.IOCredProtMode [const]
+F KeePassLib.Serialization.IOCredProtMode.value__ : System.Int32 []
+F KeePassLib.Serialization.IOCredSaveMode.NoSave : KeePassLib.Serialization.IOCredSaveMode [const]
+F KeePassLib.Serialization.IOCredSaveMode.SaveCred : KeePassLib.Serialization.IOCredSaveMode [const]
+F KeePassLib.Serialization.IOCredSaveMode.UserNameOnly : KeePassLib.Serialization.IOCredSaveMode [const]
+F KeePassLib.Serialization.IOCredSaveMode.value__ : System.Int32 []
+F KeePassLib.Serialization.IocKnownProperties.Expect100Continue : System.String [static readonly]
+F KeePassLib.Serialization.IocKnownProperties.FollowRedirects : System.String [static readonly]
+F KeePassLib.Serialization.IocKnownProperties.Passive : System.String [static readonly]
+F KeePassLib.Serialization.IocKnownProperties.PreAuth : System.String [static readonly]
+F KeePassLib.Serialization.IocKnownProperties.Timeout : System.String [static readonly]
+F KeePassLib.Serialization.IocKnownProperties.UserAgent : System.String [static readonly]
+F KeePassLib.Serialization.IocKnownProtocols.Ftp : System.String [static readonly]
+F KeePassLib.Serialization.IocKnownProtocols.Http : System.String [static readonly]
+F KeePassLib.Serialization.IocKnownProtocols.Https : System.String [static readonly]
+F KeePassLib.Serialization.IocKnownProtocols.WebDav : System.String [static readonly]
+F KeePassLib.Serialization.KdbxFormat.Default : KeePassLib.Serialization.KdbxFormat [const]
+F KeePassLib.Serialization.KdbxFormat.PlainXml : KeePassLib.Serialization.KdbxFormat [const]
+F KeePassLib.Serialization.KdbxFormat.value__ : System.Int32 []
+F KeePassLib.Serialization.OldFormatException+OldFormatType.KeePass1x : KeePassLib.Serialization.OldFormatException+OldFormatType [const]
+F KeePassLib.Serialization.OldFormatException+OldFormatType.Unknown : KeePassLib.Serialization.OldFormatException+OldFormatType [const]
+F KeePassLib.Serialization.OldFormatException+OldFormatType.value__ : System.Int32 []
+F KeePassLib.Translation.KPTranslation.FileExtension : System.String [static readonly]
+F KeePassLib.Translation.KpccLayout+LayoutParameterEx.Height : KeePassLib.Translation.KpccLayout+LayoutParameterEx [const]
+F KeePassLib.Translation.KpccLayout+LayoutParameterEx.Width : KeePassLib.Translation.KpccLayout+LayoutParameterEx [const]
+F KeePassLib.Translation.KpccLayout+LayoutParameterEx.X : KeePassLib.Translation.KpccLayout+LayoutParameterEx [const]
+F KeePassLib.Translation.KpccLayout+LayoutParameterEx.Y : KeePassLib.Translation.KpccLayout+LayoutParameterEx [const]
+F KeePassLib.Translation.KpccLayout+LayoutParameterEx.value__ : System.Int32 []
+F KeePassLib.TraversalMethod.None : KeePassLib.TraversalMethod [const]
+F KeePassLib.TraversalMethod.PreOrder : KeePassLib.TraversalMethod [const]
+F KeePassLib.TraversalMethod.value__ : System.Int32 []
+F KeePassLib.Utility.StrEncodingType.Ascii : KeePassLib.Utility.StrEncodingType [const]
+F KeePassLib.Utility.StrEncodingType.Default : KeePassLib.Utility.StrEncodingType [const]
+F KeePassLib.Utility.StrEncodingType.Unknown : KeePassLib.Utility.StrEncodingType [const]
+F KeePassLib.Utility.StrEncodingType.Utf16BE : KeePassLib.Utility.StrEncodingType [const]
+F KeePassLib.Utility.StrEncodingType.Utf16LE : KeePassLib.Utility.StrEncodingType [const]
+F KeePassLib.Utility.StrEncodingType.Utf32BE : KeePassLib.Utility.StrEncodingType [const]
+F KeePassLib.Utility.StrEncodingType.Utf32LE : KeePassLib.Utility.StrEncodingType [const]
+F KeePassLib.Utility.StrEncodingType.Utf7 : KeePassLib.Utility.StrEncodingType [const]
+F KeePassLib.Utility.StrEncodingType.Utf8 : KeePassLib.Utility.StrEncodingType [const]
+F KeePassLib.Utility.StrEncodingType.value__ : System.Int32 []
+F KeePassLib.Utility.StrUtil.CaseIgnoreCmp : System.StringComparison [static readonly]
+F KeePassLib.Utility.TimeUtil.PwTimeLength : System.Int32 [const]
+F KeePassLib.Utility.TimeUtil.SafeMaxValueUtc : System.DateTime [static readonly]
+F KeePassLib.Utility.TimeUtil.SafeMinValueUtc : System.DateTime [static readonly]
+M KeePassLib.Collections.AutoTypeAssociation..ctor()
+M KeePassLib.Collections.AutoTypeAssociation..ctor(System.String, System.String)
+M KeePassLib.Collections.AutoTypeAssociation.CloneDeep() : KeePassLib.Collections.AutoTypeAssociation
+M KeePassLib.Collections.AutoTypeAssociation.Equals(KeePassLib.Collections.AutoTypeAssociation) : System.Boolean
+M KeePassLib.Collections.AutoTypeAssociation.Equals(System.Object) : System.Boolean
+M KeePassLib.Collections.AutoTypeAssociation.GetHashCode() : System.Int32
+M KeePassLib.Collections.AutoTypeConfig..ctor()
+M KeePassLib.Collections.AutoTypeConfig.Add(KeePassLib.Collections.AutoTypeAssociation) : System.Void
+M KeePassLib.Collections.AutoTypeConfig.Clear() : System.Void
+M KeePassLib.Collections.AutoTypeConfig.CloneDeep() : KeePassLib.Collections.AutoTypeConfig
+M KeePassLib.Collections.AutoTypeConfig.Equals(KeePassLib.Collections.AutoTypeConfig) : System.Boolean
+M KeePassLib.Collections.AutoTypeConfig.Equals(System.Object) : System.Boolean
+M KeePassLib.Collections.AutoTypeConfig.GetAt(System.Int32) : KeePassLib.Collections.AutoTypeAssociation
+M KeePassLib.Collections.AutoTypeConfig.GetHashCode() : System.Int32
+M KeePassLib.Collections.AutoTypeConfig.Insert(System.Int32, KeePassLib.Collections.AutoTypeAssociation) : System.Void
+M KeePassLib.Collections.AutoTypeConfig.RemoveAt(System.Int32) : System.Void
+M KeePassLib.Collections.ProtectedBinaryDictionary..ctor()
+M KeePassLib.Collections.ProtectedBinaryDictionary.Clear() : System.Void
+M KeePassLib.Collections.ProtectedBinaryDictionary.CloneDeep() : KeePassLib.Collections.ProtectedBinaryDictionary
+M KeePassLib.Collections.ProtectedBinaryDictionary.EqualsDictionary(KeePassLib.Collections.ProtectedBinaryDictionary) : System.Boolean
+M KeePassLib.Collections.ProtectedBinaryDictionary.Get(System.String) : KeePassLib.Security.ProtectedBinary
+M KeePassLib.Collections.ProtectedBinaryDictionary.GetEnumerator() : System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<System.String,KeePassLib.Security.ProtectedBinary>>
+M KeePassLib.Collections.ProtectedBinaryDictionary.KeysToString() : System.String
+M KeePassLib.Collections.ProtectedBinaryDictionary.Remove(System.String) : System.Boolean
+M KeePassLib.Collections.ProtectedBinaryDictionary.Set(System.String, KeePassLib.Security.ProtectedBinary) : System.Void
+M KeePassLib.Collections.ProtectedStringDictionary..ctor()
+M KeePassLib.Collections.ProtectedStringDictionary.Clear() : System.Void
+M KeePassLib.Collections.ProtectedStringDictionary.CloneDeep() : KeePassLib.Collections.ProtectedStringDictionary
+M KeePassLib.Collections.ProtectedStringDictionary.EnableProtection(System.String, System.Boolean) : System.Void
+M KeePassLib.Collections.ProtectedStringDictionary.EqualsDictionary(KeePassLib.Collections.ProtectedStringDictionary) : System.Boolean
+M KeePassLib.Collections.ProtectedStringDictionary.EqualsDictionary(KeePassLib.Collections.ProtectedStringDictionary, KeePassLib.MemProtCmpMode) : System.Boolean
+M KeePassLib.Collections.ProtectedStringDictionary.EqualsDictionary(KeePassLib.Collections.ProtectedStringDictionary, KeePassLib.PwCompareOptions, KeePassLib.MemProtCmpMode) : System.Boolean
+M KeePassLib.Collections.ProtectedStringDictionary.Exists(System.String) : System.Boolean
+M KeePassLib.Collections.ProtectedStringDictionary.Get(System.String) : KeePassLib.Security.ProtectedString
+M KeePassLib.Collections.ProtectedStringDictionary.GetEnumerator() : System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<System.String,KeePassLib.Security.ProtectedString>>
+M KeePassLib.Collections.ProtectedStringDictionary.GetKeys() : System.Collections.Generic.List<System.String>
+M KeePassLib.Collections.ProtectedStringDictionary.GetSafe(System.String) : KeePassLib.Security.ProtectedString
+M KeePassLib.Collections.ProtectedStringDictionary.ReadSafe(System.String) : System.String
+M KeePassLib.Collections.ProtectedStringDictionary.ReadSafeEx(System.String) : System.String
+M KeePassLib.Collections.ProtectedStringDictionary.Remove(System.String) : System.Boolean
+M KeePassLib.Collections.ProtectedStringDictionary.Set(System.String, KeePassLib.Security.ProtectedString) : System.Void
+M KeePassLib.Collections.PwObjectList`1..ctor()
+M KeePassLib.Collections.PwObjectList`1.Add(KeePassLib.Collections.PwObjectList<T>) : System.Void
+M KeePassLib.Collections.PwObjectList`1.Add(System.Collections.Generic.List<T>) : System.Void
+M KeePassLib.Collections.PwObjectList`1.Add(T) : System.Void
+M KeePassLib.Collections.PwObjectList`1.Clear() : System.Void
+M KeePassLib.Collections.PwObjectList`1.CloneDeep() : KeePassLib.Collections.PwObjectList<T>
+M KeePassLib.Collections.PwObjectList`1.CloneShallow() : KeePassLib.Collections.PwObjectList<T>
+M KeePassLib.Collections.PwObjectList`1.CloneShallowToList() : System.Collections.Generic.List<T>
+M KeePassLib.Collections.PwObjectList`1.FromArray(T[]) : KeePassLib.Collections.PwObjectList<T>
+M KeePassLib.Collections.PwObjectList`1.FromList(System.Collections.Generic.List<T>) : KeePassLib.Collections.PwObjectList<T>
+M KeePassLib.Collections.PwObjectList`1.GetAt(System.UInt32) : T
+M KeePassLib.Collections.PwObjectList`1.GetEnumerator() : System.Collections.Generic.IEnumerator<T>
+M KeePassLib.Collections.PwObjectList`1.GetRange(System.UInt32, System.UInt32) : System.Collections.Generic.List<T>
+M KeePassLib.Collections.PwObjectList`1.IndexOf(T) : System.Int32
+M KeePassLib.Collections.PwObjectList`1.Insert(System.UInt32, T) : System.Void
+M KeePassLib.Collections.PwObjectList`1.MoveOne(System.Int32[], System.Boolean) : System.Void
+M KeePassLib.Collections.PwObjectList`1.MoveOne(T, System.Boolean) : System.Void
+M KeePassLib.Collections.PwObjectList`1.MoveOne(T[], System.Boolean) : System.Void
+M KeePassLib.Collections.PwObjectList`1.MoveTopBottom(T[], System.Boolean) : System.Void
+M KeePassLib.Collections.PwObjectList`1.Remove(T) : System.Boolean
+M KeePassLib.Collections.PwObjectList`1.RemoveAt(System.UInt32) : System.Void
+M KeePassLib.Collections.PwObjectList`1.SetAt(System.UInt32, T) : System.Void
+M KeePassLib.Collections.PwObjectList`1.Sort(System.Collections.Generic.IComparer<T>) : System.Void
+M KeePassLib.Collections.PwObjectList`1.Sort(System.Comparison<T>) : System.Void
+M KeePassLib.Collections.PwObjectPool..ctor()
+M KeePassLib.Collections.PwObjectPool.ContainsOnlyType(System.Type) : System.Boolean
+M KeePassLib.Collections.PwObjectPool.FromGroupRecursive(KeePassLib.PwGroup, System.Boolean) : KeePassLib.Collections.PwObjectPool
+M KeePassLib.Collections.PwObjectPool.Get(KeePassLib.PwUuid) : KeePassLib.Interfaces.IStructureItem
+M KeePassLib.Collections.StringDictionaryEx..ctor()
+M KeePassLib.Collections.StringDictionaryEx.CloneDeep() : KeePassLib.Collections.StringDictionaryEx
+M KeePassLib.Collections.StringDictionaryEx.Equals(KeePassLib.Collections.StringDictionaryEx) : System.Boolean
+M KeePassLib.Collections.StringDictionaryEx.Equals(System.Object) : System.Boolean
+M KeePassLib.Collections.StringDictionaryEx.Exists(System.String) : System.Boolean
+M KeePassLib.Collections.StringDictionaryEx.Get(System.String) : System.String
+M KeePassLib.Collections.StringDictionaryEx.GetEnumerator() : System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<System.String,System.String>>
+M KeePassLib.Collections.StringDictionaryEx.GetHashCode() : System.Int32
+M KeePassLib.Collections.StringDictionaryEx.Remove(System.String) : System.Boolean
+M KeePassLib.Collections.StringDictionaryEx.Set(System.String, System.String) : System.Void
+M KeePassLib.Collections.VariantDictionary..ctor()
+M KeePassLib.Collections.VariantDictionary.Clone() : System.Object
+M KeePassLib.Collections.VariantDictionary.CopyTo(KeePassLib.Collections.VariantDictionary) : System.Void
+M KeePassLib.Collections.VariantDictionary.Deserialize(System.Byte[]) : KeePassLib.Collections.VariantDictionary
+M KeePassLib.Collections.VariantDictionary.GetBool(System.String, System.Boolean) : System.Boolean
+M KeePassLib.Collections.VariantDictionary.GetByteArray(System.String) : System.Byte[]
+M KeePassLib.Collections.VariantDictionary.GetInt32(System.String, System.Int32) : System.Int32
+M KeePassLib.Collections.VariantDictionary.GetInt64(System.String, System.Int64) : System.Int64
+M KeePassLib.Collections.VariantDictionary.GetString(System.String) : System.String
+M KeePassLib.Collections.VariantDictionary.GetTypeOf(System.String) : System.Type
+M KeePassLib.Collections.VariantDictionary.GetUInt32(System.String, System.UInt32) : System.UInt32
+M KeePassLib.Collections.VariantDictionary.GetUInt64(System.String, System.UInt64) : System.UInt64
+M KeePassLib.Collections.VariantDictionary.Remove(System.String) : System.Boolean
+M KeePassLib.Collections.VariantDictionary.Serialize(KeePassLib.Collections.VariantDictionary) : System.Byte[]
+M KeePassLib.Collections.VariantDictionary.SetBool(System.String, System.Boolean) : System.Void
+M KeePassLib.Collections.VariantDictionary.SetByteArray(System.String, System.Byte[]) : System.Void
+M KeePassLib.Collections.VariantDictionary.SetInt32(System.String, System.Int32) : System.Void
+M KeePassLib.Collections.VariantDictionary.SetInt64(System.String, System.Int64) : System.Void
+M KeePassLib.Collections.VariantDictionary.SetString(System.String, System.String) : System.Void
+M KeePassLib.Collections.VariantDictionary.SetUInt32(System.String, System.UInt32) : System.Void
+M KeePassLib.Collections.VariantDictionary.SetUInt64(System.String, System.UInt64) : System.Void
+M KeePassLib.Cryptography.Cipher.ChaCha20Cipher..ctor(System.Byte[], System.Byte[])
+M KeePassLib.Cryptography.Cipher.ChaCha20Cipher..ctor(System.Byte[], System.Byte[], System.Boolean)
+M KeePassLib.Cryptography.Cipher.ChaCha20Cipher.Dispose(System.Boolean) : System.Void
+M KeePassLib.Cryptography.Cipher.ChaCha20Cipher.NextBlock(System.Byte[]) : System.Void
+M KeePassLib.Cryptography.Cipher.ChaCha20Cipher.Seek(System.Int64, System.IO.SeekOrigin) : System.Int64
+M KeePassLib.Cryptography.Cipher.ChaCha20Engine..ctor()
+M KeePassLib.Cryptography.Cipher.ChaCha20Engine.DecryptStream(System.IO.Stream, System.Byte[], System.Byte[]) : System.IO.Stream
+M KeePassLib.Cryptography.Cipher.ChaCha20Engine.EncryptStream(System.IO.Stream, System.Byte[], System.Byte[]) : System.IO.Stream
+M KeePassLib.Cryptography.Cipher.CipherPool..ctor()
+M KeePassLib.Cryptography.Cipher.CipherPool.AddCipher(KeePassLib.Cryptography.Cipher.ICipherEngine) : System.Void
+M KeePassLib.Cryptography.Cipher.CipherPool.Clear() : System.Void
+M KeePassLib.Cryptography.Cipher.CipherPool.GetCipher(KeePassLib.PwUuid) : KeePassLib.Cryptography.Cipher.ICipherEngine
+M KeePassLib.Cryptography.Cipher.CipherPool.GetCipherIndex(KeePassLib.PwUuid) : System.Int32
+M KeePassLib.Cryptography.Cipher.CipherPool.GetCipherIndex(System.String) : System.Int32
+M KeePassLib.Cryptography.Cipher.CtrBlockCipher..ctor()
+M KeePassLib.Cryptography.Cipher.CtrBlockCipher.Decrypt(System.Byte[], System.Int32, System.Int32) : System.Void
+M KeePassLib.Cryptography.Cipher.CtrBlockCipher.Dispose() : System.Void
+M KeePassLib.Cryptography.Cipher.CtrBlockCipher.Dispose(System.Boolean) : System.Void
+M KeePassLib.Cryptography.Cipher.CtrBlockCipher.Encrypt(System.Byte[], System.Int32, System.Int32) : System.Void
+M KeePassLib.Cryptography.Cipher.CtrBlockCipher.InvalidateBlock() : System.Void
+M KeePassLib.Cryptography.Cipher.CtrBlockCipher.NextBlock(System.Byte[]) : System.Void
+M KeePassLib.Cryptography.Cipher.ICipherEngine.DecryptStream(System.IO.Stream, System.Byte[], System.Byte[]) : System.IO.Stream
+M KeePassLib.Cryptography.Cipher.ICipherEngine.EncryptStream(System.IO.Stream, System.Byte[], System.Byte[]) : System.IO.Stream
+M KeePassLib.Cryptography.Cipher.Salsa20Cipher..ctor(System.Byte[], System.Byte[])
+M KeePassLib.Cryptography.Cipher.Salsa20Cipher.Dispose(System.Boolean) : System.Void
+M KeePassLib.Cryptography.Cipher.Salsa20Cipher.NextBlock(System.Byte[]) : System.Void
+M KeePassLib.Cryptography.Cipher.StandardAesEngine..ctor()
+M KeePassLib.Cryptography.Cipher.StandardAesEngine.DecryptStream(System.IO.Stream, System.Byte[], System.Byte[]) : System.IO.Stream
+M KeePassLib.Cryptography.Cipher.StandardAesEngine.EncryptStream(System.IO.Stream, System.Byte[], System.Byte[]) : System.IO.Stream
+M KeePassLib.Cryptography.CryptoRandom.AddEntropy(System.Byte[]) : System.Void
+M KeePassLib.Cryptography.CryptoRandom.GetRandomBytes(System.UInt32) : System.Byte[]
+M KeePassLib.Cryptography.CryptoRandom.NewWeakRandom() : System.Random
+M KeePassLib.Cryptography.CryptoRandomStream..ctor(KeePassLib.Cryptography.CrsAlgorithm, System.Byte[])
+M KeePassLib.Cryptography.CryptoRandomStream.Dispose() : System.Void
+M KeePassLib.Cryptography.CryptoRandomStream.GetRandomBytes(System.UInt32) : System.Byte[]
+M KeePassLib.Cryptography.CryptoRandomStream.GetRandomUInt64() : System.UInt64
+M KeePassLib.Cryptography.CryptoStreamEx..ctor(System.IO.Stream, System.Security.Cryptography.ICryptoTransform, System.Security.Cryptography.CryptoStreamMode, System.Security.Cryptography.SymmetricAlgorithm)
+M KeePassLib.Cryptography.CryptoStreamEx.Dispose(System.Boolean) : System.Void
+M KeePassLib.Cryptography.CryptoUtil.HashSha256(System.Byte[]) : System.Byte[]
+M KeePassLib.Cryptography.CryptoUtil.HashSha256(System.Byte[], System.Int32, System.Int32) : System.Byte[]
+M KeePassLib.Cryptography.CryptoUtil.ResizeKey(System.Byte[], System.Int32, System.Int32, System.Int32) : System.Byte[]
+M KeePassLib.Cryptography.Hash.Blake2b..ctor()
+M KeePassLib.Cryptography.Hash.Blake2b..ctor(System.Int32)
+M KeePassLib.Cryptography.Hash.Blake2b.HashCore(System.Byte[], System.Int32, System.Int32) : System.Void
+M KeePassLib.Cryptography.Hash.Blake2b.HashFinal() : System.Byte[]
+M KeePassLib.Cryptography.Hash.Blake2b.Initialize() : System.Void
+M KeePassLib.Cryptography.HashingStreamEx..ctor(System.IO.Stream, System.Boolean, System.Security.Cryptography.HashAlgorithm)
+M KeePassLib.Cryptography.HashingStreamEx.Dispose(System.Boolean) : System.Void
+M KeePassLib.Cryptography.HashingStreamEx.Flush() : System.Void
+M KeePassLib.Cryptography.HashingStreamEx.Read(System.Byte[], System.Int32, System.Int32) : System.Int32
+M KeePassLib.Cryptography.HashingStreamEx.Seek(System.Int64, System.IO.SeekOrigin) : System.Int64
+M KeePassLib.Cryptography.HashingStreamEx.SetLength(System.Int64) : System.Void
+M KeePassLib.Cryptography.HashingStreamEx.Write(System.Byte[], System.Int32, System.Int32) : System.Void
+M KeePassLib.Cryptography.HmacOtp.Generate(System.Byte[], System.UInt64, System.UInt32, System.Boolean, System.Int32) : System.String
+M KeePassLib.Cryptography.KeyDerivation.AesKdf..ctor()
+M KeePassLib.Cryptography.KeyDerivation.AesKdf.AreParametersWeak(KeePassLib.Cryptography.KeyDerivation.KdfParameters) : System.Boolean
+M KeePassLib.Cryptography.KeyDerivation.AesKdf.GetBestParameters(System.UInt32) : KeePassLib.Cryptography.KeyDerivation.KdfParameters
+M KeePassLib.Cryptography.KeyDerivation.AesKdf.GetDefaultParameters() : KeePassLib.Cryptography.KeyDerivation.KdfParameters
+M KeePassLib.Cryptography.KeyDerivation.AesKdf.Randomize(KeePassLib.Cryptography.KeyDerivation.KdfParameters) : System.Void
+M KeePassLib.Cryptography.KeyDerivation.AesKdf.Transform(System.Byte[], KeePassLib.Cryptography.KeyDerivation.KdfParameters) : System.Byte[]
+M KeePassLib.Cryptography.KeyDerivation.Argon2Kdf..ctor()
+M KeePassLib.Cryptography.KeyDerivation.Argon2Kdf..ctor(KeePassLib.Cryptography.KeyDerivation.Argon2Type)
+M KeePassLib.Cryptography.KeyDerivation.Argon2Kdf.AreParametersWeak(KeePassLib.Cryptography.KeyDerivation.KdfParameters) : System.Boolean
+M KeePassLib.Cryptography.KeyDerivation.Argon2Kdf.GetBestParameters(System.UInt32) : KeePassLib.Cryptography.KeyDerivation.KdfParameters
+M KeePassLib.Cryptography.KeyDerivation.Argon2Kdf.GetDefaultParameters() : KeePassLib.Cryptography.KeyDerivation.KdfParameters
+M KeePassLib.Cryptography.KeyDerivation.Argon2Kdf.Randomize(KeePassLib.Cryptography.KeyDerivation.KdfParameters) : System.Void
+M KeePassLib.Cryptography.KeyDerivation.Argon2Kdf.Transform(System.Byte[], KeePassLib.Cryptography.KeyDerivation.KdfParameters) : System.Byte[]
+M KeePassLib.Cryptography.KeyDerivation.KdfEngine..ctor()
+M KeePassLib.Cryptography.KeyDerivation.KdfEngine.AreParametersWeak(KeePassLib.Cryptography.KeyDerivation.KdfParameters) : System.Boolean
+M KeePassLib.Cryptography.KeyDerivation.KdfEngine.GetBestParameters(System.UInt32) : KeePassLib.Cryptography.KeyDerivation.KdfParameters
+M KeePassLib.Cryptography.KeyDerivation.KdfEngine.GetDefaultParameters() : KeePassLib.Cryptography.KeyDerivation.KdfParameters
+M KeePassLib.Cryptography.KeyDerivation.KdfEngine.MaximizeParamUInt64(KeePassLib.Cryptography.KeyDerivation.KdfParameters, System.String, System.UInt64, System.UInt64, System.UInt32, System.Boolean) : System.Void
+M KeePassLib.Cryptography.KeyDerivation.KdfEngine.Randomize(KeePassLib.Cryptography.KeyDerivation.KdfParameters) : System.Void
+M KeePassLib.Cryptography.KeyDerivation.KdfEngine.Transform(System.Byte[], KeePassLib.Cryptography.KeyDerivation.KdfParameters) : System.Byte[]
+M KeePassLib.Cryptography.KeyDerivation.KdfParameters..ctor(KeePassLib.PwUuid)
+M KeePassLib.Cryptography.KeyDerivation.KdfParameters.Clone() : System.Object
+M KeePassLib.Cryptography.KeyDerivation.KdfParameters.DeserializeExt(System.Byte[]) : KeePassLib.Cryptography.KeyDerivation.KdfParameters
+M KeePassLib.Cryptography.KeyDerivation.KdfParameters.SerializeExt(KeePassLib.Cryptography.KeyDerivation.KdfParameters) : System.Byte[]
+M KeePassLib.Cryptography.KeyDerivation.KdfPool.Add(KeePassLib.Cryptography.KeyDerivation.KdfEngine) : System.Void
+M KeePassLib.Cryptography.KeyDerivation.KdfPool.Get(KeePassLib.PwUuid) : KeePassLib.Cryptography.KeyDerivation.KdfEngine
+M KeePassLib.Cryptography.KeyDerivation.KdfPool.Get(System.String) : KeePassLib.Cryptography.KeyDerivation.KdfEngine
+M KeePassLib.Cryptography.PasswordGenerator.CustomPwGenerator..ctor()
+M KeePassLib.Cryptography.PasswordGenerator.CustomPwGenerator.Generate(KeePassLib.Cryptography.PasswordGenerator.PwProfile, KeePassLib.Cryptography.CryptoRandomStream) : KeePassLib.Security.ProtectedString
+M KeePassLib.Cryptography.PasswordGenerator.CustomPwGenerator.GetOptions(System.String) : System.String
+M KeePassLib.Cryptography.PasswordGenerator.CustomPwGeneratorPool..ctor()
+M KeePassLib.Cryptography.PasswordGenerator.CustomPwGeneratorPool.Add(KeePassLib.Cryptography.PasswordGenerator.CustomPwGenerator) : System.Void
+M KeePassLib.Cryptography.PasswordGenerator.CustomPwGeneratorPool.Find(KeePassLib.PwUuid) : KeePassLib.Cryptography.PasswordGenerator.CustomPwGenerator
+M KeePassLib.Cryptography.PasswordGenerator.CustomPwGeneratorPool.Find(System.String) : KeePassLib.Cryptography.PasswordGenerator.CustomPwGenerator
+M KeePassLib.Cryptography.PasswordGenerator.CustomPwGeneratorPool.GetEnumerator() : System.Collections.Generic.IEnumerator<KeePassLib.Cryptography.PasswordGenerator.CustomPwGenerator>
+M KeePassLib.Cryptography.PasswordGenerator.CustomPwGeneratorPool.Remove(KeePassLib.PwUuid) : System.Boolean
+M KeePassLib.Cryptography.PasswordGenerator.PwCharSet..ctor()
+M KeePassLib.Cryptography.PasswordGenerator.PwCharSet..ctor(System.String)
+M KeePassLib.Cryptography.PasswordGenerator.PwCharSet.Add(System.Char) : System.Void
+M KeePassLib.Cryptography.PasswordGenerator.PwCharSet.Add(System.String) : System.Void
+M KeePassLib.Cryptography.PasswordGenerator.PwCharSet.Add(System.String, System.String) : System.Void
+M KeePassLib.Cryptography.PasswordGenerator.PwCharSet.Add(System.String, System.String, System.String) : System.Void
+M KeePassLib.Cryptography.PasswordGenerator.PwCharSet.AddCharSet(System.Char) : System.Boolean
+M KeePassLib.Cryptography.PasswordGenerator.PwCharSet.AddRange(System.Char, System.Char) : System.Void
+M KeePassLib.Cryptography.PasswordGenerator.PwCharSet.Clear() : System.Void
+M KeePassLib.Cryptography.PasswordGenerator.PwCharSet.Contains(System.Char) : System.Boolean
+M KeePassLib.Cryptography.PasswordGenerator.PwCharSet.Contains(System.String) : System.Boolean
+M KeePassLib.Cryptography.PasswordGenerator.PwCharSet.Equals(KeePassLib.Cryptography.PasswordGenerator.PwCharSet) : System.Boolean
+M KeePassLib.Cryptography.PasswordGenerator.PwCharSet.Equals(System.Object) : System.Boolean
+M KeePassLib.Cryptography.PasswordGenerator.PwCharSet.GetHashCode() : System.Int32
+M KeePassLib.Cryptography.PasswordGenerator.PwCharSet.PackAndRemoveCharRanges() : System.String
+M KeePassLib.Cryptography.PasswordGenerator.PwCharSet.Remove(System.Char) : System.Boolean
+M KeePassLib.Cryptography.PasswordGenerator.PwCharSet.Remove(System.String) : System.Boolean
+M KeePassLib.Cryptography.PasswordGenerator.PwCharSet.RemoveIfAllExist(System.String) : System.Boolean
+M KeePassLib.Cryptography.PasswordGenerator.PwCharSet.ToString() : System.String
+M KeePassLib.Cryptography.PasswordGenerator.PwCharSet.UnpackCharRanges(System.String) : System.Void
+M KeePassLib.Cryptography.PasswordGenerator.PwGenerator.Generate(KeePassLib.Security.ProtectedString&, KeePassLib.Cryptography.PasswordGenerator.PwProfile, System.Byte[], KeePassLib.Cryptography.PasswordGenerator.CustomPwGeneratorPool) : KeePassLib.Cryptography.PasswordGenerator.PwgError
+M KeePassLib.Cryptography.PasswordGenerator.PwProfile..ctor()
+M KeePassLib.Cryptography.PasswordGenerator.PwProfile.CloneDeep() : KeePassLib.Cryptography.PasswordGenerator.PwProfile
+M KeePassLib.Cryptography.PasswordGenerator.PwProfile.DeriveFromPassword(KeePassLib.Security.ProtectedString) : KeePassLib.Cryptography.PasswordGenerator.PwProfile
+M KeePassLib.Cryptography.PasswordGenerator.PwProfile.Equals(KeePassLib.Cryptography.PasswordGenerator.PwProfile) : System.Boolean
+M KeePassLib.Cryptography.PasswordGenerator.PwProfile.Equals(System.Object) : System.Boolean
+M KeePassLib.Cryptography.PasswordGenerator.PwProfile.GetHashCode() : System.Int32
+M KeePassLib.Cryptography.PasswordGenerator.PwProfile.HasSecurityReducingOption() : System.Boolean
+M KeePassLib.Cryptography.PopularPasswords.Add(System.Byte[], System.Boolean) : System.Void
+M KeePassLib.Cryptography.PopularPasswords.IsPopularPassword(System.Char[]) : System.Boolean
+M KeePassLib.Cryptography.PopularPasswords.IsPopularPassword(System.Char[], System.UInt64&) : System.Boolean
+M KeePassLib.Cryptography.QualityEstimation.EstimatePasswordBits(System.Byte[]) : System.UInt32
+M KeePassLib.Cryptography.QualityEstimation.EstimatePasswordBits(System.Char[]) : System.UInt32
+M KeePassLib.Cryptography.SelfTest.Perform() : System.Void
+M KeePassLib.Delegates.EntryHandler..ctor(System.Object, System.IntPtr)
+M KeePassLib.Delegates.EntryHandler.BeginInvoke(KeePassLib.PwEntry, System.AsyncCallback, System.Object) : System.IAsyncResult
+M KeePassLib.Delegates.EntryHandler.EndInvoke(System.IAsyncResult) : System.Boolean
+M KeePassLib.Delegates.EntryHandler.Invoke(KeePassLib.PwEntry) : System.Boolean
+M KeePassLib.Delegates.GAction..ctor(System.Object, System.IntPtr)
+M KeePassLib.Delegates.GAction.BeginInvoke(System.AsyncCallback, System.Object) : System.IAsyncResult
+M KeePassLib.Delegates.GAction.EndInvoke(System.IAsyncResult) : System.Void
+M KeePassLib.Delegates.GAction.Invoke() : System.Void
+M KeePassLib.Delegates.GAction`1..ctor(System.Object, System.IntPtr)
+M KeePassLib.Delegates.GAction`1.BeginInvoke(T, System.AsyncCallback, System.Object) : System.IAsyncResult
+M KeePassLib.Delegates.GAction`1.EndInvoke(System.IAsyncResult) : System.Void
+M KeePassLib.Delegates.GAction`1.Invoke(T) : System.Void
+M KeePassLib.Delegates.GAction`2..ctor(System.Object, System.IntPtr)
+M KeePassLib.Delegates.GAction`2.BeginInvoke(T1, T2, System.AsyncCallback, System.Object) : System.IAsyncResult
+M KeePassLib.Delegates.GAction`2.EndInvoke(System.IAsyncResult) : System.Void
+M KeePassLib.Delegates.GAction`2.Invoke(T1, T2) : System.Void
+M KeePassLib.Delegates.GAction`3..ctor(System.Object, System.IntPtr)
+M KeePassLib.Delegates.GAction`3.BeginInvoke(T1, T2, T3, System.AsyncCallback, System.Object) : System.IAsyncResult
+M KeePassLib.Delegates.GAction`3.EndInvoke(System.IAsyncResult) : System.Void
+M KeePassLib.Delegates.GAction`3.Invoke(T1, T2, T3) : System.Void
+M KeePassLib.Delegates.GAction`4..ctor(System.Object, System.IntPtr)
+M KeePassLib.Delegates.GAction`4.BeginInvoke(T1, T2, T3, T4, System.AsyncCallback, System.Object) : System.IAsyncResult
+M KeePassLib.Delegates.GAction`4.EndInvoke(System.IAsyncResult) : System.Void
+M KeePassLib.Delegates.GAction`4.Invoke(T1, T2, T3, T4) : System.Void
+M KeePassLib.Delegates.GAction`5..ctor(System.Object, System.IntPtr)
+M KeePassLib.Delegates.GAction`5.BeginInvoke(T1, T2, T3, T4, T5, System.AsyncCallback, System.Object) : System.IAsyncResult
+M KeePassLib.Delegates.GAction`5.EndInvoke(System.IAsyncResult) : System.Void
+M KeePassLib.Delegates.GAction`5.Invoke(T1, T2, T3, T4, T5) : System.Void
+M KeePassLib.Delegates.GAction`6..ctor(System.Object, System.IntPtr)
+M KeePassLib.Delegates.GAction`6.BeginInvoke(T1, T2, T3, T4, T5, T6, System.AsyncCallback, System.Object) : System.IAsyncResult
+M KeePassLib.Delegates.GAction`6.EndInvoke(System.IAsyncResult) : System.Void
+M KeePassLib.Delegates.GAction`6.Invoke(T1, T2, T3, T4, T5, T6) : System.Void
+M KeePassLib.Delegates.GFunc`1..ctor(System.Object, System.IntPtr)
+M KeePassLib.Delegates.GFunc`1.BeginInvoke(System.AsyncCallback, System.Object) : System.IAsyncResult
+M KeePassLib.Delegates.GFunc`1.EndInvoke(System.IAsyncResult) : TResult
+M KeePassLib.Delegates.GFunc`1.Invoke() : TResult
+M KeePassLib.Delegates.GFunc`2..ctor(System.Object, System.IntPtr)
+M KeePassLib.Delegates.GFunc`2.BeginInvoke(T, System.AsyncCallback, System.Object) : System.IAsyncResult
+M KeePassLib.Delegates.GFunc`2.EndInvoke(System.IAsyncResult) : TResult
+M KeePassLib.Delegates.GFunc`2.Invoke(T) : TResult
+M KeePassLib.Delegates.GFunc`3..ctor(System.Object, System.IntPtr)
+M KeePassLib.Delegates.GFunc`3.BeginInvoke(T1, T2, System.AsyncCallback, System.Object) : System.IAsyncResult
+M KeePassLib.Delegates.GFunc`3.EndInvoke(System.IAsyncResult) : TResult
+M KeePassLib.Delegates.GFunc`3.Invoke(T1, T2) : TResult
+M KeePassLib.Delegates.GFunc`4..ctor(System.Object, System.IntPtr)
+M KeePassLib.Delegates.GFunc`4.BeginInvoke(T1, T2, T3, System.AsyncCallback, System.Object) : System.IAsyncResult
+M KeePassLib.Delegates.GFunc`4.EndInvoke(System.IAsyncResult) : TResult
+M KeePassLib.Delegates.GFunc`4.Invoke(T1, T2, T3) : TResult
+M KeePassLib.Delegates.GFunc`5..ctor(System.Object, System.IntPtr)
+M KeePassLib.Delegates.GFunc`5.BeginInvoke(T1, T2, T3, T4, System.AsyncCallback, System.Object) : System.IAsyncResult
+M KeePassLib.Delegates.GFunc`5.EndInvoke(System.IAsyncResult) : TResult
+M KeePassLib.Delegates.GFunc`5.Invoke(T1, T2, T3, T4) : TResult
+M KeePassLib.Delegates.GFunc`6..ctor(System.Object, System.IntPtr)
+M KeePassLib.Delegates.GFunc`6.BeginInvoke(T1, T2, T3, T4, T5, System.AsyncCallback, System.Object) : System.IAsyncResult
+M KeePassLib.Delegates.GFunc`6.EndInvoke(System.IAsyncResult) : TResult
+M KeePassLib.Delegates.GFunc`6.Invoke(T1, T2, T3, T4, T5) : TResult
+M KeePassLib.Delegates.GFunc`7..ctor(System.Object, System.IntPtr)
+M KeePassLib.Delegates.GFunc`7.BeginInvoke(T1, T2, T3, T4, T5, T6, System.AsyncCallback, System.Object) : System.IAsyncResult
+M KeePassLib.Delegates.GFunc`7.EndInvoke(System.IAsyncResult) : TResult
+M KeePassLib.Delegates.GFunc`7.Invoke(T1, T2, T3, T4, T5, T6) : TResult
+M KeePassLib.Delegates.GroupHandler..ctor(System.Object, System.IntPtr)
+M KeePassLib.Delegates.GroupHandler.BeginInvoke(KeePassLib.PwGroup, System.AsyncCallback, System.Object) : System.IAsyncResult
+M KeePassLib.Delegates.GroupHandler.EndInvoke(System.IAsyncResult) : System.Boolean
+M KeePassLib.Delegates.GroupHandler.Invoke(KeePassLib.PwGroup) : System.Boolean
+M KeePassLib.Delegates.StrPwEntryDelegate..ctor(System.Object, System.IntPtr)
+M KeePassLib.Delegates.StrPwEntryDelegate.BeginInvoke(System.String, KeePassLib.PwEntry, System.AsyncCallback, System.Object) : System.IAsyncResult
+M KeePassLib.Delegates.StrPwEntryDelegate.EndInvoke(System.IAsyncResult) : System.String
+M KeePassLib.Delegates.StrPwEntryDelegate.Invoke(System.String, KeePassLib.PwEntry) : System.String
+M KeePassLib.Delegates.VoidDelegate..ctor(System.Object, System.IntPtr)
+M KeePassLib.Delegates.VoidDelegate.BeginInvoke(System.AsyncCallback, System.Object) : System.IAsyncResult
+M KeePassLib.Delegates.VoidDelegate.EndInvoke(System.IAsyncResult) : System.Void
+M KeePassLib.Delegates.VoidDelegate.Invoke() : System.Void
+M KeePassLib.IOAccessEventArgs..ctor(KeePassLib.Serialization.IOConnectionInfo, KeePassLib.Serialization.IOConnectionInfo, KeePassLib.IOAccessType)
+M KeePassLib.IOWebRequestEventArgs..ctor(System.Net.WebRequest, KeePassLib.Serialization.IOConnectionInfo)
+M KeePassLib.Interfaces.IDeepCloneable`1.CloneDeep() : T
+M KeePassLib.Interfaces.IStatusLogger.ContinueWork() : System.Boolean
+M KeePassLib.Interfaces.IStatusLogger.EndLogging() : System.Void
+M KeePassLib.Interfaces.IStatusLogger.SetProgress(System.UInt32) : System.Boolean
+M KeePassLib.Interfaces.IStatusLogger.SetText(System.String, KeePassLib.Interfaces.LogStatusType) : System.Boolean
+M KeePassLib.Interfaces.IStatusLogger.StartLogging(System.String, System.Boolean) : System.Void
+M KeePassLib.Interfaces.ITimeLogger.Touch(System.Boolean) : System.Void
+M KeePassLib.Interfaces.IUIOperations.UIFileSave(System.Boolean) : System.Boolean
+M KeePassLib.Interfaces.IXmlSerializerEx.Deserialize(System.IO.Stream) : System.Object
+M KeePassLib.Interfaces.IXmlSerializerEx.Serialize(System.Xml.XmlWriter, System.Object) : System.Void
+M KeePassLib.Interfaces.NullStatusLogger..ctor()
+M KeePassLib.Interfaces.NullStatusLogger.ContinueWork() : System.Boolean
+M KeePassLib.Interfaces.NullStatusLogger.EndLogging() : System.Void
+M KeePassLib.Interfaces.NullStatusLogger.SetProgress(System.UInt32) : System.Boolean
+M KeePassLib.Interfaces.NullStatusLogger.SetText(System.String, KeePassLib.Interfaces.LogStatusType) : System.Boolean
+M KeePassLib.Interfaces.NullStatusLogger.StartLogging(System.String, System.Boolean) : System.Void
+M KeePassLib.Keys.CompositeKey..ctor()
+M KeePassLib.Keys.CompositeKey.AddUserKey(KeePassLib.Keys.IUserKey) : System.Void
+M KeePassLib.Keys.CompositeKey.ContainsType(System.Type) : System.Boolean
+M KeePassLib.Keys.CompositeKey.EqualsValue(KeePassLib.Keys.CompositeKey) : System.Boolean
+M KeePassLib.Keys.CompositeKey.GenerateKey32(KeePassLib.Cryptography.KeyDerivation.KdfParameters) : KeePassLib.Security.ProtectedBinary
+M KeePassLib.Keys.CompositeKey.GenerateKey32(System.Byte[], System.UInt64) : KeePassLib.Security.ProtectedBinary
+M KeePassLib.Keys.CompositeKey.GetUserKey(System.Type) : KeePassLib.Keys.IUserKey
+M KeePassLib.Keys.CompositeKey.RemoveUserKey(KeePassLib.Keys.IUserKey) : System.Boolean
+M KeePassLib.Keys.InvalidCompositeKeyException..ctor()
+M KeePassLib.Keys.KcpCustomKey..ctor(System.String, System.Byte[], System.Boolean)
+M KeePassLib.Keys.KcpKeyFile..ctor(KeePassLib.Serialization.IOConnectionInfo)
+M KeePassLib.Keys.KcpKeyFile..ctor(KeePassLib.Serialization.IOConnectionInfo, System.Boolean)
+M KeePassLib.Keys.KcpKeyFile..ctor(System.String)
+M KeePassLib.Keys.KcpKeyFile..ctor(System.String, System.Boolean)
+M KeePassLib.Keys.KcpKeyFile.Create(System.String, System.Byte[]) : System.Void
+M KeePassLib.Keys.KcpPassword..ctor(System.Byte[])
+M KeePassLib.Keys.KcpPassword..ctor(System.Byte[], System.Boolean)
+M KeePassLib.Keys.KcpPassword..ctor(System.String)
+M KeePassLib.Keys.KcpUserAccount..ctor()
+M KeePassLib.Keys.KeyProvider..ctor()
+M KeePassLib.Keys.KeyProvider.GetKey(KeePassLib.Keys.KeyProviderQueryContext) : System.Byte[]
+M KeePassLib.Keys.KeyProviderPool..ctor()
+M KeePassLib.Keys.KeyProviderPool.Add(KeePassLib.Keys.KeyProvider) : System.Void
+M KeePassLib.Keys.KeyProviderPool.Get(System.String) : KeePassLib.Keys.KeyProvider
+M KeePassLib.Keys.KeyProviderPool.GetEnumerator() : System.Collections.Generic.IEnumerator<KeePassLib.Keys.KeyProvider>
+M KeePassLib.Keys.KeyProviderPool.IsKeyProvider(System.String) : System.Boolean
+M KeePassLib.Keys.KeyProviderPool.Remove(KeePassLib.Keys.KeyProvider) : System.Boolean
+M KeePassLib.Keys.KeyProviderQueryContext..ctor(KeePassLib.Serialization.IOConnectionInfo, System.Boolean, System.Boolean)
+M KeePassLib.Keys.KeyValidator..ctor()
+M KeePassLib.Keys.KeyValidator.Validate(System.String, KeePassLib.Keys.KeyValidationType) : System.String
+M KeePassLib.Keys.KeyValidatorPool..ctor()
+M KeePassLib.Keys.KeyValidatorPool.Add(KeePassLib.Keys.KeyValidator) : System.Void
+M KeePassLib.Keys.KeyValidatorPool.GetEnumerator() : System.Collections.Generic.IEnumerator<KeePassLib.Keys.KeyValidator>
+M KeePassLib.Keys.KeyValidatorPool.Remove(KeePassLib.Keys.KeyValidator) : System.Boolean
+M KeePassLib.Keys.KeyValidatorPool.Validate(System.Byte[], KeePassLib.Keys.KeyValidationType) : System.String
+M KeePassLib.Keys.KeyValidatorPool.Validate(System.String, KeePassLib.Keys.KeyValidationType) : System.String
+M KeePassLib.Keys.KfxData..ctor()
+M KeePassLib.Keys.KfxFile..ctor()
+M KeePassLib.Keys.KfxFile.Create(System.UInt64, System.Byte[], System.Byte[]) : KeePassLib.Keys.KfxFile
+M KeePassLib.Keys.KfxFile.GetKey() : System.Byte[]
+M KeePassLib.Keys.KfxFile.Load(System.IO.Stream) : KeePassLib.Keys.KfxFile
+M KeePassLib.Keys.KfxFile.Save(System.IO.Stream) : System.Void
+M KeePassLib.Keys.KfxKey..ctor()
+M KeePassLib.Keys.KfxMeta..ctor()
+M KeePassLib.Keys.SampleKeyProvider..ctor()
+M KeePassLib.Keys.SampleKeyProvider.GetKey(KeePassLib.Keys.KeyProviderQueryContext) : System.Byte[]
+M KeePassLib.MemoryProtectionConfig..ctor()
+M KeePassLib.MemoryProtectionConfig.CloneDeep() : KeePassLib.MemoryProtectionConfig
+M KeePassLib.MemoryProtectionConfig.GetProtection(System.String) : System.Boolean
+M KeePassLib.Native.NativeLib.GetDesktopType() : KeePassLib.DesktopType
+M KeePassLib.Native.NativeLib.GetPlatformID() : System.PlatformID
+M KeePassLib.Native.NativeLib.IsLibraryInstalled() : System.Boolean
+M KeePassLib.Native.NativeLib.IsUnix() : System.Boolean
+M KeePassLib.Native.NativeLib.RunConsoleApp(System.String, System.String) : System.String
+M KeePassLib.Native.NativeLib.RunConsoleApp(System.String, System.String, System.String) : System.String
+M KeePassLib.Native.NativeLib.RunConsoleApp(System.String, System.String, System.String, KeePassLib.AppRunFlags) : System.String
+M KeePassLib.Native.NativeLib.TransformKey256(System.Byte[], System.Byte[], System.UInt64) : System.Boolean
+M KeePassLib.Native.NativeLib.TransformKeyBenchmark256(System.UInt32, System.UInt64&) : System.Boolean
+M KeePassLib.ObjectTouchedEventArgs..ctor(System.Object, System.Boolean, System.Boolean)
+M KeePassLib.PwCustomIcon..ctor(KeePassLib.PwUuid, System.Byte[])
+M KeePassLib.PwDatabase..ctor()
+M KeePassLib.PwDatabase.Close() : System.Void
+M KeePassLib.PwDatabase.DeleteCustomIcons(System.Collections.Generic.List<KeePassLib.PwUuid>) : System.Boolean
+M KeePassLib.PwDatabase.DeleteDuplicateEntries(KeePassLib.Interfaces.IStatusLogger) : System.UInt32
+M KeePassLib.PwDatabase.DeleteEmptyGroups() : System.UInt32
+M KeePassLib.PwDatabase.DeleteUnusedCustomIcons() : System.UInt32
+M KeePassLib.PwDatabase.GetCustomIconIndex(KeePassLib.PwUuid) : System.Int32
+M KeePassLib.PwDatabase.GetCustomIconIndex(System.Byte[]) : System.Int32
+M KeePassLib.PwDatabase.LoadHeader(KeePassLib.Serialization.IOConnectionInfo) : KeePassLib.PwDatabase
+M KeePassLib.PwDatabase.MaintainBackups() : System.Boolean
+M KeePassLib.PwDatabase.MergeIn(KeePassLib.PwDatabase, KeePassLib.PwMergeMethod) : System.Void
+M KeePassLib.PwDatabase.MergeIn(KeePassLib.PwDatabase, KeePassLib.PwMergeMethod, KeePassLib.Interfaces.IStatusLogger) : System.Void
+M KeePassLib.PwDatabase.New(KeePassLib.Serialization.IOConnectionInfo, KeePassLib.Keys.CompositeKey) : System.Void
+M KeePassLib.PwDatabase.Open(KeePassLib.Serialization.IOConnectionInfo, KeePassLib.Keys.CompositeKey, KeePassLib.Interfaces.IStatusLogger) : System.Void
+M KeePassLib.PwDatabase.Save(KeePassLib.Interfaces.IStatusLogger) : System.Void
+M KeePassLib.PwDatabase.SaveAs(KeePassLib.Serialization.IOConnectionInfo, System.Boolean, KeePassLib.Interfaces.IStatusLogger) : System.Void
+M KeePassLib.PwDefs.GetStandardFields() : System.Collections.Generic.List<System.String>
+M KeePassLib.PwDefs.IsStandardField(System.String) : System.Boolean
+M KeePassLib.PwDefs.IsTanEntry(KeePassLib.PwEntry) : System.Boolean
+M KeePassLib.PwDeletedObject..ctor()
+M KeePassLib.PwDeletedObject..ctor(KeePassLib.PwUuid, System.DateTime)
+M KeePassLib.PwDeletedObject.CloneDeep() : KeePassLib.PwDeletedObject
+M KeePassLib.PwEntry..ctor(KeePassLib.PwGroup, System.Boolean, System.Boolean)
+M KeePassLib.PwEntry..ctor(System.Boolean, System.Boolean)
+M KeePassLib.PwEntry.AddTag(System.String) : System.Boolean
+M KeePassLib.PwEntry.AssignProperties(KeePassLib.PwEntry, System.Boolean, System.Boolean, System.Boolean) : System.Void
+M KeePassLib.PwEntry.CloneDeep() : KeePassLib.PwEntry
+M KeePassLib.PwEntry.CloneStructure() : KeePassLib.PwEntry
+M KeePassLib.PwEntry.CreateBackup() : System.Void
+M KeePassLib.PwEntry.CreateBackup(KeePassLib.PwDatabase) : System.Void
+M KeePassLib.PwEntry.Duplicate() : KeePassLib.PwEntry
+M KeePassLib.PwEntry.EqualsEntry(KeePassLib.PwEntry, KeePassLib.PwCompareOptions, KeePassLib.MemProtCmpMode) : System.Boolean
+M KeePassLib.PwEntry.EqualsEntry(KeePassLib.PwEntry, System.Boolean, System.Boolean, System.Boolean, System.Boolean, System.Boolean) : System.Boolean
+M KeePassLib.PwEntry.EqualsEntry(KeePassLib.PwEntry, System.Boolean, System.Boolean, System.Boolean, System.Boolean, System.Boolean, KeePassLib.MemProtCmpMode) : System.Boolean
+M KeePassLib.PwEntry.GetAutoTypeEnabled() : System.Boolean
+M KeePassLib.PwEntry.GetAutoTypeSequence() : System.String
+M KeePassLib.PwEntry.GetSearchingEnabled() : System.Boolean
+M KeePassLib.PwEntry.GetSize() : System.UInt64
+M KeePassLib.PwEntry.HasBackupOfData(KeePassLib.PwEntry, System.Boolean, System.Boolean) : System.Boolean
+M KeePassLib.PwEntry.HasTag(System.String) : System.Boolean
+M KeePassLib.PwEntry.IsContainedIn(KeePassLib.PwGroup) : System.Boolean
+M KeePassLib.PwEntry.MaintainBackups(KeePassLib.PwDatabase) : System.Boolean
+M KeePassLib.PwEntry.RemoveTag(System.String) : System.Boolean
+M KeePassLib.PwEntry.RestoreFromBackup(System.UInt32) : System.Void
+M KeePassLib.PwEntry.RestoreFromBackup(System.UInt32, KeePassLib.PwDatabase) : System.Void
+M KeePassLib.PwEntry.SetCreatedNow() : System.Void
+M KeePassLib.PwEntry.SetUuid(KeePassLib.PwUuid, System.Boolean) : System.Void
+M KeePassLib.PwEntry.ToString() : System.String
+M KeePassLib.PwEntry.Touch(System.Boolean) : System.Void
+M KeePassLib.PwEntry.Touch(System.Boolean, System.Boolean) : System.Void
+M KeePassLib.PwEntryComparer..ctor(System.String, System.Boolean, System.Boolean)
+M KeePassLib.PwEntryComparer.Compare(KeePassLib.PwEntry, KeePassLib.PwEntry) : System.Int32
+M KeePassLib.PwGroup..ctor()
+M KeePassLib.PwGroup..ctor(System.Boolean, System.Boolean)
+M KeePassLib.PwGroup..ctor(System.Boolean, System.Boolean, System.String, KeePassLib.PwIcon)
+M KeePassLib.PwGroup.AddEntry(KeePassLib.PwEntry, System.Boolean) : System.Void
+M KeePassLib.PwGroup.AddEntry(KeePassLib.PwEntry, System.Boolean, System.Boolean) : System.Void
+M KeePassLib.PwGroup.AddGroup(KeePassLib.PwGroup, System.Boolean) : System.Void
+M KeePassLib.PwGroup.AddGroup(KeePassLib.PwGroup, System.Boolean, System.Boolean) : System.Void
+M KeePassLib.PwGroup.AssignProperties(KeePassLib.PwGroup, System.Boolean, System.Boolean) : System.Void
+M KeePassLib.PwGroup.BuildEntryTagsDict(System.Boolean) : System.Collections.Generic.IDictionary<System.String,System.UInt32>
+M KeePassLib.PwGroup.BuildEntryTagsList() : System.Collections.Generic.List<System.String>
+M KeePassLib.PwGroup.BuildEntryTagsList(System.Boolean) : System.Collections.Generic.List<System.String>
+M KeePassLib.PwGroup.CloneDeep() : KeePassLib.PwGroup
+M KeePassLib.PwGroup.CloneStructure() : KeePassLib.PwGroup
+M KeePassLib.PwGroup.CreateNewItemUuids(System.Boolean, System.Boolean, System.Boolean) : System.Void
+M KeePassLib.PwGroup.DeleteAllObjects(KeePassLib.PwDatabase) : System.Void
+M KeePassLib.PwGroup.Duplicate() : KeePassLib.PwGroup
+M KeePassLib.PwGroup.EnableStringFieldProtection(System.String, System.Boolean) : System.Boolean
+M KeePassLib.PwGroup.EqualsGroup(KeePassLib.PwGroup, KeePassLib.PwCompareOptions, KeePassLib.MemProtCmpMode) : System.Boolean
+M KeePassLib.PwGroup.FindCreateGroup(System.String, System.Boolean) : KeePassLib.PwGroup
+M KeePassLib.PwGroup.FindCreateSubTree(System.String, System.Char[]) : KeePassLib.PwGroup
+M KeePassLib.PwGroup.FindCreateSubTree(System.String, System.Char[], System.Boolean) : KeePassLib.PwGroup
+M KeePassLib.PwGroup.FindCreateSubTree(System.String, System.String[], System.Boolean) : KeePassLib.PwGroup
+M KeePassLib.PwGroup.FindEntriesByTag(System.String, KeePassLib.Collections.PwObjectList<KeePassLib.PwEntry>, System.Boolean) : System.Void
+M KeePassLib.PwGroup.FindEntry(KeePassLib.PwUuid, System.Boolean) : KeePassLib.PwEntry
+M KeePassLib.PwGroup.FindGroup(KeePassLib.PwUuid, System.Boolean) : KeePassLib.PwGroup
+M KeePassLib.PwGroup.FindObject(KeePassLib.PwUuid, System.Boolean, System.Nullable<System.Boolean>) : KeePassLib.Interfaces.IStructureItem
+M KeePassLib.PwGroup.GetAutoTypeEnabledInherited() : System.Boolean
+M KeePassLib.PwGroup.GetAutoTypeSequenceInherited() : System.String
+M KeePassLib.PwGroup.GetCounts(System.Boolean, System.UInt32&, System.UInt32&) : System.Void
+M KeePassLib.PwGroup.GetDepth() : System.UInt32
+M KeePassLib.PwGroup.GetEntries(System.Boolean) : KeePassLib.Collections.PwObjectList<KeePassLib.PwEntry>
+M KeePassLib.PwGroup.GetEntriesCount(System.Boolean) : System.UInt32
+M KeePassLib.PwGroup.GetFlatEntryList(System.Collections.Generic.LinkedList<KeePassLib.PwGroup>) : System.Collections.Generic.LinkedList<KeePassLib.PwEntry>
+M KeePassLib.PwGroup.GetFlatGroupList() : System.Collections.Generic.LinkedList<KeePassLib.PwGroup>
+M KeePassLib.PwGroup.GetFullPath() : System.String
+M KeePassLib.PwGroup.GetFullPath(System.String, System.Boolean) : System.String
+M KeePassLib.PwGroup.GetGroups(System.Boolean) : KeePassLib.Collections.PwObjectList<KeePassLib.PwGroup>
+M KeePassLib.PwGroup.GetObjects(System.Boolean, System.Nullable<System.Boolean>) : System.Collections.Generic.List<KeePassLib.Interfaces.IStructureItem>
+M KeePassLib.PwGroup.GetSearchingEnabledInherited() : System.Boolean
+M KeePassLib.PwGroup.IsContainedIn(KeePassLib.PwGroup) : System.Boolean
+M KeePassLib.PwGroup.SearchEntries(KeePassLib.SearchParameters, KeePassLib.Collections.PwObjectList<KeePassLib.PwEntry>) : System.Void
+M KeePassLib.PwGroup.SearchEntries(KeePassLib.SearchParameters, KeePassLib.Collections.PwObjectList<KeePassLib.PwEntry>, KeePassLib.Interfaces.IStatusLogger) : System.Void
+M KeePassLib.PwGroup.SetCreatedNow(System.Boolean) : System.Void
+M KeePassLib.PwGroup.SortSubGroups(System.Boolean) : System.Void
+M KeePassLib.PwGroup.TakeOwnership(System.Boolean, System.Boolean, System.Boolean) : System.Void
+M KeePassLib.PwGroup.ToString() : System.String
+M KeePassLib.PwGroup.Touch(System.Boolean) : System.Void
+M KeePassLib.PwGroup.Touch(System.Boolean, System.Boolean) : System.Void
+M KeePassLib.PwGroup.TraverseTree(KeePassLib.TraversalMethod, KeePassLib.Delegates.GroupHandler, KeePassLib.Delegates.EntryHandler) : System.Boolean
+M KeePassLib.PwGroupComparer..ctor()
+M KeePassLib.PwGroupComparer.Compare(KeePassLib.PwGroup, KeePassLib.PwGroup) : System.Int32
+M KeePassLib.PwUuid..ctor(System.Boolean)
+M KeePassLib.PwUuid..ctor(System.Byte[])
+M KeePassLib.PwUuid.CompareTo(KeePassLib.PwUuid) : System.Int32
+M KeePassLib.PwUuid.Equals(KeePassLib.PwUuid) : System.Boolean
+M KeePassLib.PwUuid.Equals(System.Object) : System.Boolean
+M KeePassLib.PwUuid.EqualsValue(KeePassLib.PwUuid) : System.Boolean
+M KeePassLib.PwUuid.GetHashCode() : System.Int32
+M KeePassLib.PwUuid.ToHexString() : System.String
+M KeePassLib.PwUuid.ToString() : System.String
+M KeePassLib.PwUuidComparable..ctor(KeePassLib.PwUuid)
+M KeePassLib.PwUuidComparable.CompareTo(KeePassLib.PwUuidComparable) : System.Int32
+M KeePassLib.Resources.KLRes.GetKeyNames() : System.String[]
+M KeePassLib.Resources.KLRes.SetTranslatedStrings(System.Collections.Generic.Dictionary<System.String,System.String>) : System.Void
+M KeePassLib.Resources.KSRes.GetKeyNames() : System.String[]
+M KeePassLib.Resources.KSRes.SetTranslatedStrings(System.Collections.Generic.Dictionary<System.String,System.String>) : System.Void
+M KeePassLib.SearchParameters..ctor()
+M KeePassLib.SearchParameters.Clone() : KeePassLib.SearchParameters
+M KeePassLib.Security.PbCryptDelegate..ctor(System.Object, System.IntPtr)
+M KeePassLib.Security.PbCryptDelegate.BeginInvoke(System.Byte[], KeePassLib.Security.PbCryptFlags, System.Int64, System.AsyncCallback, System.Object) : System.IAsyncResult
+M KeePassLib.Security.PbCryptDelegate.EndInvoke(System.IAsyncResult) : System.Void
+M KeePassLib.Security.PbCryptDelegate.Invoke(System.Byte[], KeePassLib.Security.PbCryptFlags, System.Int64) : System.Void
+M KeePassLib.Security.ProtectedBinary..ctor()
+M KeePassLib.Security.ProtectedBinary..ctor(System.Boolean, KeePassLib.Security.XorredBuffer)
+M KeePassLib.Security.ProtectedBinary..ctor(System.Boolean, System.Byte[])
+M KeePassLib.Security.ProtectedBinary..ctor(System.Boolean, System.Byte[], System.Int32, System.Int32)
+M KeePassLib.Security.ProtectedBinary.Equals(KeePassLib.Security.ProtectedBinary) : System.Boolean
+M KeePassLib.Security.ProtectedBinary.Equals(KeePassLib.Security.ProtectedBinary, System.Boolean) : System.Boolean
+M KeePassLib.Security.ProtectedBinary.Equals(System.Object) : System.Boolean
+M KeePassLib.Security.ProtectedBinary.GetHashCode() : System.Int32
+M KeePassLib.Security.ProtectedBinary.ReadData() : System.Byte[]
+M KeePassLib.Security.ProtectedBinary.ReadXorredData(KeePassLib.Cryptography.CryptoRandomStream) : System.Byte[]
+M KeePassLib.Security.ProtectedString..ctor()
+M KeePassLib.Security.ProtectedString..ctor(System.Boolean, KeePassLib.Security.XorredBuffer)
+M KeePassLib.Security.ProtectedString..ctor(System.Boolean, System.Byte[])
+M KeePassLib.Security.ProtectedString..ctor(System.Boolean, System.String)
+M KeePassLib.Security.ProtectedString.Equals(KeePassLib.Security.ProtectedString, System.Boolean) : System.Boolean
+M KeePassLib.Security.ProtectedString.Insert(System.Int32, System.String) : KeePassLib.Security.ProtectedString
+M KeePassLib.Security.ProtectedString.ReadChars() : System.Char[]
+M KeePassLib.Security.ProtectedString.ReadString() : System.String
+M KeePassLib.Security.ProtectedString.ReadUtf8() : System.Byte[]
+M KeePassLib.Security.ProtectedString.ReadXorredString(KeePassLib.Cryptography.CryptoRandomStream) : System.Byte[]
+M KeePassLib.Security.ProtectedString.Remove(System.Int32, System.Int32) : KeePassLib.Security.ProtectedString
+M KeePassLib.Security.ProtectedString.Trim() : KeePassLib.Security.ProtectedString
+M KeePassLib.Security.ProtectedString.WithProtection(System.Boolean) : KeePassLib.Security.ProtectedString
+M KeePassLib.Security.XorredBuffer..ctor(System.Byte[], System.Byte[])
+M KeePassLib.Security.XorredBuffer.Dispose() : System.Void
+M KeePassLib.Security.XorredBuffer.Finalize() : System.Void
+M KeePassLib.Security.XorredBuffer.ReadPlainText() : System.Byte[]
+M KeePassLib.Serialization.BinaryReaderEx..ctor(System.IO.Stream, System.Text.Encoding, System.String)
+M KeePassLib.Serialization.BinaryReaderEx.ReadByte() : System.Byte
+M KeePassLib.Serialization.BinaryReaderEx.ReadBytes(System.Int32) : System.Byte[]
+M KeePassLib.Serialization.FileLock..ctor(KeePassLib.Serialization.IOConnectionInfo)
+M KeePassLib.Serialization.FileLock.Dispose() : System.Void
+M KeePassLib.Serialization.FileLock.Finalize() : System.Void
+M KeePassLib.Serialization.FileLockException..ctor(System.String, System.String)
+M KeePassLib.Serialization.FileTransactionEx..ctor(KeePassLib.Serialization.IOConnectionInfo)
+M KeePassLib.Serialization.FileTransactionEx..ctor(KeePassLib.Serialization.IOConnectionInfo, System.Boolean)
+M KeePassLib.Serialization.FileTransactionEx.CommitWrite() : System.Void
+M KeePassLib.Serialization.FileTransactionEx.Configure(System.String, System.Nullable<System.Boolean>) : System.Void
+M KeePassLib.Serialization.FileTransactionEx.Dispose() : System.Void
+M KeePassLib.Serialization.FileTransactionEx.Finalize() : System.Void
+M KeePassLib.Serialization.FileTransactionEx.OpenWrite() : System.IO.Stream
+M KeePassLib.Serialization.HashedBlockStream..ctor(System.IO.Stream, System.Boolean)
+M KeePassLib.Serialization.HashedBlockStream..ctor(System.IO.Stream, System.Boolean, System.Int32)
+M KeePassLib.Serialization.HashedBlockStream..ctor(System.IO.Stream, System.Boolean, System.Int32, System.Boolean)
+M KeePassLib.Serialization.HashedBlockStream.Dispose(System.Boolean) : System.Void
+M KeePassLib.Serialization.HashedBlockStream.Flush() : System.Void
+M KeePassLib.Serialization.HashedBlockStream.Read(System.Byte[], System.Int32, System.Int32) : System.Int32
+M KeePassLib.Serialization.HashedBlockStream.Seek(System.Int64, System.IO.SeekOrigin) : System.Int64
+M KeePassLib.Serialization.HashedBlockStream.SetLength(System.Int64) : System.Void
+M KeePassLib.Serialization.HashedBlockStream.Write(System.Byte[], System.Int32, System.Int32) : System.Void
+M KeePassLib.Serialization.HmacBlockStream..ctor(System.IO.Stream, System.Boolean, System.Boolean, System.Byte[])
+M KeePassLib.Serialization.HmacBlockStream.Dispose(System.Boolean) : System.Void
+M KeePassLib.Serialization.HmacBlockStream.Flush() : System.Void
+M KeePassLib.Serialization.HmacBlockStream.Read(System.Byte[], System.Int32, System.Int32) : System.Int32
+M KeePassLib.Serialization.HmacBlockStream.Seek(System.Int64, System.IO.SeekOrigin) : System.Int64
+M KeePassLib.Serialization.HmacBlockStream.SetLength(System.Int64) : System.Void
+M KeePassLib.Serialization.HmacBlockStream.Write(System.Byte[], System.Int32, System.Int32) : System.Void
+M KeePassLib.Serialization.IOConnection.DeleteFile(KeePassLib.Serialization.IOConnectionInfo) : System.Void
+M KeePassLib.Serialization.IOConnection.FileExists(KeePassLib.Serialization.IOConnectionInfo) : System.Boolean
+M KeePassLib.Serialization.IOConnection.FileExists(KeePassLib.Serialization.IOConnectionInfo, System.Boolean) : System.Boolean
+M KeePassLib.Serialization.IOConnection.OpenRead(KeePassLib.Serialization.IOConnectionInfo) : System.IO.Stream
+M KeePassLib.Serialization.IOConnection.OpenWrite(KeePassLib.Serialization.IOConnectionInfo) : System.IO.Stream
+M KeePassLib.Serialization.IOConnection.ReadFile(KeePassLib.Serialization.IOConnectionInfo) : System.Byte[]
+M KeePassLib.Serialization.IOConnection.RenameFile(KeePassLib.Serialization.IOConnectionInfo, KeePassLib.Serialization.IOConnectionInfo) : System.Void
+M KeePassLib.Serialization.IOConnectionInfo..ctor()
+M KeePassLib.Serialization.IOConnectionInfo.CanProbablyAccess() : System.Boolean
+M KeePassLib.Serialization.IOConnectionInfo.ClearCredentials(System.Boolean) : System.Void
+M KeePassLib.Serialization.IOConnectionInfo.CloneDeep() : KeePassLib.Serialization.IOConnectionInfo
+M KeePassLib.Serialization.IOConnectionInfo.FromPath(System.String) : KeePassLib.Serialization.IOConnectionInfo
+M KeePassLib.Serialization.IOConnectionInfo.GetDisplayName() : System.String
+M KeePassLib.Serialization.IOConnectionInfo.IsEmpty() : System.Boolean
+M KeePassLib.Serialization.IOConnectionInfo.IsLocalFile() : System.Boolean
+M KeePassLib.Serialization.IOConnectionInfo.Obfuscate(System.Boolean) : System.Void
+M KeePassLib.Serialization.IOConnectionInfo.ToString() : System.String
+M KeePassLib.Serialization.IocProperties..ctor()
+M KeePassLib.Serialization.IocProperties.CloneDeep() : KeePassLib.Serialization.IocProperties
+M KeePassLib.Serialization.IocProperties.CopyTo(KeePassLib.Serialization.IocProperties) : System.Void
+M KeePassLib.Serialization.IocProperties.Deserialize(System.String) : KeePassLib.Serialization.IocProperties
+M KeePassLib.Serialization.IocProperties.Get(System.String) : System.String
+M KeePassLib.Serialization.IocProperties.GetBool(System.String) : System.Nullable<System.Boolean>
+M KeePassLib.Serialization.IocProperties.GetLong(System.String) : System.Nullable<System.Int64>
+M KeePassLib.Serialization.IocProperties.Serialize() : System.String
+M KeePassLib.Serialization.IocProperties.Set(System.String, System.String) : System.Void
+M KeePassLib.Serialization.IocProperties.SetBool(System.String, System.Nullable<System.Boolean>) : System.Void
+M KeePassLib.Serialization.IocProperties.SetLong(System.String, System.Nullable<System.Int64>) : System.Void
+M KeePassLib.Serialization.IocPropertyInfo..ctor(System.String, System.Type, System.String, System.String[])
+M KeePassLib.Serialization.IocPropertyInfo.AddProtocols(System.String[]) : System.Void
+M KeePassLib.Serialization.IocPropertyInfoPool.Add(KeePassLib.Serialization.IocPropertyInfo) : System.Boolean
+M KeePassLib.Serialization.IocPropertyInfoPool.Get(System.String) : KeePassLib.Serialization.IocPropertyInfo
+M KeePassLib.Serialization.KdbxFile..ctor(KeePassLib.PwDatabase)
+M KeePassLib.Serialization.KdbxFile.DetermineLanguageId() : System.Void
+M KeePassLib.Serialization.KdbxFile.Load(System.IO.Stream, KeePassLib.Serialization.KdbxFormat, KeePassLib.Interfaces.IStatusLogger) : System.Void
+M KeePassLib.Serialization.KdbxFile.Load(System.String, KeePassLib.Serialization.KdbxFormat, KeePassLib.Interfaces.IStatusLogger) : System.Void
+M KeePassLib.Serialization.KdbxFile.ReadEntries(KeePassLib.PwDatabase, System.IO.Stream) : System.Collections.Generic.List<KeePassLib.PwEntry>
+M KeePassLib.Serialization.KdbxFile.ReadEntries(System.IO.Stream) : System.Collections.Generic.List<KeePassLib.PwEntry>
+M KeePassLib.Serialization.KdbxFile.ReadEntries(System.IO.Stream, KeePassLib.PwDatabase, System.Boolean) : System.Collections.Generic.List<KeePassLib.PwEntry>
+M KeePassLib.Serialization.KdbxFile.Save(System.IO.Stream, KeePassLib.PwGroup, KeePassLib.Serialization.KdbxFormat, KeePassLib.Interfaces.IStatusLogger) : System.Void
+M KeePassLib.Serialization.KdbxFile.WriteEntries(System.IO.Stream, KeePassLib.PwDatabase, KeePassLib.PwEntry[]) : System.Boolean
+M KeePassLib.Serialization.KdbxFile.WriteEntries(System.IO.Stream, KeePassLib.PwEntry[]) : System.Boolean
+M KeePassLib.Serialization.OldFormatException..ctor(System.String)
+M KeePassLib.Serialization.OldFormatException..ctor(System.String, KeePassLib.Serialization.OldFormatException+OldFormatType)
+M KeePassLib.Translation.KPControlCustomization..ctor()
+M KeePassLib.Translation.KPControlCustomization.CompareTo(KeePassLib.Translation.KPControlCustomization) : System.Int32
+M KeePassLib.Translation.KPControlCustomization.ControlSupportsText(System.Object) : System.Boolean
+M KeePassLib.Translation.KPControlCustomization.MatchHash(System.String) : System.Boolean
+M KeePassLib.Translation.KPFormCustomization..ctor()
+M KeePassLib.Translation.KPStringTable..ctor()
+M KeePassLib.Translation.KPStringTable.ToDictionary() : System.Collections.Generic.Dictionary<System.String,System.String>
+M KeePassLib.Translation.KPStringTableItem..ctor()
+M KeePassLib.Translation.KPTranslation..ctor()
+M KeePassLib.Translation.KPTranslation.Load(System.IO.Stream, KeePassLib.Interfaces.IXmlSerializerEx) : KeePassLib.Translation.KPTranslation
+M KeePassLib.Translation.KPTranslation.Load(System.String, KeePassLib.Interfaces.IXmlSerializerEx) : KeePassLib.Translation.KPTranslation
+M KeePassLib.Translation.KPTranslation.SafeGetStringTableDictionary(System.String) : System.Collections.Generic.Dictionary<System.String,System.String>
+M KeePassLib.Translation.KPTranslation.Save(KeePassLib.Translation.KPTranslation, System.IO.Stream, KeePassLib.Interfaces.IXmlSerializerEx) : System.Void
+M KeePassLib.Translation.KPTranslation.Save(KeePassLib.Translation.KPTranslation, System.String, KeePassLib.Interfaces.IXmlSerializerEx) : System.Void
+M KeePassLib.Translation.KPTranslationProperties..ctor()
+M KeePassLib.Translation.KpccLayout..ctor()
+M KeePassLib.Translation.KpccLayout.SetControlRelativeValue(KeePassLib.Translation.KpccLayout+LayoutParameterEx, System.String) : System.Void
+M KeePassLib.Translation.KpccLayout.ToControlRelativePercent(System.String) : System.Nullable<System.Double>
+M KeePassLib.Translation.KpccLayout.ToControlRelativeString(System.String) : System.String
+M KeePassLib.Utility.AppLogEx.Close() : System.Void
+M KeePassLib.Utility.AppLogEx.Log(System.Exception) : System.Void
+M KeePassLib.Utility.AppLogEx.Log(System.String) : System.Void
+M KeePassLib.Utility.AppLogEx.Open(System.String) : System.Void
+M KeePassLib.Utility.CharStream..ctor(System.String)
+M KeePassLib.Utility.CharStream.PeekChar() : System.Char
+M KeePassLib.Utility.CharStream.PeekChar(System.Boolean) : System.Char
+M KeePassLib.Utility.CharStream.ReadChar() : System.Char
+M KeePassLib.Utility.CharStream.ReadChar(System.Boolean) : System.Char
+M KeePassLib.Utility.MemUtil.ArraysEqual(System.Byte[], System.Byte[]) : System.Boolean
+M KeePassLib.Utility.MemUtil.ByteArrayToHexString(System.Byte[]) : System.String
+M KeePassLib.Utility.MemUtil.BytesToInt32(System.Byte[]) : System.Int32
+M KeePassLib.Utility.MemUtil.BytesToInt32(System.Byte[], System.Int32) : System.Int32
+M KeePassLib.Utility.MemUtil.BytesToInt64(System.Byte[]) : System.Int64
+M KeePassLib.Utility.MemUtil.BytesToInt64(System.Byte[], System.Int32) : System.Int64
+M KeePassLib.Utility.MemUtil.BytesToUInt16(System.Byte[]) : System.UInt16
+M KeePassLib.Utility.MemUtil.BytesToUInt16(System.Byte[], System.Int32) : System.UInt16
+M KeePassLib.Utility.MemUtil.BytesToUInt32(System.Byte[]) : System.UInt32
+M KeePassLib.Utility.MemUtil.BytesToUInt32(System.Byte[], System.Int32) : System.UInt32
+M KeePassLib.Utility.MemUtil.BytesToUInt64(System.Byte[]) : System.UInt64
+M KeePassLib.Utility.MemUtil.BytesToUInt64(System.Byte[], System.Int32) : System.UInt64
+M KeePassLib.Utility.MemUtil.Compress(System.Byte[]) : System.Byte[]
+M KeePassLib.Utility.MemUtil.CopyStream(System.IO.Stream, System.IO.Stream) : System.Void
+M KeePassLib.Utility.MemUtil.Decompress(System.Byte[]) : System.Byte[]
+M KeePassLib.Utility.MemUtil.Except<T>(System.Collections.Generic.IEnumerable<T>, System.Collections.Generic.IEnumerable<T>, System.Collections.Generic.IEqualityComparer<T>) : System.Collections.Generic.IEnumerable<T>
+M KeePassLib.Utility.MemUtil.Hash32(System.Byte[], System.Int32, System.Int32) : System.UInt32
+M KeePassLib.Utility.MemUtil.HexStringToByteArray(System.String) : System.Byte[]
+M KeePassLib.Utility.MemUtil.IndexOf<T>(T[], T[]) : System.Int32
+M KeePassLib.Utility.MemUtil.Int32ToBytes(System.Int32) : System.Byte[]
+M KeePassLib.Utility.MemUtil.Int32ToBytesEx(System.Int32, System.Byte[], System.Int32) : System.Void
+M KeePassLib.Utility.MemUtil.Int64ToBytes(System.Int64) : System.Byte[]
+M KeePassLib.Utility.MemUtil.Int64ToBytesEx(System.Int64, System.Byte[], System.Int32) : System.Void
+M KeePassLib.Utility.MemUtil.Intersect<T>(System.Collections.Generic.IEnumerable<T>, System.Collections.Generic.IEnumerable<T>, System.Collections.Generic.IEqualityComparer<T>) : System.Collections.Generic.IEnumerable<T>
+M KeePassLib.Utility.MemUtil.Mid<T>(T[], System.Int32, System.Int32) : T[]
+M KeePassLib.Utility.MemUtil.ParseBase32(System.String) : System.Byte[]
+M KeePassLib.Utility.MemUtil.Read(System.IO.Stream) : System.Byte[]
+M KeePassLib.Utility.MemUtil.Read(System.IO.Stream, System.Int32) : System.Byte[]
+M KeePassLib.Utility.MemUtil.RotateLeft32(System.UInt32, System.Int32) : System.UInt32
+M KeePassLib.Utility.MemUtil.RotateLeft64(System.UInt64, System.Int32) : System.UInt64
+M KeePassLib.Utility.MemUtil.RotateRight32(System.UInt32, System.Int32) : System.UInt32
+M KeePassLib.Utility.MemUtil.RotateRight64(System.UInt64, System.Int32) : System.UInt64
+M KeePassLib.Utility.MemUtil.UInt16ToBytes(System.UInt16) : System.Byte[]
+M KeePassLib.Utility.MemUtil.UInt32ToBytes(System.UInt32) : System.Byte[]
+M KeePassLib.Utility.MemUtil.UInt32ToBytesEx(System.UInt32, System.Byte[], System.Int32) : System.Void
+M KeePassLib.Utility.MemUtil.UInt64ToBytes(System.UInt64) : System.Byte[]
+M KeePassLib.Utility.MemUtil.UInt64ToBytesEx(System.UInt64, System.Byte[], System.Int32) : System.Void
+M KeePassLib.Utility.MemUtil.Union<T>(System.Collections.Generic.IEnumerable<T>, System.Collections.Generic.IEnumerable<T>, System.Collections.Generic.IEqualityComparer<T>) : System.Collections.Generic.IEnumerable<T>
+M KeePassLib.Utility.MemUtil.Write(System.IO.Stream, System.Byte[]) : System.Void
+M KeePassLib.Utility.MemUtil.XorArray(System.Byte[], System.Int32, System.Byte[], System.Int32, System.Int32) : System.Void
+M KeePassLib.Utility.MemUtil.ZeroArray<T>(T[]) : System.Void
+M KeePassLib.Utility.MemUtil.ZeroByteArray(System.Byte[]) : System.Void
+M KeePassLib.Utility.MemUtil.ZeroMemory(System.IntPtr, System.Int64) : System.Void
+M KeePassLib.Utility.MessageService.AskYesNo(System.String) : System.Boolean
+M KeePassLib.Utility.MessageService.AskYesNo(System.String, System.String) : System.Boolean
+M KeePassLib.Utility.MessageService.AskYesNo(System.String, System.String, System.Boolean) : System.Boolean
+M KeePassLib.Utility.MessageService.ExternalDecrementMessageCount() : System.Void
+M KeePassLib.Utility.MessageService.ExternalIncrementMessageCount() : System.Void
+M KeePassLib.Utility.MessageService.ShowFatal(System.Object[]) : System.Void
+M KeePassLib.Utility.MessageService.ShowInfo(System.Object[]) : System.Void
+M KeePassLib.Utility.MessageService.ShowInfoEx(System.String, System.Object[]) : System.Void
+M KeePassLib.Utility.MessageService.ShowLoadWarning(KeePassLib.Serialization.IOConnectionInfo, System.Exception) : System.Void
+M KeePassLib.Utility.MessageService.ShowLoadWarning(System.String, System.Exception) : System.Void
+M KeePassLib.Utility.MessageService.ShowLoadWarning(System.String, System.Exception, System.Boolean) : System.Void
+M KeePassLib.Utility.MessageService.ShowSaveWarning(KeePassLib.Serialization.IOConnectionInfo, System.Exception, System.Boolean) : System.Void
+M KeePassLib.Utility.MessageService.ShowSaveWarning(System.String, System.Exception, System.Boolean) : System.Void
+M KeePassLib.Utility.MessageService.ShowWarning(System.Object[]) : System.Void
+M KeePassLib.Utility.MessageServiceEventArgs..ctor()
+M KeePassLib.Utility.MonoWorkarounds.IsRequired() : System.Boolean
+M KeePassLib.Utility.MonoWorkarounds.IsRequired(System.UInt32) : System.Boolean
+M KeePassLib.Utility.MonoWorkarounds.SetEnabled(System.UInt32, System.Nullable<System.Boolean>) : System.Void
+M KeePassLib.Utility.StrEncodingInfo..ctor(KeePassLib.Utility.StrEncodingType, System.String, System.Text.Encoding, System.UInt32, System.Byte[])
+M KeePassLib.Utility.StrUtil.AddAccelerator(System.String, System.Collections.Generic.List<System.Char>) : System.String
+M KeePassLib.Utility.StrUtil.AlphaNumericOnly(System.String) : System.String
+M KeePassLib.Utility.StrUtil.BoolToString(System.Boolean) : System.String
+M KeePassLib.Utility.StrUtil.BoolToStringEx(System.Nullable<System.Boolean>) : System.String
+M KeePassLib.Utility.StrUtil.ByteToSafeChar(System.Byte) : System.Char
+M KeePassLib.Utility.StrUtil.ColorToUnnamedHtml(System.Drawing.Color, System.Boolean) : System.String
+M KeePassLib.Utility.StrUtil.CompactString3Dots(System.String, System.Int32) : System.String
+M KeePassLib.Utility.StrUtil.CompareLengthGt(System.String, System.String) : System.Int32
+M KeePassLib.Utility.StrUtil.CompareNaturally(System.String, System.String) : System.Int32
+M KeePassLib.Utility.StrUtil.ContainsTolerant(System.String, System.String) : System.Boolean
+M KeePassLib.Utility.StrUtil.Count(System.String, System.String) : System.Int32
+M KeePassLib.Utility.StrUtil.DataToDataUri(System.Byte[], System.String) : System.String
+M KeePassLib.Utility.StrUtil.DataUriToData(System.String) : System.Byte[]
+M KeePassLib.Utility.StrUtil.DecryptString(System.String) : System.String
+M KeePassLib.Utility.StrUtil.Deobfuscate(System.String) : System.String
+M KeePassLib.Utility.StrUtil.DeserializeIntArray(System.String) : System.Int32[]
+M KeePassLib.Utility.StrUtil.EncodeMenuText(System.String) : System.String
+M KeePassLib.Utility.StrUtil.EncodeToolTipText(System.String) : System.String
+M KeePassLib.Utility.StrUtil.EncryptString(System.String) : System.String
+M KeePassLib.Utility.StrUtil.EqualsTolerant(System.String, System.String) : System.Boolean
+M KeePassLib.Utility.StrUtil.FormatDataSize(System.UInt64) : System.String
+M KeePassLib.Utility.StrUtil.FormatDataSizeKB(System.UInt64) : System.String
+M KeePassLib.Utility.StrUtil.FormatException(System.Exception) : System.String
+M KeePassLib.Utility.StrUtil.GetEncoding(KeePassLib.Utility.StrEncodingType) : KeePassLib.Utility.StrEncodingInfo
+M KeePassLib.Utility.StrUtil.GetEncoding(System.String) : KeePassLib.Utility.StrEncodingInfo
+M KeePassLib.Utility.StrUtil.GetNewLineSeq(System.String) : System.String
+M KeePassLib.Utility.StrUtil.GetStringBetween(System.String, System.Int32, System.String, System.String) : System.String
+M KeePassLib.Utility.StrUtil.GetStringBetween(System.String, System.Int32, System.String, System.String, System.Int32&) : System.String
+M KeePassLib.Utility.StrUtil.GetUnusedChar(System.String) : System.Char
+M KeePassLib.Utility.StrUtil.IsDataUri(System.String) : System.Boolean
+M KeePassLib.Utility.StrUtil.IsDataUri(System.String, System.String) : System.Boolean
+M KeePassLib.Utility.StrUtil.IsHexString(System.Byte[], System.Boolean) : System.Boolean
+M KeePassLib.Utility.StrUtil.IsHexString(System.String, System.Boolean) : System.Boolean
+M KeePassLib.Utility.StrUtil.MultiToSingleLine(System.String) : System.String
+M KeePassLib.Utility.StrUtil.NormalizeNewLines(KeePassLib.Collections.ProtectedStringDictionary, System.Boolean) : System.Void
+M KeePassLib.Utility.StrUtil.NormalizeNewLines(System.String, System.Boolean) : System.String
+M KeePassLib.Utility.StrUtil.Obfuscate(System.String) : System.String
+M KeePassLib.Utility.StrUtil.ParseVersion(System.String) : System.UInt64
+M KeePassLib.Utility.StrUtil.RemoveAccelerator(System.String) : System.String
+M KeePassLib.Utility.StrUtil.RemovePlaceholders(System.String) : System.String
+M KeePassLib.Utility.StrUtil.ReplaceCaseInsensitive(System.String, System.String, System.String) : System.String
+M KeePassLib.Utility.StrUtil.RtfEncodeChar(System.Char) : System.String
+M KeePassLib.Utility.StrUtil.RtfFix(System.String) : System.String
+M KeePassLib.Utility.StrUtil.SafeXmlString(System.String) : System.String
+M KeePassLib.Utility.StrUtil.SerializeIntArray(System.Int32[]) : System.String
+M KeePassLib.Utility.StrUtil.SimplePatternMatch(System.String, System.String, System.StringComparison) : System.Boolean
+M KeePassLib.Utility.StrUtil.SplitCommandLine(System.String, System.String&, System.String&) : System.Void
+M KeePassLib.Utility.StrUtil.SplitSearchTerms(System.String) : System.Collections.Generic.List<System.String>
+M KeePassLib.Utility.StrUtil.SplitWithSep(System.String, System.String[], System.Boolean) : System.Collections.Generic.List<System.String>
+M KeePassLib.Utility.StrUtil.StringToBool(System.String) : System.Boolean
+M KeePassLib.Utility.StrUtil.StringToBoolEx(System.String) : System.Nullable<System.Boolean>
+M KeePassLib.Utility.StrUtil.StringToHtml(System.String) : System.String
+M KeePassLib.Utility.StrUtil.StringToTags(System.String) : System.Collections.Generic.List<System.String>
+M KeePassLib.Utility.StrUtil.TagsToString(System.Collections.Generic.List<System.String>, System.Boolean) : System.String
+M KeePassLib.Utility.StrUtil.TryParseDateTime(System.String, System.DateTime&) : System.Boolean
+M KeePassLib.Utility.StrUtil.TryParseInt(System.String, System.Int32&) : System.Boolean
+M KeePassLib.Utility.StrUtil.TryParseIntInvariant(System.String, System.Int32&) : System.Boolean
+M KeePassLib.Utility.StrUtil.TryParseLong(System.String, System.Int64&) : System.Boolean
+M KeePassLib.Utility.StrUtil.TryParseLongInvariant(System.String, System.Int64&) : System.Boolean
+M KeePassLib.Utility.StrUtil.TryParseUInt(System.String, System.UInt32&) : System.Boolean
+M KeePassLib.Utility.StrUtil.TryParseUIntInvariant(System.String, System.UInt32&) : System.Boolean
+M KeePassLib.Utility.StrUtil.TryParseULong(System.String, System.UInt64&) : System.Boolean
+M KeePassLib.Utility.StrUtil.TryParseULongInvariant(System.String, System.UInt64&) : System.Boolean
+M KeePassLib.Utility.StrUtil.TryParseUShort(System.String, System.UInt16&) : System.Boolean
+M KeePassLib.Utility.StrUtil.VersionToString(System.UInt64) : System.String
+M KeePassLib.Utility.StrUtil.VersionToString(System.UInt64, System.Boolean) : System.String
+M KeePassLib.Utility.StrUtil.VersionToString(System.UInt64, System.UInt32) : System.String
+M KeePassLib.Utility.StrUtil.XmlToString(System.String) : System.String
+M KeePassLib.Utility.TimeUtil.Compare(System.DateTime, System.DateTime, System.Boolean) : System.Int32
+M KeePassLib.Utility.TimeUtil.ConvertUnixTime(System.Double) : System.DateTime
+M KeePassLib.Utility.TimeUtil.FromDisplayString(System.String) : System.DateTime
+M KeePassLib.Utility.TimeUtil.FromDisplayStringEx(System.String, System.DateTime&) : System.Boolean
+M KeePassLib.Utility.TimeUtil.ParseUSTextDate(System.String) : System.Nullable<System.DateTime>
+M KeePassLib.Utility.TimeUtil.ParseUSTextDate(System.String, System.DateTimeKind) : System.Nullable<System.DateTime>
+M KeePassLib.Utility.TimeUtil.SerializeUnix(System.DateTime) : System.Double
+M KeePassLib.Utility.TimeUtil.SerializeUtc(System.DateTime) : System.String
+M KeePassLib.Utility.TimeUtil.ToDisplayString(System.DateTime) : System.String
+M KeePassLib.Utility.TimeUtil.ToDisplayStringDateOnly(System.DateTime) : System.String
+M KeePassLib.Utility.TimeUtil.ToLocal(System.DateTime, System.Boolean) : System.DateTime
+M KeePassLib.Utility.TimeUtil.ToUtc(System.DateTime, System.Boolean) : System.DateTime
+M KeePassLib.Utility.TimeUtil.TryDeserializeUtc(System.String, System.DateTime&) : System.Boolean
+M KeePassLib.Utility.TypeOverridePool.CreateInstance<T>() : T
+M KeePassLib.Utility.TypeOverridePool.IsRegistered(System.Type) : System.Boolean
+M KeePassLib.Utility.TypeOverridePool.Register(System.Type, KeePassLib.Delegates.GFunc<System.Object>) : System.Void
+M KeePassLib.Utility.TypeOverridePool.Unregister(System.Type) : System.Void
+M KeePassLib.Utility.UrlUtil.AssemblyEquals(System.String, System.String) : System.Boolean
+M KeePassLib.Utility.UrlUtil.ConvertSeparators(System.String) : System.String
+M KeePassLib.Utility.UrlUtil.ConvertSeparators(System.String, System.Char) : System.String
+M KeePassLib.Utility.UrlUtil.EnsureTerminatingSeparator(System.String, System.Boolean) : System.String
+M KeePassLib.Utility.UrlUtil.FileUrlToPath(System.String) : System.String
+M KeePassLib.Utility.UrlUtil.FilterFileName(System.String) : System.String
+M KeePassLib.Utility.UrlUtil.GetDriveLetter(System.String) : System.Char
+M KeePassLib.Utility.UrlUtil.GetExtension(System.String) : System.String
+M KeePassLib.Utility.UrlUtil.GetFileDirectory(System.String, System.Boolean, System.Boolean) : System.String
+M KeePassLib.Utility.UrlUtil.GetFileInfos(System.IO.DirectoryInfo, System.String, System.IO.SearchOption) : System.Collections.Generic.List<System.IO.FileInfo>
+M KeePassLib.Utility.UrlUtil.GetFileName(System.String) : System.String
+M KeePassLib.Utility.UrlUtil.GetFilePaths(System.String, System.String, System.IO.SearchOption) : System.Collections.Generic.List<System.String>
+M KeePassLib.Utility.UrlUtil.GetHost(System.String) : System.String
+M KeePassLib.Utility.UrlUtil.GetQuotedAppPath(System.String) : System.String
+M KeePassLib.Utility.UrlUtil.GetShortestAbsolutePath(System.String) : System.String
+M KeePassLib.Utility.UrlUtil.GetTempPath() : System.String
+M KeePassLib.Utility.UrlUtil.GetUrlLength(System.String, System.Int32) : System.Int32
+M KeePassLib.Utility.UrlUtil.HideFile(System.String, System.Boolean) : System.Boolean
+M KeePassLib.Utility.UrlUtil.IsAbsolutePath(System.String) : System.Boolean
+M KeePassLib.Utility.UrlUtil.IsUncPath(System.String) : System.Boolean
+M KeePassLib.Utility.UrlUtil.MakeAbsolutePath(System.String, System.String) : System.String
+M KeePassLib.Utility.UrlUtil.MakeRelativePath(System.String, System.String) : System.String
+M KeePassLib.Utility.UrlUtil.RemoveScheme(System.String) : System.String
+M KeePassLib.Utility.UrlUtil.StripExtension(System.String) : System.String
+M KeePassLib.Utility.UrlUtil.UnhideFile(System.String) : System.Boolean
+M KeePassLib.Utility.XmlUtilEx.CreateXmlDocument() : System.Xml.XmlDocument
+M KeePassLib.Utility.XmlUtilEx.CreateXmlReader(System.IO.Stream) : System.Xml.XmlReader
+M KeePassLib.Utility.XmlUtilEx.CreateXmlReaderSettings() : System.Xml.XmlReaderSettings
+M KeePassLib.Utility.XmlUtilEx.CreateXmlWriter(System.IO.Stream) : System.Xml.XmlWriter
+M KeePassLib.Utility.XmlUtilEx.CreateXmlWriterSettings() : System.Xml.XmlWriterSettings
+M KeePassLib.Utility.XmlUtilEx.Deserialize<T>(System.IO.Stream) : T
+M KeePassLib.Utility.XmlUtilEx.Serialize<T>(System.IO.Stream, T) : System.Void
+P KeePassLib.Collections.AutoTypeAssociation.Sequence : System.String [get;set;]
+P KeePassLib.Collections.AutoTypeAssociation.WindowName : System.String [get;set;]
+P KeePassLib.Collections.AutoTypeConfig.Associations : System.Collections.Generic.IEnumerable<KeePassLib.Collections.AutoTypeAssociation> [get;]
+P KeePassLib.Collections.AutoTypeConfig.AssociationsCount : System.Int32 [get;]
+P KeePassLib.Collections.AutoTypeConfig.DefaultSequence : System.String [get;set;]
+P KeePassLib.Collections.AutoTypeConfig.Enabled : System.Boolean [get;set;]
+P KeePassLib.Collections.AutoTypeConfig.ObfuscationOptions : KeePassLib.Collections.AutoTypeObfuscationOptions [get;set;]
+P KeePassLib.Collections.ProtectedBinaryDictionary.UCount : System.UInt32 [get;]
+P KeePassLib.Collections.ProtectedStringDictionary.UCount : System.UInt32 [get;]
+P KeePassLib.Collections.PwObjectList`1.UCount : System.UInt32 [get;]
+P KeePassLib.Collections.StringDictionaryEx.Count : System.Int32 [get;]
+P KeePassLib.Collections.VariantDictionary.Count : System.Int32 [get;]
+P KeePassLib.Cryptography.Cipher.ChaCha20Cipher.BlockSize : System.Int32 [get;]
+P KeePassLib.Cryptography.Cipher.ChaCha20Engine.CipherUuid : KeePassLib.PwUuid [get;]
+P KeePassLib.Cryptography.Cipher.ChaCha20Engine.DisplayName : System.String [get;]
+P KeePassLib.Cryptography.Cipher.ChaCha20Engine.IVLength : System.Int32 [get;]
+P KeePassLib.Cryptography.Cipher.ChaCha20Engine.KeyLength : System.Int32 [get;]
+P KeePassLib.Cryptography.Cipher.CipherPool.EngineCount : System.Int32 [get;]
+P KeePassLib.Cryptography.Cipher.CipherPool.GlobalPool : KeePassLib.Cryptography.Cipher.CipherPool [get;]
+P KeePassLib.Cryptography.Cipher.CipherPool.Item : KeePassLib.Cryptography.Cipher.ICipherEngine [get;]
+P KeePassLib.Cryptography.Cipher.CtrBlockCipher.BlockSize : System.Int32 [get;]
+P KeePassLib.Cryptography.Cipher.ICipherEngine.CipherUuid : KeePassLib.PwUuid [get;]
+P KeePassLib.Cryptography.Cipher.ICipherEngine.DisplayName : System.String [get;]
+P KeePassLib.Cryptography.Cipher.ICipherEngine2.IVLength : System.Int32 [get;]
+P KeePassLib.Cryptography.Cipher.ICipherEngine2.KeyLength : System.Int32 [get;]
+P KeePassLib.Cryptography.Cipher.Salsa20Cipher.BlockSize : System.Int32 [get;]
+P KeePassLib.Cryptography.Cipher.StandardAesEngine.AesUuid : KeePassLib.PwUuid [get;]
+P KeePassLib.Cryptography.Cipher.StandardAesEngine.CipherUuid : KeePassLib.PwUuid [get;]
+P KeePassLib.Cryptography.Cipher.StandardAesEngine.DisplayName : System.String [get;]
+P KeePassLib.Cryptography.CryptoRandom.GeneratedBytesCount : System.UInt64 [get;]
+P KeePassLib.Cryptography.CryptoRandom.Instance : KeePassLib.Cryptography.CryptoRandom [get;]
+P KeePassLib.Cryptography.CryptoUtil.IsProtectedDataSupported : System.Boolean [get;]
+P KeePassLib.Cryptography.HashingStreamEx.CanRead : System.Boolean [get;]
+P KeePassLib.Cryptography.HashingStreamEx.CanSeek : System.Boolean [get;]
+P KeePassLib.Cryptography.HashingStreamEx.CanWrite : System.Boolean [get;]
+P KeePassLib.Cryptography.HashingStreamEx.Hash : System.Byte[] [get;]
+P KeePassLib.Cryptography.HashingStreamEx.Length : System.Int64 [get;]
+P KeePassLib.Cryptography.HashingStreamEx.Position : System.Int64 [get;set;]
+P KeePassLib.Cryptography.KeyDerivation.AesKdf.Name : System.String [get;]
+P KeePassLib.Cryptography.KeyDerivation.AesKdf.Uuid : KeePassLib.PwUuid [get;]
+P KeePassLib.Cryptography.KeyDerivation.Argon2Kdf.Name : System.String [get;]
+P KeePassLib.Cryptography.KeyDerivation.Argon2Kdf.Uuid : KeePassLib.PwUuid [get;]
+P KeePassLib.Cryptography.KeyDerivation.KdfEngine.Name : System.String [get;]
+P KeePassLib.Cryptography.KeyDerivation.KdfEngine.Uuid : KeePassLib.PwUuid [get;]
+P KeePassLib.Cryptography.KeyDerivation.KdfParameters.KdfUuid : KeePassLib.PwUuid [get;]
+P KeePassLib.Cryptography.KeyDerivation.KdfPool.Engines : System.Collections.Generic.IEnumerable<KeePassLib.Cryptography.KeyDerivation.KdfEngine> [get;]
+P KeePassLib.Cryptography.PasswordGenerator.CustomPwGenerator.Name : System.String [get;]
+P KeePassLib.Cryptography.PasswordGenerator.CustomPwGenerator.SupportsOptions : System.Boolean [get;]
+P KeePassLib.Cryptography.PasswordGenerator.CustomPwGenerator.Uuid : KeePassLib.PwUuid [get;]
+P KeePassLib.Cryptography.PasswordGenerator.CustomPwGeneratorPool.Count : System.Int32 [get;]
+P KeePassLib.Cryptography.PasswordGenerator.PwCharSet.HighAnsiChars : System.String [get;]
+P KeePassLib.Cryptography.PasswordGenerator.PwCharSet.Item : System.Char [get;]
+P KeePassLib.Cryptography.PasswordGenerator.PwCharSet.Size : System.UInt32 [get;]
+P KeePassLib.Cryptography.PasswordGenerator.PwCharSet.SpecialChars : System.String [get;]
+P KeePassLib.Cryptography.PasswordGenerator.PwProfile.CharSet : KeePassLib.Cryptography.PasswordGenerator.PwCharSet [get;set;]
+P KeePassLib.Cryptography.PasswordGenerator.PwProfile.CharSetAdditional : System.String [get;set;]
+P KeePassLib.Cryptography.PasswordGenerator.PwProfile.CharSetRanges : System.String [get;set;]
+P KeePassLib.Cryptography.PasswordGenerator.PwProfile.CollectUserEntropy : System.Boolean [get;set;]
+P KeePassLib.Cryptography.PasswordGenerator.PwProfile.CustomAlgorithmOptions : System.String [get;set;]
+P KeePassLib.Cryptography.PasswordGenerator.PwProfile.CustomAlgorithmUuid : System.String [get;set;]
+P KeePassLib.Cryptography.PasswordGenerator.PwProfile.ExcludeCharacters : System.String [get;set;]
+P KeePassLib.Cryptography.PasswordGenerator.PwProfile.ExcludeLookAlike : System.Boolean [get;set;]
+P KeePassLib.Cryptography.PasswordGenerator.PwProfile.GeneratorType : KeePassLib.Cryptography.PasswordGenerator.PasswordGeneratorType [get;set;]
+P KeePassLib.Cryptography.PasswordGenerator.PwProfile.Length : System.UInt32 [get;set;]
+P KeePassLib.Cryptography.PasswordGenerator.PwProfile.Name : System.String [get;set;]
+P KeePassLib.Cryptography.PasswordGenerator.PwProfile.NoRepeatingCharacters : System.Boolean [get;set;]
+P KeePassLib.Cryptography.PasswordGenerator.PwProfile.Pattern : System.String [get;set;]
+P KeePassLib.Cryptography.PasswordGenerator.PwProfile.PatternPermutePassword : System.Boolean [get;set;]
+P KeePassLib.IOAccessEventArgs.IOConnectionInfo : KeePassLib.Serialization.IOConnectionInfo [get;]
+P KeePassLib.IOAccessEventArgs.IOConnectionInfo2 : KeePassLib.Serialization.IOConnectionInfo [get;]
+P KeePassLib.IOAccessEventArgs.Type : KeePassLib.IOAccessType [get;]
+P KeePassLib.IOWebRequestEventArgs.IOConnectionInfo : KeePassLib.Serialization.IOConnectionInfo [get;]
+P KeePassLib.IOWebRequestEventArgs.Request : System.Net.WebRequest [get;]
+P KeePassLib.Interfaces.IStructureItem.ParentGroup : KeePassLib.PwGroup [get;]
+P KeePassLib.Interfaces.IStructureItem.PreviousParentGroup : KeePassLib.PwUuid [get;]
+P KeePassLib.Interfaces.IStructureItem.Uuid : KeePassLib.PwUuid [get;set;]
+P KeePassLib.Interfaces.ITimeLogger.CreationTime : System.DateTime [get;set;]
+P KeePassLib.Interfaces.ITimeLogger.Expires : System.Boolean [get;set;]
+P KeePassLib.Interfaces.ITimeLogger.ExpiryTime : System.DateTime [get;set;]
+P KeePassLib.Interfaces.ITimeLogger.LastAccessTime : System.DateTime [get;set;]
+P KeePassLib.Interfaces.ITimeLogger.LastModificationTime : System.DateTime [get;set;]
+P KeePassLib.Interfaces.ITimeLogger.LocationChanged : System.DateTime [get;set;]
+P KeePassLib.Interfaces.ITimeLogger.UsageCount : System.UInt64 [get;set;]
+P KeePassLib.Keys.CompositeKey.UserKeyCount : System.UInt32 [get;]
+P KeePassLib.Keys.CompositeKey.UserKeys : System.Collections.Generic.IEnumerable<KeePassLib.Keys.IUserKey> [get;]
+P KeePassLib.Keys.IUserKey.KeyData : KeePassLib.Security.ProtectedBinary [get;]
+P KeePassLib.Keys.InvalidCompositeKeyException.Message : System.String [get;]
+P KeePassLib.Keys.KcpCustomKey.KeyData : KeePassLib.Security.ProtectedBinary [get;]
+P KeePassLib.Keys.KcpCustomKey.Name : System.String [get;]
+P KeePassLib.Keys.KcpKeyFile.KeyData : KeePassLib.Security.ProtectedBinary [get;]
+P KeePassLib.Keys.KcpKeyFile.Path : System.String [get;]
+P KeePassLib.Keys.KcpPassword.KeyData : KeePassLib.Security.ProtectedBinary [get;]
+P KeePassLib.Keys.KcpPassword.Password : KeePassLib.Security.ProtectedString [get;]
+P KeePassLib.Keys.KcpUserAccount.KeyData : KeePassLib.Security.ProtectedBinary [get;]
+P KeePassLib.Keys.KeyProvider.DirectKey : System.Boolean [get;]
+P KeePassLib.Keys.KeyProvider.Exclusive : System.Boolean [get;]
+P KeePassLib.Keys.KeyProvider.GetKeyMightShowGui : System.Boolean [get;]
+P KeePassLib.Keys.KeyProvider.Name : System.String [get;]
+P KeePassLib.Keys.KeyProvider.SecureDesktopCompatible : System.Boolean [get;]
+P KeePassLib.Keys.KeyProviderPool.Count : System.Int32 [get;]
+P KeePassLib.Keys.KeyProviderQueryContext.CreatingNewKey : System.Boolean [get;]
+P KeePassLib.Keys.KeyProviderQueryContext.DatabaseIOInfo : KeePassLib.Serialization.IOConnectionInfo [get;]
+P KeePassLib.Keys.KeyProviderQueryContext.DatabasePath : System.String [get;]
+P KeePassLib.Keys.KeyProviderQueryContext.IsOnSecureDesktop : System.Boolean [get;]
+P KeePassLib.Keys.KeyValidator.Name : System.String [get;]
+P KeePassLib.Keys.KeyValidatorPool.Count : System.Int32 [get;]
+P KeePassLib.Keys.KfxData.Hash : System.String [get;set;]
+P KeePassLib.Keys.KfxData.Value : System.String [get;set;]
+P KeePassLib.Keys.KfxFile.Key : KeePassLib.Keys.KfxKey [get;set;]
+P KeePassLib.Keys.KfxFile.Meta : KeePassLib.Keys.KfxMeta [get;set;]
+P KeePassLib.Keys.KfxKey.Data : KeePassLib.Keys.KfxData [get;set;]
+P KeePassLib.Keys.KfxMeta.Version : System.String [get;set;]
+P KeePassLib.Keys.SampleKeyProvider.GetKeyMightShowGui : System.Boolean [get;]
+P KeePassLib.Keys.SampleKeyProvider.Name : System.String [get;]
+P KeePassLib.Native.NativeLib.AllowNative : System.Boolean [get;set;]
+P KeePassLib.Native.NativeLib.MonoVersion : System.UInt64 [get;]
+P KeePassLib.ObjectTouchedEventArgs.Modified : System.Boolean [get;]
+P KeePassLib.ObjectTouchedEventArgs.Object : System.Object [get;]
+P KeePassLib.ObjectTouchedEventArgs.ParentsTouched : System.Boolean [get;]
+P KeePassLib.PwCustomIcon.ImageDataPng : System.Byte[] [get;]
+P KeePassLib.PwCustomIcon.LastModificationTime : System.Nullable<System.DateTime> [get;set;]
+P KeePassLib.PwCustomIcon.Name : System.String [get;set;]
+P KeePassLib.PwCustomIcon.Uuid : KeePassLib.PwUuid [get;]
+P KeePassLib.PwDatabase.Color : System.Drawing.Color [get;set;]
+P KeePassLib.PwDatabase.Compression : KeePassLib.PwCompressionAlgorithm [get;set;]
+P KeePassLib.PwDatabase.CustomData : KeePassLib.Collections.StringDictionaryEx [get;]
+P KeePassLib.PwDatabase.CustomIcons : System.Collections.Generic.List<KeePassLib.PwCustomIcon> [get;]
+P KeePassLib.PwDatabase.DataCipherUuid : KeePassLib.PwUuid [get;set;]
+P KeePassLib.PwDatabase.DefaultUserName : System.String [get;set;]
+P KeePassLib.PwDatabase.DefaultUserNameChanged : System.DateTime [get;set;]
+P KeePassLib.PwDatabase.DeletedObjects : KeePassLib.Collections.PwObjectList<KeePassLib.PwDeletedObject> [get;]
+P KeePassLib.PwDatabase.Description : System.String [get;set;]
+P KeePassLib.PwDatabase.DescriptionChanged : System.DateTime [get;set;]
+P KeePassLib.PwDatabase.DetachBinaries : System.String [get;set;]
+P KeePassLib.PwDatabase.EntryTemplatesGroup : KeePassLib.PwUuid [get;set;]
+P KeePassLib.PwDatabase.EntryTemplatesGroupChanged : System.DateTime [get;set;]
+P KeePassLib.PwDatabase.HashOfFileOnDisk : System.Byte[] [get;]
+P KeePassLib.PwDatabase.HashOfLastIO : System.Byte[] [get;]
+P KeePassLib.PwDatabase.HistoryMaxItems : System.Int32 [get;set;]
+P KeePassLib.PwDatabase.HistoryMaxSize : System.Int64 [get;set;]
+P KeePassLib.PwDatabase.IOConnectionInfo : KeePassLib.Serialization.IOConnectionInfo [get;]
+P KeePassLib.PwDatabase.IsOpen : System.Boolean [get;]
+P KeePassLib.PwDatabase.KdfParameters : KeePassLib.Cryptography.KeyDerivation.KdfParameters [get;set;]
+P KeePassLib.PwDatabase.LastSelectedGroup : KeePassLib.PwUuid [get;set;]
+P KeePassLib.PwDatabase.LastTopVisibleGroup : KeePassLib.PwUuid [get;set;]
+P KeePassLib.PwDatabase.LocalizedAppName : System.String [get;set;]
+P KeePassLib.PwDatabase.MaintenanceHistoryDays : System.UInt32 [get;set;]
+P KeePassLib.PwDatabase.MasterKey : KeePassLib.Keys.CompositeKey [get;set;]
+P KeePassLib.PwDatabase.MasterKeyChangeForce : System.Int64 [get;set;]
+P KeePassLib.PwDatabase.MasterKeyChangeForceOnce : System.Boolean [get;set;]
+P KeePassLib.PwDatabase.MasterKeyChangeRec : System.Int64 [get;set;]
+P KeePassLib.PwDatabase.MasterKeyChanged : System.DateTime [get;set;]
+P KeePassLib.PwDatabase.MemoryProtection : KeePassLib.MemoryProtectionConfig [get;set;]
+P KeePassLib.PwDatabase.Modified : System.Boolean [get;set;]
+P KeePassLib.PwDatabase.Name : System.String [get;set;]
+P KeePassLib.PwDatabase.NameChanged : System.DateTime [get;set;]
+P KeePassLib.PwDatabase.PublicCustomData : KeePassLib.Collections.VariantDictionary [get;]
+P KeePassLib.PwDatabase.RecycleBinChanged : System.DateTime [get;set;]
+P KeePassLib.PwDatabase.RecycleBinEnabled : System.Boolean [get;set;]
+P KeePassLib.PwDatabase.RecycleBinUuid : KeePassLib.PwUuid [get;set;]
+P KeePassLib.PwDatabase.RootGroup : KeePassLib.PwGroup [get;set;]
+P KeePassLib.PwDatabase.SettingsChanged : System.DateTime [get;set;]
+P KeePassLib.PwDatabase.UINeedsIconUpdate : System.Boolean [get;set;]
+P KeePassLib.PwDatabase.UseFileLocks : System.Boolean [get;set;]
+P KeePassLib.PwDatabase.UseFileTransactions : System.Boolean [get;set;]
+P KeePassLib.PwDeletedObject.DeletionTime : System.DateTime [get;set;]
+P KeePassLib.PwDeletedObject.Uuid : KeePassLib.PwUuid [get;set;]
+P KeePassLib.PwEntry.AutoType : KeePassLib.Collections.AutoTypeConfig [get;set;]
+P KeePassLib.PwEntry.BackgroundColor : System.Drawing.Color [get;set;]
+P KeePassLib.PwEntry.Binaries : KeePassLib.Collections.ProtectedBinaryDictionary [get;set;]
+P KeePassLib.PwEntry.CreationTime : System.DateTime [get;set;]
+P KeePassLib.PwEntry.CustomData : KeePassLib.Collections.StringDictionaryEx [get;]
+P KeePassLib.PwEntry.CustomIconUuid : KeePassLib.PwUuid [get;set;]
+P KeePassLib.PwEntry.Expires : System.Boolean [get;set;]
+P KeePassLib.PwEntry.ExpiryTime : System.DateTime [get;set;]
+P KeePassLib.PwEntry.ForegroundColor : System.Drawing.Color [get;set;]
+P KeePassLib.PwEntry.History : KeePassLib.Collections.PwObjectList<KeePassLib.PwEntry> [get;set;]
+P KeePassLib.PwEntry.IconId : KeePassLib.PwIcon [get;set;]
+P KeePassLib.PwEntry.LastAccessTime : System.DateTime [get;set;]
+P KeePassLib.PwEntry.LastModificationTime : System.DateTime [get;set;]
+P KeePassLib.PwEntry.LocationChanged : System.DateTime [get;set;]
+P KeePassLib.PwEntry.OverrideUrl : System.String [get;set;]
+P KeePassLib.PwEntry.ParentGroup : KeePassLib.PwGroup [get;]
+P KeePassLib.PwEntry.PreviousParentGroup : KeePassLib.PwUuid [get;set;]
+P KeePassLib.PwEntry.QualityCheck : System.Boolean [get;set;]
+P KeePassLib.PwEntry.Strings : KeePassLib.Collections.ProtectedStringDictionary [get;set;]
+P KeePassLib.PwEntry.Tags : System.Collections.Generic.List<System.String> [get;set;]
+P KeePassLib.PwEntry.UsageCount : System.UInt64 [get;set;]
+P KeePassLib.PwEntry.Uuid : KeePassLib.PwUuid [get;set;]
+P KeePassLib.PwGroup.CreationTime : System.DateTime [get;set;]
+P KeePassLib.PwGroup.CustomData : KeePassLib.Collections.StringDictionaryEx [get;]
+P KeePassLib.PwGroup.CustomIconUuid : KeePassLib.PwUuid [get;set;]
+P KeePassLib.PwGroup.DefaultAutoTypeSequence : System.String [get;set;]
+P KeePassLib.PwGroup.EnableAutoType : System.Nullable<System.Boolean> [get;set;]
+P KeePassLib.PwGroup.EnableSearching : System.Nullable<System.Boolean> [get;set;]
+P KeePassLib.PwGroup.Entries : KeePassLib.Collections.PwObjectList<KeePassLib.PwEntry> [get;]
+P KeePassLib.PwGroup.Expires : System.Boolean [get;set;]
+P KeePassLib.PwGroup.ExpiryTime : System.DateTime [get;set;]
+P KeePassLib.PwGroup.Groups : KeePassLib.Collections.PwObjectList<KeePassLib.PwGroup> [get;]
+P KeePassLib.PwGroup.IconId : KeePassLib.PwIcon [get;set;]
+P KeePassLib.PwGroup.IsExpanded : System.Boolean [get;set;]
+P KeePassLib.PwGroup.IsVirtual : System.Boolean [get;set;]
+P KeePassLib.PwGroup.LastAccessTime : System.DateTime [get;set;]
+P KeePassLib.PwGroup.LastModificationTime : System.DateTime [get;set;]
+P KeePassLib.PwGroup.LastTopVisibleEntry : KeePassLib.PwUuid [get;set;]
+P KeePassLib.PwGroup.LocationChanged : System.DateTime [get;set;]
+P KeePassLib.PwGroup.Name : System.String [get;set;]
+P KeePassLib.PwGroup.Notes : System.String [get;set;]
+P KeePassLib.PwGroup.ParentGroup : KeePassLib.PwGroup [get;]
+P KeePassLib.PwGroup.PreviousParentGroup : KeePassLib.PwUuid [get;set;]
+P KeePassLib.PwGroup.Tags : System.Collections.Generic.List<System.String> [get;set;]
+P KeePassLib.PwGroup.UsageCount : System.UInt64 [get;set;]
+P KeePassLib.PwGroup.Uuid : KeePassLib.PwUuid [get;set;]
+P KeePassLib.PwUuid.IsZero : System.Boolean [get;]
+P KeePassLib.PwUuid.UuidBytes : System.Byte[] [get;]
+P KeePassLib.Resources.KLRes.AlgorithmUnknown : System.String [get;]
+P KeePassLib.Resources.KLRes.CharSetInvalid : System.String [get;]
+P KeePassLib.Resources.KLRes.CharSetTooFewChars : System.String [get;]
+P KeePassLib.Resources.KLRes.CryptoStreamFailed : System.String [get;]
+P KeePassLib.Resources.KLRes.EncDataTooLarge : System.String [get;]
+P KeePassLib.Resources.KLRes.EntryLower : System.String [get;]
+P KeePassLib.Resources.KLRes.ErrorInClipboard : System.String [get;]
+P KeePassLib.Resources.KLRes.Expect100Continue : System.String [get;]
+P KeePassLib.Resources.KLRes.FatalError : System.String [get;]
+P KeePassLib.Resources.KLRes.FatalErrorText : System.String [get;]
+P KeePassLib.Resources.KLRes.FileCorrupted : System.String [get;]
+P KeePassLib.Resources.KLRes.FileHeaderCorrupted : System.String [get;]
+P KeePassLib.Resources.KLRes.FileIncomplete : System.String [get;]
+P KeePassLib.Resources.KLRes.FileIncompleteExpc : System.String [get;]
+P KeePassLib.Resources.KLRes.FileLoadFailed : System.String [get;]
+P KeePassLib.Resources.KLRes.FileLockedWrite : System.String [get;]
+P KeePassLib.Resources.KLRes.FileNewVerOrPlgReq : System.String [get;]
+P KeePassLib.Resources.KLRes.FileNewVerReq : System.String [get;]
+P KeePassLib.Resources.KLRes.FileSaveCorruptionWarning : System.String [get;]
+P KeePassLib.Resources.KLRes.FileSaveFailed : System.String [get;]
+P KeePassLib.Resources.KLRes.FileSaveFailed2 : System.String [get;]
+P KeePassLib.Resources.KLRes.FileSigInvalid : System.String [get;]
+P KeePassLib.Resources.KLRes.FileUnknownCipher : System.String [get;]
+P KeePassLib.Resources.KLRes.FileUnknownCompression : System.String [get;]
+P KeePassLib.Resources.KLRes.FileVersionUnsupported : System.String [get;]
+P KeePassLib.Resources.KLRes.FinalKeyCreationFailed : System.String [get;]
+P KeePassLib.Resources.KLRes.FollowRedirects : System.String [get;]
+P KeePassLib.Resources.KLRes.FrameworkNotImplExcp : System.String [get;]
+P KeePassLib.Resources.KLRes.General : System.String [get;]
+P KeePassLib.Resources.KLRes.GroupLower : System.String [get;]
+P KeePassLib.Resources.KLRes.InvalidCompositeKey : System.String [get;]
+P KeePassLib.Resources.KLRes.InvalidCompositeKeyHint : System.String [get;]
+P KeePassLib.Resources.KLRes.InvalidCompositeKeyOrCorrupted : System.String [get;]
+P KeePassLib.Resources.KLRes.InvalidDataWhileDecoding : System.String [get;]
+P KeePassLib.Resources.KLRes.KeePass1xHint : System.String [get;]
+P KeePassLib.Resources.KLRes.KeyBits : System.String [get;]
+P KeePassLib.Resources.KLRes.KeyFileDbSel : System.String [get;]
+P KeePassLib.Resources.KLRes.KeyHashMismatch : System.String [get;]
+P KeePassLib.Resources.KLRes.MasterSeedLengthInvalid : System.String [get;]
+P KeePassLib.Resources.KLRes.OldFormat : System.String [get;]
+P KeePassLib.Resources.KLRes.Passive : System.String [get;]
+P KeePassLib.Resources.KLRes.PathBackslash : System.String [get;]
+P KeePassLib.Resources.KLRes.PatternInvalid : System.String [get;]
+P KeePassLib.Resources.KLRes.PreAuth : System.String [get;]
+P KeePassLib.Resources.KLRes.PwGenFailed : System.String [get;]
+P KeePassLib.Resources.KLRes.StructsTooDeep : System.String [get;]
+P KeePassLib.Resources.KLRes.Timeout : System.String [get;]
+P KeePassLib.Resources.KLRes.TryAgainSecs : System.String [get;]
+P KeePassLib.Resources.KLRes.UnknownError : System.String [get;]
+P KeePassLib.Resources.KLRes.UnknownHeaderId : System.String [get;]
+P KeePassLib.Resources.KLRes.UnknownKdf : System.String [get;]
+P KeePassLib.Resources.KLRes.UserAccountKeyError : System.String [get;]
+P KeePassLib.Resources.KLRes.UserAgent : System.String [get;]
+P KeePassLib.Resources.KSRes.Test : System.String [get;]
+P KeePassLib.SearchParameters.ComparisonMode : System.StringComparison [get;set;]
+P KeePassLib.SearchParameters.DataTransformation : System.String [get;set;]
+P KeePassLib.SearchParameters.DataTransformationFn : KeePassLib.Delegates.StrPwEntryDelegate [get;set;]
+P KeePassLib.SearchParameters.ExcludeExpired : System.Boolean [get;set;]
+P KeePassLib.SearchParameters.MatchDiacritics : System.Boolean [get;set;]
+P KeePassLib.SearchParameters.Name : System.String [get;set;]
+P KeePassLib.SearchParameters.None : KeePassLib.SearchParameters [get;]
+P KeePassLib.SearchParameters.RegularExpression : System.Boolean [get;set;]
+P KeePassLib.SearchParameters.RespectEntrySearchingDisabled : System.Boolean [get;set;]
+P KeePassLib.SearchParameters.SearchInGroupNames : System.Boolean [get;set;]
+P KeePassLib.SearchParameters.SearchInGroupPaths : System.Boolean [get;set;]
+P KeePassLib.SearchParameters.SearchInHistory : System.Boolean [get;set;]
+P KeePassLib.SearchParameters.SearchInNotes : System.Boolean [get;set;]
+P KeePassLib.SearchParameters.SearchInOther : System.Boolean [get;set;]
+P KeePassLib.SearchParameters.SearchInPasswords : System.Boolean [get;set;]
+P KeePassLib.SearchParameters.SearchInStringNames : System.Boolean [get;set;]
+P KeePassLib.SearchParameters.SearchInTags : System.Boolean [get;set;]
+P KeePassLib.SearchParameters.SearchInTitles : System.Boolean [get;set;]
+P KeePassLib.SearchParameters.SearchInUrls : System.Boolean [get;set;]
+P KeePassLib.SearchParameters.SearchInUserNames : System.Boolean [get;set;]
+P KeePassLib.SearchParameters.SearchInUuids : System.Boolean [get;set;]
+P KeePassLib.SearchParameters.SearchMode : KeePassLib.PwSearchMode [get;set;]
+P KeePassLib.SearchParameters.SearchString : System.String [get;set;]
+P KeePassLib.Security.ProtectedBinary.ExtCrypt : KeePassLib.Security.PbCryptDelegate [get;set;]
+P KeePassLib.Security.ProtectedBinary.IsProtected : System.Boolean [get;]
+P KeePassLib.Security.ProtectedBinary.Length : System.UInt32 [get;]
+P KeePassLib.Security.ProtectedString.Empty : KeePassLib.Security.ProtectedString [get;]
+P KeePassLib.Security.ProtectedString.EmptyEx : KeePassLib.Security.ProtectedString [get;]
+P KeePassLib.Security.ProtectedString.IsEmpty : System.Boolean [get;]
+P KeePassLib.Security.ProtectedString.IsProtected : System.Boolean [get;]
+P KeePassLib.Security.ProtectedString.Length : System.Int32 [get;]
+P KeePassLib.Security.XorredBuffer.Length : System.UInt32 [get;]
+P KeePassLib.Serialization.BinaryReaderEx.CopyDataTo : System.IO.Stream [get;set;]
+P KeePassLib.Serialization.BinaryReaderEx.ReadExceptionText : System.String [get;set;]
+P KeePassLib.Serialization.FileLockException.Message : System.String [get;]
+P KeePassLib.Serialization.HashedBlockStream.CanRead : System.Boolean [get;]
+P KeePassLib.Serialization.HashedBlockStream.CanSeek : System.Boolean [get;]
+P KeePassLib.Serialization.HashedBlockStream.CanWrite : System.Boolean [get;]
+P KeePassLib.Serialization.HashedBlockStream.Length : System.Int64 [get;]
+P KeePassLib.Serialization.HashedBlockStream.Position : System.Int64 [get;set;]
+P KeePassLib.Serialization.HmacBlockStream.CanRead : System.Boolean [get;]
+P KeePassLib.Serialization.HmacBlockStream.CanSeek : System.Boolean [get;]
+P KeePassLib.Serialization.HmacBlockStream.CanWrite : System.Boolean [get;]
+P KeePassLib.Serialization.HmacBlockStream.Length : System.Int64 [get;]
+P KeePassLib.Serialization.HmacBlockStream.Position : System.Int64 [get;set;]
+P KeePassLib.Serialization.IHasIocProperties.IOConnectionProperties : KeePassLib.Serialization.IocProperties [get;set;]
+P KeePassLib.Serialization.IOConnectionInfo.CredProtMode : KeePassLib.Serialization.IOCredProtMode [get;set;]
+P KeePassLib.Serialization.IOConnectionInfo.CredSaveMode : KeePassLib.Serialization.IOCredSaveMode [get;set;]
+P KeePassLib.Serialization.IOConnectionInfo.IsComplete : System.Boolean [get;set;]
+P KeePassLib.Serialization.IOConnectionInfo.Password : System.String [get;set;]
+P KeePassLib.Serialization.IOConnectionInfo.Path : System.String [get;set;]
+P KeePassLib.Serialization.IOConnectionInfo.Properties : KeePassLib.Serialization.IocProperties [get;set;]
+P KeePassLib.Serialization.IOConnectionInfo.PropertiesEx : System.String [get;set;]
+P KeePassLib.Serialization.IOConnectionInfo.UserName : System.String [get;set;]
+P KeePassLib.Serialization.IocPropertyInfo.DisplayName : System.String [get;set;]
+P KeePassLib.Serialization.IocPropertyInfo.Name : System.String [get;]
+P KeePassLib.Serialization.IocPropertyInfo.Protocols : System.Collections.Generic.IEnumerable<System.String> [get;]
+P KeePassLib.Serialization.IocPropertyInfo.Type : System.Type [get;]
+P KeePassLib.Serialization.IocPropertyInfoPool.PropertyInfos : System.Collections.Generic.IEnumerable<KeePassLib.Serialization.IocPropertyInfo> [get;]
+P KeePassLib.Serialization.KdbxFile.DetachBinaries : System.String [get;set;]
+P KeePassLib.Serialization.KdbxFile.HashOfFileOnDisk : System.Byte[] [get;]
+P KeePassLib.Serialization.KdbxFile.RepairMode : System.Boolean [get;set;]
+P KeePassLib.Serialization.OldFormatException.Message : System.String [get;]
+P KeePassLib.Translation.KPControlCustomization.BaseHash : System.String [get;set;]
+P KeePassLib.Translation.KPControlCustomization.Layout : KeePassLib.Translation.KpccLayout [get;set;]
+P KeePassLib.Translation.KPControlCustomization.Name : System.String [get;set;]
+P KeePassLib.Translation.KPControlCustomization.Text : System.String [get;set;]
+P KeePassLib.Translation.KPControlCustomization.TextEnglish : System.String [get;set;]
+P KeePassLib.Translation.KPFormCustomization.Controls : System.Collections.Generic.List<KeePassLib.Translation.KPControlCustomization> [get;set;]
+P KeePassLib.Translation.KPFormCustomization.FullName : System.String [get;set;]
+P KeePassLib.Translation.KPFormCustomization.Window : KeePassLib.Translation.KPControlCustomization [get;set;]
+P KeePassLib.Translation.KPStringTable.Name : System.String [get;set;]
+P KeePassLib.Translation.KPStringTable.Strings : System.Collections.Generic.List<KeePassLib.Translation.KPStringTableItem> [get;set;]
+P KeePassLib.Translation.KPStringTableItem.Name : System.String [get;set;]
+P KeePassLib.Translation.KPStringTableItem.Value : System.String [get;set;]
+P KeePassLib.Translation.KPStringTableItem.ValueEnglish : System.String [get;set;]
+P KeePassLib.Translation.KPTranslation.Forms : System.Collections.Generic.List<KeePassLib.Translation.KPFormCustomization> [get;set;]
+P KeePassLib.Translation.KPTranslation.Properties : KeePassLib.Translation.KPTranslationProperties [get;set;]
+P KeePassLib.Translation.KPTranslation.StringTables : System.Collections.Generic.List<KeePassLib.Translation.KPStringTable> [get;set;]
+P KeePassLib.Translation.KPTranslation.UnusedText : System.String [get;set;]
+P KeePassLib.Translation.KPTranslationProperties.Application : System.String [get;set;]
+P KeePassLib.Translation.KPTranslationProperties.ApplicationVersion : System.String [get;set;]
+P KeePassLib.Translation.KPTranslationProperties.AuthorContact : System.String [get;set;]
+P KeePassLib.Translation.KPTranslationProperties.AuthorName : System.String [get;set;]
+P KeePassLib.Translation.KPTranslationProperties.FileUuid : System.String [get;set;]
+P KeePassLib.Translation.KPTranslationProperties.Generator : System.String [get;set;]
+P KeePassLib.Translation.KPTranslationProperties.Iso6391Code : System.String [get;set;]
+P KeePassLib.Translation.KPTranslationProperties.LastModified : System.String [get;set;]
+P KeePassLib.Translation.KPTranslationProperties.NameEnglish : System.String [get;set;]
+P KeePassLib.Translation.KPTranslationProperties.NameNative : System.String [get;set;]
+P KeePassLib.Translation.KPTranslationProperties.RightToLeft : System.Boolean [get;set;]
+P KeePassLib.Translation.KpccLayout.Height : System.String [get;set;]
+P KeePassLib.Translation.KpccLayout.Width : System.String [get;set;]
+P KeePassLib.Translation.KpccLayout.X : System.String [get;set;]
+P KeePassLib.Translation.KpccLayout.Y : System.String [get;set;]
+P KeePassLib.Utility.CharStream.Position : System.Int64 [get;set;]
+P KeePassLib.Utility.MessageService.CurrentMessageCount : System.UInt32 [get;]
+P KeePassLib.Utility.MessageService.NewLine : System.String [get;]
+P KeePassLib.Utility.MessageService.NewParagraph : System.String [get;]
+P KeePassLib.Utility.MessageServiceEventArgs.Text : System.String [get;]
+P KeePassLib.Utility.MessageServiceEventArgs.Title : System.String [get;]
+P KeePassLib.Utility.StrEncodingInfo.CodePointSize : System.UInt32 [get;]
+P KeePassLib.Utility.StrEncodingInfo.Encoding : System.Text.Encoding [get;]
+P KeePassLib.Utility.StrEncodingInfo.Name : System.String [get;]
+P KeePassLib.Utility.StrEncodingInfo.StartSignature : System.Byte[] [get;]
+P KeePassLib.Utility.StrEncodingInfo.Type : KeePassLib.Utility.StrEncodingType [get;]
+P KeePassLib.Utility.StrUtil.CaseIgnoreComparer : System.StringComparer [get;]
+P KeePassLib.Utility.StrUtil.Encodings : System.Collections.Generic.IEnumerable<KeePassLib.Utility.StrEncodingInfo> [get;]
+P KeePassLib.Utility.StrUtil.RightToLeft : System.Boolean [get;set;]
+P KeePassLib.Utility.StrUtil.Utf8 : System.Text.UTF8Encoding [get;]
+P KeePassLib.Utility.TimeUtil.UnixRoot : System.DateTime [get;]
+P KeePassLib.Utility.UrlUtil.LocalDirSepChar : System.Char [get;]
+T KeePassLib.AppRunFlags [enum]
+T KeePassLib.Collections.AutoTypeAssociation [sealed class]
+T KeePassLib.Collections.AutoTypeConfig [sealed class]
+T KeePassLib.Collections.AutoTypeObfuscationOptions [enum]
+T KeePassLib.Collections.ProtectedBinaryDictionary [sealed class]
+T KeePassLib.Collections.ProtectedStringDictionary [sealed class]
+T KeePassLib.Collections.PwObjectList`1 [sealed class]
+T KeePassLib.Collections.PwObjectPool [sealed class]
+T KeePassLib.Collections.StringDictionaryEx [sealed class]
+T KeePassLib.Collections.VariantDictionary [class]
+T KeePassLib.Cryptography.Cipher.ChaCha20Cipher [sealed class]
+T KeePassLib.Cryptography.Cipher.ChaCha20Engine [sealed class]
+T KeePassLib.Cryptography.Cipher.CipherPool [sealed class]
+T KeePassLib.Cryptography.Cipher.CtrBlockCipher [abstract class]
+T KeePassLib.Cryptography.Cipher.ICipherEngine [interface]
+T KeePassLib.Cryptography.Cipher.ICipherEngine2 [interface]
+T KeePassLib.Cryptography.Cipher.Salsa20Cipher [sealed class]
+T KeePassLib.Cryptography.Cipher.StandardAesEngine [sealed class]
+T KeePassLib.Cryptography.CrsAlgorithm [enum]
+T KeePassLib.Cryptography.CryptoRandom [sealed class]
+T KeePassLib.Cryptography.CryptoRandomStream [sealed class]
+T KeePassLib.Cryptography.CryptoStreamEx [sealed class]
+T KeePassLib.Cryptography.CryptoUtil [static class]
+T KeePassLib.Cryptography.Hash.Blake2b [sealed class]
+T KeePassLib.Cryptography.HashingStreamEx [sealed class]
+T KeePassLib.Cryptography.HmacOtp [static class]
+T KeePassLib.Cryptography.KeyDerivation.AesKdf [sealed class]
+T KeePassLib.Cryptography.KeyDerivation.Argon2Kdf [sealed class]
+T KeePassLib.Cryptography.KeyDerivation.Argon2Type [enum]
+T KeePassLib.Cryptography.KeyDerivation.KdfEngine [abstract class]
+T KeePassLib.Cryptography.KeyDerivation.KdfParameters [sealed class]
+T KeePassLib.Cryptography.KeyDerivation.KdfPool [static class]
+T KeePassLib.Cryptography.PasswordGenerator.CustomPwGenerator [abstract class]
+T KeePassLib.Cryptography.PasswordGenerator.CustomPwGeneratorPool [sealed class]
+T KeePassLib.Cryptography.PasswordGenerator.PasswordGeneratorType [enum]
+T KeePassLib.Cryptography.PasswordGenerator.PwCharSet [sealed class]
+T KeePassLib.Cryptography.PasswordGenerator.PwGenerator [static class]
+T KeePassLib.Cryptography.PasswordGenerator.PwProfile [sealed class]
+T KeePassLib.Cryptography.PasswordGenerator.PwgError [enum]
+T KeePassLib.Cryptography.PopularPasswords [static class]
+T KeePassLib.Cryptography.QualityEstimation [static class]
+T KeePassLib.Cryptography.SelfTest [static class]
+T KeePassLib.Delegates.EntryHandler [sealed class]
+T KeePassLib.Delegates.GAction [sealed class]
+T KeePassLib.Delegates.GAction`1 [sealed class]
+T KeePassLib.Delegates.GAction`2 [sealed class]
+T KeePassLib.Delegates.GAction`3 [sealed class]
+T KeePassLib.Delegates.GAction`4 [sealed class]
+T KeePassLib.Delegates.GAction`5 [sealed class]
+T KeePassLib.Delegates.GAction`6 [sealed class]
+T KeePassLib.Delegates.GFunc`1 [sealed class]
+T KeePassLib.Delegates.GFunc`2 [sealed class]
+T KeePassLib.Delegates.GFunc`3 [sealed class]
+T KeePassLib.Delegates.GFunc`4 [sealed class]
+T KeePassLib.Delegates.GFunc`5 [sealed class]
+T KeePassLib.Delegates.GFunc`6 [sealed class]
+T KeePassLib.Delegates.GFunc`7 [sealed class]
+T KeePassLib.Delegates.GroupHandler [sealed class]
+T KeePassLib.Delegates.StrPwEntryDelegate [sealed class]
+T KeePassLib.Delegates.VoidDelegate [sealed class]
+T KeePassLib.DesktopType [enum]
+T KeePassLib.IOAccessEventArgs [sealed class]
+T KeePassLib.IOAccessType [enum]
+T KeePassLib.IOWebRequestEventArgs [sealed class]
+T KeePassLib.Interfaces.IDeepCloneable`1 [interface]
+T KeePassLib.Interfaces.IStatusLogger [interface]
+T KeePassLib.Interfaces.IStructureItem [interface]
+T KeePassLib.Interfaces.ITimeLogger [interface]
+T KeePassLib.Interfaces.IUIOperations [interface]
+T KeePassLib.Interfaces.IXmlSerializerEx [interface]
+T KeePassLib.Interfaces.LogStatusType [enum]
+T KeePassLib.Interfaces.NullStatusLogger [sealed class]
+T KeePassLib.Keys.CompositeKey [sealed class]
+T KeePassLib.Keys.IUserKey [interface]
+T KeePassLib.Keys.InvalidCompositeKeyException [sealed class]
+T KeePassLib.Keys.KcpCustomKey [sealed class]
+T KeePassLib.Keys.KcpKeyFile [sealed class]
+T KeePassLib.Keys.KcpPassword [sealed class]
+T KeePassLib.Keys.KcpUserAccount [sealed class]
+T KeePassLib.Keys.KeyProvider [abstract class]
+T KeePassLib.Keys.KeyProviderPool [sealed class]
+T KeePassLib.Keys.KeyProviderQueryContext [sealed class]
+T KeePassLib.Keys.KeyValidationType [enum]
+T KeePassLib.Keys.KeyValidator [abstract class]
+T KeePassLib.Keys.KeyValidatorPool [sealed class]
+T KeePassLib.Keys.KfxData [sealed class]
+T KeePassLib.Keys.KfxFile [sealed class]
+T KeePassLib.Keys.KfxKey [sealed class]
+T KeePassLib.Keys.KfxMeta [sealed class]
+T KeePassLib.Keys.SampleKeyProvider [sealed class]
+T KeePassLib.Keys.UserKeyType [enum]
+T KeePassLib.MemProtCmpMode [enum]
+T KeePassLib.MemoryProtectionConfig [sealed class]
+T KeePassLib.Native.NativeLib [static class]
+T KeePassLib.ObjectTouchedEventArgs [sealed class]
+T KeePassLib.ProxyAuthType [enum]
+T KeePassLib.ProxyServerType [enum]
+T KeePassLib.PwCompareOptions [enum]
+T KeePassLib.PwCompressionAlgorithm [enum]
+T KeePassLib.PwCustomIcon [sealed class]
+T KeePassLib.PwDatabase [sealed class]
+T KeePassLib.PwDefs [static class]
+T KeePassLib.PwDeletedObject [sealed class]
+T KeePassLib.PwEntry [sealed class]
+T KeePassLib.PwEntryComparer [sealed class]
+T KeePassLib.PwGroup [sealed class]
+T KeePassLib.PwGroupComparer [sealed class]
+T KeePassLib.PwIcon [enum]
+T KeePassLib.PwMergeMethod [enum]
+T KeePassLib.PwSearchMode [enum]
+T KeePassLib.PwUuid [sealed class]
+T KeePassLib.PwUuidComparable [sealed class]
+T KeePassLib.Resources.KLRes [static class]
+T KeePassLib.Resources.KSRes [static class]
+T KeePassLib.ScaleTransformFlags [enum]
+T KeePassLib.SearchParameters [sealed class]
+T KeePassLib.Security.PbCryptDelegate [sealed class]
+T KeePassLib.Security.PbCryptFlags [enum]
+T KeePassLib.Security.ProtectedBinary [sealed class]
+T KeePassLib.Security.ProtectedString [sealed class]
+T KeePassLib.Security.XorredBuffer [sealed class]
+T KeePassLib.Serialization.BinaryReaderEx [sealed class]
+T KeePassLib.Serialization.FileLock [sealed class]
+T KeePassLib.Serialization.FileLockException [sealed class]
+T KeePassLib.Serialization.FileTransactionEx [sealed class]
+T KeePassLib.Serialization.HashedBlockStream [sealed class]
+T KeePassLib.Serialization.HmacBlockStream [sealed class]
+T KeePassLib.Serialization.IHasIocProperties [interface]
+T KeePassLib.Serialization.IOConnection [static class]
+T KeePassLib.Serialization.IOConnectionInfo [sealed class]
+T KeePassLib.Serialization.IOCredProtMode [enum]
+T KeePassLib.Serialization.IOCredSaveMode [enum]
+T KeePassLib.Serialization.IocKnownProperties [static class]
+T KeePassLib.Serialization.IocKnownProtocols [static class]
+T KeePassLib.Serialization.IocProperties [sealed class]
+T KeePassLib.Serialization.IocPropertyInfo [sealed class]
+T KeePassLib.Serialization.IocPropertyInfoPool [static class]
+T KeePassLib.Serialization.KdbxFile [sealed class]
+T KeePassLib.Serialization.KdbxFormat [enum]
+T KeePassLib.Serialization.OldFormatException [sealed class]
+T KeePassLib.Serialization.OldFormatException+OldFormatType [enum]
+T KeePassLib.Translation.KPControlCustomization [sealed class]
+T KeePassLib.Translation.KPFormCustomization [sealed class]
+T KeePassLib.Translation.KPStringTable [sealed class]
+T KeePassLib.Translation.KPStringTableItem [sealed class]
+T KeePassLib.Translation.KPTranslation [sealed class]
+T KeePassLib.Translation.KPTranslationProperties [sealed class]
+T KeePassLib.Translation.KpccLayout [sealed class]
+T KeePassLib.Translation.KpccLayout+LayoutParameterEx [enum]
+T KeePassLib.TraversalMethod [enum]
+T KeePassLib.Utility.AppLogEx [static class]
+T KeePassLib.Utility.CharStream [sealed class]
+T KeePassLib.Utility.GfxUtil [static class]
+T KeePassLib.Utility.MemUtil [static class]
+T KeePassLib.Utility.MessageService [static class]
+T KeePassLib.Utility.MessageServiceEventArgs [sealed class]
+T KeePassLib.Utility.MonoWorkarounds [static class]
+T KeePassLib.Utility.StrEncodingInfo [sealed class]
+T KeePassLib.Utility.StrEncodingType [enum]
+T KeePassLib.Utility.StrUtil [static class]
+T KeePassLib.Utility.TimeUtil [static class]
+T KeePassLib.Utility.TypeOverridePool [static class]
+T KeePassLib.Utility.UrlUtil [static class]
+T KeePassLib.Utility.XmlUtilEx [static class]
