@@ -23,9 +23,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 
+using System.Security.Cryptography;
+
 #if !KeePassUAP
 using System.Drawing;
-using System.Security.Cryptography;
 using System.Windows.Forms;
 #endif
 
@@ -182,7 +183,7 @@ namespace KeePassLib.Cryptography
 			fI32(Environment.TickCount);
 			fI64(DateTime.UtcNow.ToBinary());
 
-#if !KeePassLibSD
+#if (!KeePassLibSD && !KeePassUAP)
 			// In try-catch for systems without GUI;
 			// https://sourceforge.net/p/keepass/discussion/329221/thread/20335b73/
 			try
@@ -197,11 +198,7 @@ namespace KeePassLib.Cryptography
 			try
 			{
 				fI32((int)NativeLib.GetPlatformID());
-#if KeePassUAP
-				fStr(EnvironmentExt.OSVersion.VersionString);
-#else
 				fStr(Environment.OSVersion.VersionString);
-#endif
 
 				fI32(Environment.ProcessorCount);
 
@@ -224,9 +221,7 @@ namespace KeePassLib.Cryptography
 
 			try
 			{
-#if KeePassUAP
-				f(DiagnosticsExt.GetProcessEntropy(), true);
-#elif !KeePassLibSD
+#if !KeePassLibSD
 				using(Process p = Process.GetCurrentProcess())
 				{
 					fI64(p.Handle.ToInt64());

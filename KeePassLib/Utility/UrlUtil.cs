@@ -715,11 +715,7 @@ namespace KeePassLib.Utility
 			string strDir;
 			if(NativeLib.IsUnix())
 				strDir = NativeMethods.GetUserRuntimeDir();
-#if KeePassUAP
-			else strDir = Windows.Storage.ApplicationData.Current.TemporaryFolder.Path;
-#else
-			else strDir = Path.GetTempPath();
-#endif
+		else strDir = Path.GetTempPath();
 
 			try
 			{

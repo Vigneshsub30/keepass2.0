@@ -255,7 +255,9 @@ namespace KeePassLib.Serialization
 				if(bBaseExists) IOConnection.DeleteFile(m_iocBase);
 				IOConnection.RenameFile(m_iocTemp, m_iocBase);
 			}
-			else { Debug.Assert(pbSec != null); } // TxF success => NTFS => has ACL
+	#if !KeePassUAP
+		else { Debug.Assert(pbSec != null); } // TxF success => NTFS => has ACL
+#endif
 
 			try
 			{

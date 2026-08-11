@@ -23,9 +23,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 
-#if !KeePassUAP
 using System.Security.Cryptography;
-#endif
 
 using KeePassLib.Resources;
 using KeePassLib.Utility;
@@ -159,7 +157,7 @@ namespace KeePassLib.Serialization
 			// bits long (using SHA-512)
 
 			byte[] pbBlockKey;
-			using(SHA512Managed h = new SHA512Managed())
+			using(SHA512 h = SHA512.Create())
 			{
 				byte[] pbIndex = MemUtil.UInt64ToBytes(uBlockIndex);
 

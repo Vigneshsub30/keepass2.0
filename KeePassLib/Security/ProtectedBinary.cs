@@ -21,9 +21,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 
-#if !KeePassUAP
 using System.Security.Cryptography;
-#endif
 
 using KeePassLib.Cryptography;
 using KeePassLib.Cryptography.Cipher;
@@ -428,19 +426,17 @@ namespace KeePassLib.Security
 
 			try
 			{
-				RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider();
 				byte[] pb = new byte[32];
-				rng.GetBytes(pb);
+				RandomNumberGenerator.Fill(pb);
 
 				Array.Copy(pb, 0, pbAll, i, 32);
 				i += 32;
 
 				MemUtil.ZeroByteArray(pb);
-				MemUtil.DisposeIfPossible(rng);
 			}
 			catch(Exception) { Debug.Assert(false); }
 
-			try // In case RNGCryptoServiceProvider does not work properly
+			try // In case RandomNumberGenerator does not work properly
 			{
 				byte[] pb = Guid.NewGuid().ToByteArray();
 				Array.Copy(pb, 0, pbAll, i, 16);

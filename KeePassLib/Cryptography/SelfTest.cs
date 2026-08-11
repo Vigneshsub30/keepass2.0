@@ -26,13 +26,7 @@ using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
 
-#if KeePassUAP
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Engines;
-using Org.BouncyCastle.Crypto.Parameters;
-#else
 using System.Security.Cryptography;
-#endif
 
 using KeePassLib.Cryptography.Cipher;
 using KeePassLib.Cryptography.Hash;
@@ -102,9 +96,6 @@ namespace KeePassLib.Cryptography
 			TestStrUtil();
 			TestUrlUtil();
 
-#if KeePassUAP
-			SelfTestEx.Perform();
-#endif
 		}
 
 		internal static void TestFipsComplianceProblems()
@@ -139,14 +130,6 @@ namespace KeePassLib.Cryptography
 				0x75, 0xD1, 0x1B, 0x0E, 0x3A, 0x68, 0xC4, 0x22,
 				0x3D, 0x88, 0xDB, 0xF0, 0x17, 0x97, 0x7D, 0xD7 };
 
-#if KeePassUAP
-			AesEngine aes = new AesEngine();
-			aes.Init(true, new KeyParameter(pbKey));
-			if(aes.GetBlockSize() != pbData.Length)
-				throw new SecurityException("AES (BC)");
-			aes.ProcessBlock(pbData, 0, pbData, 0);
-			aes.Reset();
-#else
 			using(SymmetricAlgorithm a = CryptoUtil.CreateAes(256, CipherMode.ECB,
 				PaddingMode.None))
 			{
@@ -155,7 +138,6 @@ namespace KeePassLib.Cryptography
 					t.TransformBlock(pbData, 0, 16, pbData, 0);
 				}
 			}
-#endif
 
 			if(!MemUtil.ArraysEqual(pbData, pbRefCT))
 				throw new SecurityException("AES");

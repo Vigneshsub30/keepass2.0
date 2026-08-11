@@ -148,13 +148,21 @@ namespace KeePass.Forms
 				Plugin p = pi.Interface;
 				Debug.Assert(p != null);
 
-				int nImageIndex = 0;
-				Image img = ((p != null) ? p.SmallIcon : null);
-				if(img != null)
+			int nImageIndex = 0;
+			byte[] pbIcon = ((p != null) ? p.SmallIconData : null);
+			if(pbIcon != null && pbIcon.Length > 0)
+			{
+				try
 				{
-					nImageIndex = m_ilIcons.Images.Count;
-					m_ilIcons.Images.Add(img);
+					using(System.IO.MemoryStream ms = new System.IO.MemoryStream(pbIcon))
+					{
+						Image img = Image.FromStream(ms);
+						nImageIndex = m_ilIcons.Images.Count;
+						m_ilIcons.Images.Add(img);
+					}
 				}
+				catch(Exception) { System.Diagnostics.Debug.Assert(false); }
+			}
 				lvi.ImageIndex = nImageIndex;
 			}
 

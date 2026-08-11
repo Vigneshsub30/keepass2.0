@@ -71,17 +71,7 @@ namespace KeePassLib.Utility
 		}
 #endif
 
-#if KeePassUAP
-		public static Image LoadImage(byte[] pb)
-		{
-			if(pb == null) throw new ArgumentNullException("pb");
-
-			using(MemoryStream ms = new MemoryStream(pb, false))
-			{
-				return Image.FromStream(ms);
-			}
-		}
-#else
+#if !KeePassUAP
 		public static Image LoadImage(byte[] pb)
 		{
 			if(pb == null) throw new ArgumentNullException("pb");
@@ -435,6 +425,7 @@ namespace KeePassLib.Utility
 #endif // !KeePassLibSD
 #endif // KeePassUAP
 
+#if !KeePassUAP
 		internal static void SetHighQuality(Graphics g)
 		{
 			if(g == null) { Debug.Assert(false); return; }
@@ -572,5 +563,6 @@ namespace KeePassLib.Utility
 
 			return str;
 		}
+#endif // !KeePassUAP
 	}
 }

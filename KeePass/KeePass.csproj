@@ -364,6 +364,7 @@
     <Compile Include="Plugins\IPluginHost.cs" />
     <Compile Include="Plugins\DefaultPluginHost.cs" />
     <Compile Include="Plugins\PluginManager.cs" />
+    <Compile Include="Plugins\WinFormsPluginMenuAdapter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs" />
@@ -372,6 +373,7 @@
     <Compile Include="UI\ShowWarningsLogger.cs" />
     <Compile Include="UI\StatusBarLogger.cs" />
     <Compile Include="UI\UIUtil.cs" />
+    <Compile Include="Forms\WinFormsMainWindowService.cs" />
     <Compile Include="Services\WinFormsDialogService.cs" />
     <Compile Include="Services\WinFormsMessageService.cs" />
     <Compile Include="Util\AppLocator.cs" />

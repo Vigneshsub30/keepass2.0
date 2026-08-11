@@ -454,7 +454,11 @@ namespace KeePassLib.Serialization
 			WriteObject(ElemDbDefaultUser, m_pwDatabase.DefaultUserName, true);
 			WriteObject(ElemDbDefaultUserChanged, m_pwDatabase.DefaultUserNameChanged);
 			WriteObject(ElemDbMntncHistoryDays, m_pwDatabase.MaintenanceHistoryDays);
+#if !KeePassUAP
 			WriteObject(ElemDbColor, StrUtil.ColorToUnnamedHtml(m_pwDatabase.Color, true), false);
+#else
+			WriteObject(ElemDbColor, string.Empty, false);
+#endif
 			WriteObject(ElemDbKeyChanged, m_pwDatabase.MasterKeyChanged);
 			WriteObject(ElemDbKeyChangeRec, m_pwDatabase.MasterKeyChangeRec);
 			WriteObject(ElemDbKeyChangeForce, m_pwDatabase.MasterKeyChangeForce);
@@ -533,8 +537,13 @@ namespace KeePassLib.Serialization
 			if(!pe.CustomIconUuid.IsZero)
 				WriteObject(ElemCustomIconID, pe.CustomIconUuid);
 
+#if !KeePassUAP
 			WriteObject(ElemFgColor, StrUtil.ColorToUnnamedHtml(pe.ForegroundColor, true), false);
 			WriteObject(ElemBgColor, StrUtil.ColorToUnnamedHtml(pe.BackgroundColor, true), false);
+#else
+			WriteObject(ElemFgColor, string.Empty, false);
+			WriteObject(ElemBgColor, string.Empty, false);
+#endif
 			WriteObject(ElemOverrideUrl, pe.OverrideUrl, true);
 
 			if((m_uFileVersion >= FileVersion32_4_1) && !pe.QualityCheck)

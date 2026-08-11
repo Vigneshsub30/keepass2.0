@@ -201,11 +201,7 @@ namespace KeePassLib.Native
 		{
 			if(g_opl.HasValue) return g_opl.Value;
 
-#if KeePassUAP
-			g_opl = EnvironmentExt.OSVersion.Platform;
-#else
 			g_opl = Environment.OSVersion.Platform;
-#endif
 
 #if (!KeePassLibSD && !KeePassUAP)
 			// Mono returns PlatformID.Unix on MacOS, workaround this
@@ -512,8 +508,10 @@ namespace KeePassLib.Native
 			}
 
 			return false;
+#endif
 		}
 
+#if !KeePassUAP
 		private static bool TransformKeyHalf(byte[] pbData16, byte[] pbSeed32,
 			ulong uRounds)
 		{
@@ -573,8 +571,10 @@ namespace KeePassLib.Native
 			catch(Exception) { Debug.Assert(false); }
 
 			return false;
+#endif
 		}
 
+#if !KeePassUAP
 		private static ulong TransformKeyBenchmarkHalf(uint uMilliseconds)
 		{
 			try { return NativeMethods.AesKdfTransformBenchmarkHalf(uMilliseconds); }

@@ -70,7 +70,9 @@ namespace KeePassLib
 		private string m_strDefaultUserName = string.Empty;
 		private DateTime m_dtDefaultUserChanged = PwDefs.DtDefaultNow;
 		private uint m_uMntncHistoryDays = 365;
+#if !KeePassUAP
 		private Color m_clr = Color.Empty;
+#endif
 
 		private DateTime m_dtKeyLastChanged = PwDefs.DtDefaultNow;
 		private long m_lKeyChangeRecDays = -1;
@@ -239,11 +241,13 @@ namespace KeePassLib
 			set { m_uMntncHistoryDays = value; }
 		}
 
+#if !KeePassUAP
 		public Color Color
 		{
 			get { return m_clr; }
 			set { m_clr = value; }
 		}
+#endif
 
 		public DateTime MasterKeyChanged
 		{
@@ -546,7 +550,9 @@ namespace KeePassLib
 			m_strDefaultUserName = string.Empty;
 			m_dtDefaultUserChanged = dtNow;
 			m_uMntncHistoryDays = 365;
+#if !KeePassUAP
 			m_clr = Color.Empty;
+#endif
 
 			m_dtKeyLastChanged = dtNow;
 			m_lKeyChangeRecDays = -1;
@@ -1551,7 +1557,9 @@ namespace KeePassLib
 			{
 				m_dtSettingsChanged = pdSource.m_dtSettingsChanged;
 
+#if !KeePassUAP
 				m_clr = pdSource.m_clr;
+#endif
 			}
 
 			if(bForce || (pdSource.m_dtNameChanged > m_dtNameChanged))
@@ -1748,17 +1756,7 @@ namespace KeePassLib
 			return -1;
 		}
 
-#if KeePassUAP
-		public Image GetCustomIcon(PwUuid pwIconId)
-		{
-			int nIndex = GetCustomIconIndex(pwIconId);
-			if(nIndex >= 0)
-				return m_vCustomIcons[nIndex].GetImage();
-			else { Debug.Assert(false); }
-
-			return null;
-		}
-#elif !KeePassLibSD
+#if (!KeePassUAP && !KeePassLibSD)
 		[Obsolete("Additionally specify the size.")]
 		public Image GetCustomIcon(PwUuid pwIconId)
 		{

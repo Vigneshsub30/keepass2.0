@@ -20,8 +20,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+#if !KeePassUAP
 using System.Drawing;
 using System.Drawing.Imaging;
+#endif
 
 using KeePassLib.Utility;
 
@@ -40,7 +42,9 @@ namespace KeePassLib
 		private DateTime? m_odtLastMod = null;
 
 		private bool? m_obImageValid = null;
+#if !KeePassUAP
 		private readonly Dictionary<long, Image> m_dImageCache = new Dictionary<long, Image>();
+#endif
 
 		public PwUuid Uuid
 		{
@@ -69,6 +73,7 @@ namespace KeePassLib
 			set { m_odtLastMod = value; }
 		}
 
+#if !KeePassUAP
 		internal bool IsImageValid
 		{
 			get
@@ -82,12 +87,13 @@ namespace KeePassLib
 		[Obsolete("Use GetImage instead.")]
 		public Image Image
 		{
-#if (!KeePassLibSD && !KeePassUAP)
+#if !KeePassLibSD
 			get { return GetImage(16, 16); } // Backward compatibility
 #else
 			get { return GetImage(); } // Backward compatibility
 #endif
 		}
+#endif
 
 		public PwCustomIcon(PwUuid pu, byte[] pbImageDataPng)
 		{
@@ -104,6 +110,7 @@ namespace KeePassLib
 			return (((long)w << 32) ^ (long)h);
 		}
 
+#if !KeePassUAP
 		/// <summary>
 		/// Get the icon as an <c>Image</c> (original size).
 		/// </summary>
@@ -134,7 +141,7 @@ namespace KeePassLib
 			return img;
 		}
 
-#if (!KeePassLibSD && !KeePassUAP)
+#if !KeePassLibSD
 		/// <summary>
 		/// Get the icon as an <c>Image</c> (with the specified size).
 		/// </summary>
@@ -159,7 +166,8 @@ namespace KeePassLib
 			m_dImageCache[lKey] = img;
 			return img;
 		}
-#endif
+#endif // !KeePassLibSD
+#endif // !KeePassUAP
 
 		internal PwCustomIcon Clone()
 		{

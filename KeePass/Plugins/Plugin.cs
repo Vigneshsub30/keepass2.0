@@ -19,9 +19,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Text;
-using System.Windows.Forms;
+
+using KeePassLib.Plugins;
 
 namespace KeePass.Plugins
 {
@@ -57,11 +57,11 @@ namespace KeePass.Plugins
 		}
 
 		/// <summary>
-		/// Get a small icon representing the plugin.
-		/// The image's width should be <c>DpiUtil.ScaleIntX(16)</c>,
-		/// and its height should be <c>DpiUtil.ScaleIntY(16)</c>.
+		/// Get raw image data for a small icon representing the plugin.
+		/// The decoded icon should be 16×16 device-independent pixels.
+		/// Returns <c>null</c> when the plugin provides no icon.
 		/// </summary>
-		public virtual Image SmallIcon
+		public virtual byte[] SmallIconData
 		{
 			get { return null; }
 		}
@@ -76,12 +76,16 @@ namespace KeePass.Plugins
 		}
 
 		/// <summary>
-		/// Get a menu item of the plugin. See
-		/// https://keepass.info/help/v2_dev/plg_index.html#co_menuitem
+		/// Get a platform-neutral menu command describing the plugin's menu item.
+		/// The UI layer converts this into the appropriate platform type
+		/// (e.g. <see cref="System.Windows.Forms.ToolStripMenuItem"/>).
+		/// Returns <c>null</c> when the plugin provides no menu item for
+		/// <paramref name="t"/>.
+		/// See https://keepass.info/help/v2_dev/plg_index.html#co_menuitem
 		/// </summary>
 		/// <param name="t">Type of the menu that the plugin should
 		/// return an item for.</param>
-		public virtual ToolStripMenuItem GetMenuItem(PluginMenuType t)
+		public virtual PluginMenuCommand GetMenuCommand(PluginMenuType t)
 		{
 			return null;
 		}

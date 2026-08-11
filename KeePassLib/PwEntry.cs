@@ -51,8 +51,10 @@ namespace KeePassLib
 		private PwIcon m_pwIcon = PwIcon.Key;
 		private PwUuid m_puCustomIcon = PwUuid.Zero;
 
+#if !KeePassUAP
 		private Color m_clrForeground = Color.Empty;
 		private Color m_clrBackground = Color.Empty;
+#endif
 
 		// For implementing the ITimeLogger interface
 		private DateTime m_tCreation = PwDefs.DtDefaultNow;
@@ -173,6 +175,7 @@ namespace KeePassLib
 			}
 		}
 
+#if !KeePassUAP
 		/// <summary>
 		/// Get or set the foreground color of this entry.
 		/// </summary>
@@ -190,6 +193,7 @@ namespace KeePassLib
 			get { return m_clrBackground; }
 			set { m_clrBackground = value; }
 		}
+#endif
 
 		// Implement ITimeLogger interface
 		public DateTime CreationTime
@@ -333,8 +337,10 @@ namespace KeePassLib
 			pe.m_pwIcon = m_pwIcon;
 			pe.m_puCustomIcon = m_puCustomIcon;
 
+#if !KeePassUAP
 			pe.m_clrForeground = m_clrForeground;
 			pe.m_clrBackground = m_clrBackground;
+#endif
 
 			pe.m_tCreation = m_tCreation;
 			pe.m_tLastMod = m_tLastMod;
@@ -456,8 +462,10 @@ namespace KeePassLib
 			if(m_pwIcon != pe.m_pwIcon) return false;
 			if(!m_puCustomIcon.Equals(pe.m_puCustomIcon)) return false;
 
+#if !KeePassUAP
 			if(m_clrForeground != pe.m_clrForeground) return false;
 			if(m_clrBackground != pe.m_clrBackground) return false;
+#endif
 
 			if(!TimeUtil.EqualsFloor(m_tCreation, pe.m_tCreation)) return false;
 			if(!bIgnoreLastMod && !TimeUtil.EqualsFloor(m_tLastMod, pe.m_tLastMod)) return false;
@@ -515,8 +523,10 @@ namespace KeePassLib
 			m_pwIcon = peTemplate.m_pwIcon;
 			m_puCustomIcon = peTemplate.m_puCustomIcon; // Immutable
 
+#if !KeePassUAP
 			m_clrForeground = peTemplate.m_clrForeground;
 			m_clrBackground = peTemplate.m_clrBackground;
+#endif
 
 			m_tCreation = peTemplate.m_tCreation;
 			m_tLastMod = peTemplate.m_tLastMod;

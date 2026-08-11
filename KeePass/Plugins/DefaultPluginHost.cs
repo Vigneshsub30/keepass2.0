@@ -33,6 +33,7 @@ using KeePassLib;
 using KeePassLib.Cryptography.Cipher;
 using KeePassLib.Cryptography.PasswordGenerator;
 using KeePassLib.Keys;
+using KeePassLib.Plugins;
 using KeePassLib.Security;
 
 namespace KeePass.Plugins
@@ -40,6 +41,7 @@ namespace KeePass.Plugins
 	internal sealed class DefaultPluginHost : IPluginHost
 	{
 		private MainForm m_form = null;
+		private WinFormsMainWindowService m_mainWindowService = null;
 		private CommandLineArgs m_cmdLineArgs = null;
 		private CipherPool m_cipherPool = null;
 
@@ -55,13 +57,14 @@ namespace KeePass.Plugins
 			Debug.Assert(cipherPool != null);
 
 			m_form = form;
+			m_mainWindowService = new WinFormsMainWindowService(form);
 			m_cmdLineArgs = cmdLineArgs;
 			m_cipherPool = cipherPool;
 		}
 
-		public MainForm MainWindow
+		public IMainWindowService MainWindow
 		{
-			get { return m_form; }
+			get { return m_mainWindowService; }
 		}
 
 		public PwDatabase Database

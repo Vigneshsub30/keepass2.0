@@ -37,6 +37,7 @@ namespace KeePassLib.Native
 
 		private static bool? g_obXSel = null;
 
+#if (!KeePassLibSD && !KeePassUAP)
 		public static string GetText()
 		{
 			// System.Windows.Forms.Clipboard doesn't work properly,
@@ -59,6 +60,10 @@ namespace KeePassLib.Native
 
 			return XSelSetText(str, bMayBlock);
 		}
+#else
+		public static string GetText() { return null; }
+		public static bool SetText(string strText, bool bMayBlock) { return false; }
+#endif
 
 		// =============================================================
 		// LibGTK
@@ -152,6 +157,7 @@ namespace KeePassLib.Native
 		// =============================================================
 		// XSel
 
+#if (!KeePassLibSD && !KeePassUAP)
 		private static bool XSelInit()
 		{
 			if(g_obXSel.HasValue) return g_obXSel.Value;
@@ -186,5 +192,6 @@ namespace KeePassLib.Native
 			return (NativeLib.RunConsoleApp(XSel, XSelW + strOpt,
 				str, XSelWF) != null);
 		}
+#endif // (!KeePassLibSD && !KeePassUAP)
 	}
 }

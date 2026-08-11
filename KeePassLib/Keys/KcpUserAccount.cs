@@ -20,9 +20,7 @@
 using System;
 using System.IO;
 
-#if !KeePassUAP
 using System.Security.Cryptography;
-#endif
 
 using KeePassLib.Cryptography;
 using KeePassLib.Security;
@@ -68,12 +66,8 @@ namespace KeePassLib.Keys
 
 		private static string GetUserKeyFilePath(bool bCreate)
 		{
-#if KeePassUAP
-			string strUserDir = EnvironmentExt.AppDataRoamingFolderPath;
-#else
 			string strUserDir = Environment.GetFolderPath(
 				Environment.SpecialFolder.ApplicationData);
-#endif
 
 			strUserDir = UrlUtil.EnsureTerminatingSeparator(strUserDir, false) +
 				PwDefs.ShortProductName;
@@ -97,8 +91,12 @@ namespace KeePassLib.Keys
 				if((pbProtectedKey == null) || (pbProtectedKey.Length == 0))
 					return null;
 
-				return CryptoUtil.UnprotectData(pbProtectedKey,
-					g_pbDomainSepTag, DataProtectionScope.CurrentUser);
+#if !KeePassUAP
+			return CryptoUtil.UnprotectData(pbProtectedKey,
+				g_pbDomainSepTag, DataProtectionScope.CurrentUser);
+#else
+			throw new PlatformNotSupportedException("DPAPI is not available on this platform.");
+#endif
 			}
 			catch(Exception ex)
 			{
@@ -110,24 +108,29 @@ namespace KeePassLib.Keys
 		{
 			string strFilePath = GetUserKeyFilePath(true);
 
-			byte[] pbRandomKey = CryptoRandom.Instance.GetRandomBytes(64);
-			byte[] pbProtectedKey = CryptoUtil.ProtectData(pbRandomKey,
-				g_pbDomainSepTag, DataProtectionScope.CurrentUser);
+		byte[] pbRandomKey = CryptoRandom.Instance.GetRandomBytes(64);
+#if !KeePassUAP
+		byte[] pbProtectedKey = CryptoUtil.ProtectData(pbRandomKey,
+			g_pbDomainSepTag, DataProtectionScope.CurrentUser);
 
-			try
-			{
-				File.WriteAllBytes(strFilePath, pbProtectedKey);
+		try
+		{
+			File.WriteAllBytes(strFilePath, pbProtectedKey);
 
-				byte[] pbLoadedKey = LoadUserKey();
-				if(!MemUtil.ArraysEqual(pbLoadedKey, pbRandomKey))
-					throw new InvalidDataException();
-				return pbLoadedKey;
-			}
-			catch(Exception ex)
-			{
-				throw new ExtendedException(strFilePath, ex);
-			}
-			finally { MemUtil.ZeroByteArray(pbRandomKey); }
+			byte[] pbLoadedKey = LoadUserKey();
+			if(!MemUtil.ArraysEqual(pbLoadedKey, pbRandomKey))
+				throw new InvalidDataException();
+			return pbLoadedKey;
 		}
+		catch(Exception ex)
+		{
+			throw new ExtendedException(strFilePath, ex);
+		}
+		finally { MemUtil.ZeroByteArray(pbRandomKey); }
+#else
+		MemUtil.ZeroByteArray(pbRandomKey);
+		throw new PlatformNotSupportedException("DPAPI is not available on this platform.");
+#endif
 	}
+}
 }

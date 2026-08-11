@@ -27,9 +27,7 @@ using System.Security;
 using System.Text;
 using System.Xml;
 
-#if !KeePassUAP
 using System.Security.Cryptography;
-#endif
 
 #if !KeePassLibSD
 using System.IO.Compression;

@@ -32,6 +32,23 @@ using KeePassLib.Serialization;
 
 namespace KeePassLib.Utility
 {
+	/// <summary>
+	/// Platform-neutral severity classification for messages shown through
+	/// <see cref="MessageService"/>.  Used by <see cref="MessageService.ShowDelegate"/>
+	/// so non-Windows consumers can distinguish info, warning, and fatal messages
+	/// without referencing <c>System.Windows.Forms.MessageBoxIcon</c>.
+	/// </summary>
+	public enum MessageServiceSeverity
+	{
+		/// <summary>Informational message.</summary>
+		Info,
+		/// <summary>Warning message.</summary>
+		Warning,
+		/// <summary>Fatal/error message.</summary>
+		Fatal
+	}
+
+#if !KeePassUAP
 	public sealed class MessageServiceEventArgs : EventArgs
 	{
 		private readonly string m_strTitle = string.Empty;
@@ -57,24 +74,45 @@ namespace KeePassLib.Utility
 			m_mbi = mbi;
 		}
 	}
+#endif
 
 	public static class MessageService
 	{
 		private static int g_nCurrentMessageCount = 0;
 
-#if !KeePassLibSD
+		/// <summary>
+		/// Optional platform-neutral delegate invoked by <see cref="ShowInfo"/>,
+		/// <see cref="ShowWarning"/>, and <see cref="ShowFatal"/>.  When non-<c>null</c>,
+		/// this delegate handles display instead of the built-in WinForms
+		/// <c>MessageBox</c> (on Windows) or <c>Console.Error</c> (elsewhere).
+		/// Signature: <c>(title, text, severity)</c>.
+		/// Set this early in application startup, before any message is shown.
+		/// </summary>
+		public static Action<string, string, MessageServiceSeverity> ShowDelegate { get; set; }
+
+		/// <summary>
+		/// Optional platform-neutral delegate invoked by <see cref="AskYesNo(string,string,bool)"/>.
+		/// When non-<c>null</c>, this delegate handles the prompt instead of the
+		/// built-in WinForms <c>MessageBox</c>.
+		/// Signature: <c>(text, title, defaultYes) → true = Yes, false = No</c>.
+		/// </summary>
+		public static Func<string, string, bool, bool> AskYesNoDelegate { get; set; }
+
+#if (!KeePassLibSD && !KeePassUAP)
 		private const MessageBoxIcon g_mbiInfo = MessageBoxIcon.Information;
 		private const MessageBoxIcon g_mbiWarning = MessageBoxIcon.Warning;
 		private const MessageBoxIcon g_mbiFatal = MessageBoxIcon.Error;
 
 		private const MessageBoxOptions g_mboRtl = (MessageBoxOptions.RtlReading |
 			MessageBoxOptions.RightAlign);
-#else
+#elif KeePassLibSD
 		private const MessageBoxIcon g_mbiInfo = MessageBoxIcon.Asterisk;
 		private const MessageBoxIcon g_mbiWarning = MessageBoxIcon.Exclamation;
 		private const MessageBoxIcon g_mbiFatal = MessageBoxIcon.Hand;
 #endif
+#if !KeePassUAP
 		private const MessageBoxIcon g_mbiQuestion = MessageBoxIcon.Question;
+#endif
 
 		public static string NewLine
 		{
@@ -209,6 +247,7 @@ namespace KeePassLib.Utility
 			return MessageBox.Show(iParent, strText, strTitle, mbb, mbi, mbdb);
 		}
 #endif
+#endif // !KeePassUAP — closes the block opened around SafeShowMessageBox
 
 		public static void ShowInfo(params object[] vLines)
 		{
@@ -222,12 +261,24 @@ namespace KeePassLib.Utility
 			strTitle = (strTitle ?? PwDefs.ShortProductName);
 			string strText = ObjectsToMessage(vLines);
 
-			if(MessageService.MessageShowing != null)
-				MessageService.MessageShowing(null, new MessageServiceEventArgs(
-					strTitle, strText, MessageBoxButtons.OK, g_mbiInfo));
+			Action<string, string, MessageServiceSeverity> del = MessageService.ShowDelegate;
+			if(del != null)
+			{
+				del(strTitle, strText, MessageServiceSeverity.Info);
+			}
+			else
+			{
+#if !KeePassUAP
+				if(MessageService.MessageShowing != null)
+					MessageService.MessageShowing(null, new MessageServiceEventArgs(
+						strTitle, strText, MessageBoxButtons.OK, g_mbiInfo));
 
-			SafeShowMessageBox(strText, strTitle, MessageBoxButtons.OK, g_mbiInfo,
-				MessageBoxDefaultButton.Button1);
+				SafeShowMessageBox(strText, strTitle, MessageBoxButtons.OK, g_mbiInfo,
+					MessageBoxDefaultButton.Button1);
+#else
+				Console.Error.WriteLine("[INFO] {0}: {1}", strTitle, strText);
+#endif
+			}
 
 			Interlocked.Decrement(ref g_nCurrentMessageCount);
 		}
@@ -249,12 +300,24 @@ namespace KeePassLib.Utility
 			string strTitle = PwDefs.ShortProductName;
 			string strText = ObjectsToMessage(vLines, bFullExceptions);
 
-			if(MessageService.MessageShowing != null)
-				MessageService.MessageShowing(null, new MessageServiceEventArgs(
-					strTitle, strText, MessageBoxButtons.OK, g_mbiWarning));
+			Action<string, string, MessageServiceSeverity> del = MessageService.ShowDelegate;
+			if(del != null)
+			{
+				del(strTitle, strText, MessageServiceSeverity.Warning);
+			}
+			else
+			{
+#if !KeePassUAP
+				if(MessageService.MessageShowing != null)
+					MessageService.MessageShowing(null, new MessageServiceEventArgs(
+						strTitle, strText, MessageBoxButtons.OK, g_mbiWarning));
 
-			SafeShowMessageBox(strText, strTitle, MessageBoxButtons.OK, g_mbiWarning,
-				MessageBoxDefaultButton.Button1);
+				SafeShowMessageBox(strText, strTitle, MessageBoxButtons.OK, g_mbiWarning,
+					MessageBoxDefaultButton.Button1);
+#else
+				Console.Error.WriteLine("[WARNING] {0}: {1}", strTitle, strText);
+#endif
+			}
 
 			Interlocked.Decrement(ref g_nCurrentMessageCount);
 		}
@@ -270,6 +333,7 @@ namespace KeePassLib.Utility
 				// KLRes.ErrorFeedbackRequest + MessageService.NewParagraph +
 				ObjectsToMessage(vLines);
 
+#if !KeePassUAP
 			try
 			{
 				string strDetails = ObjectsToMessage(vLines, true);
@@ -282,17 +346,31 @@ namespace KeePassLib.Utility
 #endif
 			}
 			catch(Exception) { Debug.Assert(false); }
+#endif
 
-			if(MessageService.MessageShowing != null)
-				MessageService.MessageShowing(null, new MessageServiceEventArgs(
-					strTitle, strText, MessageBoxButtons.OK, g_mbiFatal));
+			Action<string, string, MessageServiceSeverity> del = MessageService.ShowDelegate;
+			if(del != null)
+			{
+				del(strTitle, strText, MessageServiceSeverity.Fatal);
+			}
+			else
+			{
+#if !KeePassUAP
+				if(MessageService.MessageShowing != null)
+					MessageService.MessageShowing(null, new MessageServiceEventArgs(
+						strTitle, strText, MessageBoxButtons.OK, g_mbiFatal));
 
-			SafeShowMessageBox(strText, strTitle, MessageBoxButtons.OK, g_mbiFatal,
-				MessageBoxDefaultButton.Button1);
+				SafeShowMessageBox(strText, strTitle, MessageBoxButtons.OK, g_mbiFatal,
+					MessageBoxDefaultButton.Button1);
+#else
+				Console.Error.WriteLine("[FATAL] {0}: {1}", strTitle, strText);
+#endif
+			}
 
 			Interlocked.Decrement(ref g_nCurrentMessageCount);
 		}
 
+#if !KeePassUAP
 		public static DialogResult Ask(string strText, string strTitle,
 			MessageBoxButtons mbb)
 		{
@@ -320,31 +398,52 @@ namespace KeePassLib.Utility
 			string strTextEx = (strText ?? string.Empty);
 			string strTitleEx = (strTitle ?? PwDefs.ShortProductName);
 
-			if(MessageService.MessageShowing != null)
-				MessageService.MessageShowing(null, new MessageServiceEventArgs(
-					strTitleEx, strTextEx, MessageBoxButtons.YesNo, mbi));
+			Func<string, string, bool, bool> delAsk = MessageService.AskYesNoDelegate;
+			bool bResult;
+			if(delAsk != null)
+			{
+				bResult = delAsk(strTextEx, strTitleEx, bDefaultToYes);
+			}
+			else
+			{
+				if(MessageService.MessageShowing != null)
+					MessageService.MessageShowing(null, new MessageServiceEventArgs(
+						strTitleEx, strTextEx, MessageBoxButtons.YesNo, mbi));
 
-			DialogResult dr = SafeShowMessageBox(strTextEx, strTitleEx,
-				MessageBoxButtons.YesNo, mbi, bDefaultToYes ?
-				MessageBoxDefaultButton.Button1 : MessageBoxDefaultButton.Button2);
+				DialogResult dr = SafeShowMessageBox(strTextEx, strTitleEx,
+					MessageBoxButtons.YesNo, mbi, bDefaultToYes ?
+					MessageBoxDefaultButton.Button1 : MessageBoxDefaultButton.Button2);
+
+				bResult = (dr == DialogResult.Yes);
+			}
 
 			Interlocked.Decrement(ref g_nCurrentMessageCount);
-			return (dr == DialogResult.Yes);
+			return bResult;
 		}
+#endif
 
 		public static bool AskYesNo(string strText, string strTitle, bool bDefaultToYes)
 		{
+			Func<string, string, bool, bool> delAsk = MessageService.AskYesNoDelegate;
+			if(delAsk != null)
+				return delAsk(strText ?? string.Empty,
+					strTitle ?? PwDefs.ShortProductName, bDefaultToYes);
+
+#if !KeePassUAP
 			return AskYesNo(strText, strTitle, bDefaultToYes, g_mbiQuestion);
+#else
+			return bDefaultToYes;
+#endif
 		}
 
 		public static bool AskYesNo(string strText, string strTitle)
 		{
-			return AskYesNo(strText, strTitle, true, g_mbiQuestion);
+			return AskYesNo(strText, strTitle, true);
 		}
 
 		public static bool AskYesNo(string strText)
 		{
-			return AskYesNo(strText, null, true, g_mbiQuestion);
+			return AskYesNo(strText, null, true);
 		}
 
 		public static void ShowLoadWarning(string strFilePath, Exception ex)
@@ -380,7 +479,6 @@ namespace KeePassLib.Utility
 				ShowSaveWarning(ioc.GetDisplayName(), ex, bCorruptionWarning);
 			else ShowWarning(ex);
 		}
-#endif // !KeePassUAP
 
 		internal static string GetLoadWarningMessage(string strFilePath,
 			Exception ex, bool bFullException)

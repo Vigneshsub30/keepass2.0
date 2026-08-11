@@ -284,9 +284,6 @@ namespace KeePassLib.Native
 #if KeePassLibSD
 			return Path.GetTempPath();
 #else
-#if KeePassUAP
-			string strRtDir = EnvironmentExt.AppDataLocalFolderPath;
-#else
 			string strRtDir = Environment.GetEnvironmentVariable("XDG_RUNTIME_DIR");
 			if(string.IsNullOrEmpty(strRtDir))
 				strRtDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
@@ -295,7 +292,6 @@ namespace KeePassLib.Native
 				Debug.Assert(false);
 				return Path.GetTempPath(); // Not UrlUtil (otherwise cyclic)
 			}
-#endif
 
 			strRtDir = UrlUtil.EnsureTerminatingSeparator(strRtDir, false);
 			strRtDir += PwDefs.ShortProductName;

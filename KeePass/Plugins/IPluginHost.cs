@@ -20,14 +20,12 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Drawing;
 using System.Resources;
 using System.Diagnostics;
 
 using KeePass.App.Configuration;
 using KeePass.DataExchange;
 using KeePass.Ecas;
-using KeePass.Forms;
 using KeePass.UI;
 using KeePass.Util;
 
@@ -35,15 +33,18 @@ using KeePassLib;
 using KeePassLib.Cryptography.Cipher;
 using KeePassLib.Cryptography.PasswordGenerator;
 using KeePassLib.Keys;
+using KeePassLib.Plugins;
 
 namespace KeePass.Plugins
 {
 	public interface IPluginHost
 	{
 		/// <summary>
-		/// Reference to the KeePass main window.
+		/// Platform-neutral service interface for the KeePass main window.
+		/// Use this instead of a direct <c>MainForm</c> reference to avoid
+		/// coupling plugins to the WinForms implementation.
 		/// </summary>
-		MainForm MainWindow { get; }
+		IMainWindowService MainWindow { get; }
 
 		/// <summary>
 		/// Reference to the currently open database.

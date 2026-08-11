@@ -24,9 +24,7 @@ using System.IO;
 using System.Security;
 using System.Text;
 
-#if !KeePassUAP
 using System.Security.Cryptography;
-#endif
 
 using KeePassLib.Resources;
 
@@ -92,9 +90,6 @@ namespace KeePassLib.Cryptography.Cipher
 		{
 			StandardAesEngine.ValidateArguments(s, bEncrypt, pbKey, pbIV);
 
-#if KeePassUAP
-			return StandardAesEngineExt.CreateStream(s, bEncrypt, pbKey, pbIV);
-#else
 			SymmetricAlgorithm a = CryptoUtil.CreateAes(256, CipherMode.CBC,
 				PaddingMode.PKCS7);
 
@@ -105,7 +100,6 @@ namespace KeePassLib.Cryptography.Cipher
 
 			return new CryptoStreamEx(s, t, bEncrypt ? CryptoStreamMode.Write :
 				CryptoStreamMode.Read, a);
-#endif
 		}
 
 		public Stream EncryptStream(Stream s, byte[] pbKey, byte[] pbIV)

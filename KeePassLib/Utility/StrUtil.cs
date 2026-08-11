@@ -487,6 +487,7 @@ namespace KeePassLib.Utility
 		//	return sb.ToString();
 		// }
 
+#if !KeePassUAP
 		/// <summary>
 		/// Convert a <c>Color</c> to a HTML color identifier string.
 		/// </summary>
@@ -521,6 +522,7 @@ namespace KeePassLib.Utility
 
 			return new string(v);
 		}
+#endif
 
 		internal static void AppendTrim(StringBuilder sb, string strSeparator,
 			string strAppend)
@@ -1457,6 +1459,7 @@ namespace KeePassLib.Utility
 		// Domain separation tag for this class
 		private static readonly byte[] g_pbDomainSepTag = { 0xA5, 0x74, 0x2E, 0xEC };
 
+#if !KeePassUAP
 		public static string EncryptString(string strPlainText)
 		{
 			if(string.IsNullOrEmpty(strPlainText)) return string.Empty;
@@ -1467,7 +1470,7 @@ namespace KeePassLib.Utility
 				byte[] pbEnc = CryptoUtil.ProtectData(pbPlain, g_pbDomainSepTag,
 					DataProtectionScope.CurrentUser);
 
-#if (!KeePassLibSD && !KeePassUAP)
+#if !KeePassLibSD
 				return Convert.ToBase64String(pbEnc, Base64FormattingOptions.None);
 #else
 				return Convert.ToBase64String(pbEnc);
@@ -1494,6 +1497,10 @@ namespace KeePassLib.Utility
 
 			return strCipherText;
 		}
+#else
+		public static string EncryptString(string strPlainText) { return strPlainText; }
+		public static string DecryptString(string strCipherText) { return strCipherText; }
+#endif
 
 		public static string SerializeIntArray(int[] vNumbers)
 		{

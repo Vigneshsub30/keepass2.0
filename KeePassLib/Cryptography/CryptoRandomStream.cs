@@ -20,9 +20,7 @@
 using System;
 using System.Diagnostics;
 
-#if !KeePassUAP
 using System.Security.Cryptography;
-#endif
 
 using KeePassLib.Cryptography.Cipher;
 using KeePassLib.Utility;
@@ -103,13 +101,13 @@ namespace KeePassLib.Cryptography
 				m_pbKey = new byte[32];
 				m_pbIV = new byte[12];
 
-				using(SHA512Managed h = new SHA512Managed())
-				{
-					byte[] pbHash = h.ComputeHash(pbKey);
-					Array.Copy(pbHash, m_pbKey, 32);
-					Array.Copy(pbHash, 32, m_pbIV, 0, 12);
-					MemUtil.ZeroByteArray(pbHash);
-				}
+			using(SHA512 h = SHA512.Create())
+			{
+				byte[] pbHash = h.ComputeHash(pbKey);
+				Array.Copy(pbHash, m_pbKey, 32);
+				Array.Copy(pbHash, 32, m_pbIV, 0, 12);
+				MemUtil.ZeroByteArray(pbHash);
+			}
 
 				m_chacha20 = new ChaCha20Cipher(m_pbKey, m_pbIV, true);
 			}

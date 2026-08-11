@@ -23,13 +23,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading;
 
-#if KeePassUAP
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Engines;
-using Org.BouncyCastle.Crypto.Parameters;
-#else
 using System.Security.Cryptography;
-#endif
 
 using KeePassLib.Native;
 using KeePassLib.Utility;
@@ -143,19 +137,6 @@ namespace KeePassLib.Cryptography.KeyDerivation
 		{
 			if(uRounds == 0) return;
 
-#if KeePassUAP
-			KeyParameter kp = new KeyParameter(pbSeed32);
-			AesEngine aes = new AesEngine();
-			aes.Init(true, kp);
-
-			for(ulong u = 0; u < uRounds; ++u)
-			{
-				aes.ProcessBlock(pbData32, 0, pbData32, 0);
-				aes.ProcessBlock(pbData32, 16, pbData32, 16);
-			}
-
-			aes.Reset();
-#else
 			byte[] pbDataL = null, pbDataR = null;
 			try
 			{
@@ -181,10 +162,9 @@ namespace KeePassLib.Cryptography.KeyDerivation
 			}
 			finally
 			{
-				MemUtil.ZeroByteArray(pbDataL);
-				MemUtil.ZeroByteArray(pbDataR);
+			MemUtil.ZeroByteArray(pbDataL);
+			MemUtil.ZeroByteArray(pbDataR);
 			}
-#endif
 		}
 
 		private static Exception TransformKeyManagedHalf(byte[] pbData16,

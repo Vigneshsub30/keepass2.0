@@ -236,9 +236,13 @@ namespace KeePassLib.Serialization
 						m_pwDatabase.MaintenanceHistoryDays = ReadUInt(xr, 365);
 					else if(xr.Name == ElemDbColor)
 					{
+#if !KeePassUAP
 						string strColor = ReadString(xr);
 						if(!string.IsNullOrEmpty(strColor))
 							m_pwDatabase.Color = ColorTranslator.FromHtml(strColor);
+#else
+						ReadString(xr); // consume element, Color not supported on this platform
+#endif
 					}
 					else if(xr.Name == ElemDbKeyChanged)
 						m_pwDatabase.MasterKeyChanged = ReadTime(xr);
@@ -443,15 +447,23 @@ namespace KeePassLib.Serialization
 						m_ctxEntry.CustomIconUuid = ReadUuid(xr);
 					else if(xr.Name == ElemFgColor)
 					{
+#if !KeePassUAP
 						string strColor = ReadString(xr);
 						if(!string.IsNullOrEmpty(strColor))
 							m_ctxEntry.ForegroundColor = ColorTranslator.FromHtml(strColor);
+#else
+						ReadString(xr); // consume element, Color not supported on this platform
+#endif
 					}
 					else if(xr.Name == ElemBgColor)
 					{
+#if !KeePassUAP
 						string strColor = ReadString(xr);
 						if(!string.IsNullOrEmpty(strColor))
 							m_ctxEntry.BackgroundColor = ColorTranslator.FromHtml(strColor);
+#else
+						ReadString(xr); // consume element, Color not supported on this platform
+#endif
 					}
 					else if(xr.Name == ElemOverrideUrl)
 						m_ctxEntry.OverrideUrl = ReadString(xr);

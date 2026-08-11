@@ -23,9 +23,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 
-#if !KeePassUAP
 using System.Security.Cryptography;
-#endif
 
 using KeePassLib.Utility;
 
@@ -33,6 +31,7 @@ namespace KeePassLib.Cryptography
 {
 	public static class CryptoUtil
 	{
+#if !KeePassUAP
 		private static bool? g_obProtData = null;
 		public static bool IsProtectedDataSupported
 		{
@@ -68,6 +67,9 @@ namespace KeePassLib.Cryptography
 				return b;
 			}
 		}
+#else
+		public static bool IsProtectedDataSupported { get { return false; } }
+#endif
 
 		public static byte[] HashSha256(byte[] pbData)
 		{
@@ -86,7 +88,7 @@ namespace KeePassLib.Cryptography
 #endif
 
 			byte[] pbHash;
-			using(SHA256Managed h = new SHA256Managed())
+			using(SHA256 h = SHA256.Create())
 			{
 				pbHash = h.ComputeHash(pbData, iOffset, cbCount);
 			}
@@ -108,7 +110,7 @@ namespace KeePassLib.Cryptography
 			using(FileStream fs = new FileStream(strFilePath, FileMode.Open,
 				FileAccess.Read, FileShare.Read))
 			{
-				using(SHA256Managed h = new SHA256Managed())
+				using(SHA256 h = SHA256.Create())
 				{
 					return h.ComputeHash(fs);
 				}
@@ -131,10 +133,10 @@ namespace KeePassLib.Cryptography
 			if(cbOut <= 32) pbHash = HashSha256(pbIn, iInOffset, cbIn);
 			else
 			{
-				using(SHA512Managed h = new SHA512Managed())
-				{
-					pbHash = h.ComputeHash(pbIn, iInOffset, cbIn);
-				}
+			using(SHA512 h = SHA512.Create())
+			{
+				pbHash = h.ComputeHash(pbIn, iInOffset, cbIn);
+			}
 			}
 
 			if(cbOut == pbHash.Length) return pbHash;
@@ -175,7 +177,6 @@ namespace KeePassLib.Cryptography
 			return pbRet;
 		}
 
-#if !KeePassUAP
 		internal static SymmetricAlgorithm CreateAes(int cKeyBits, CipherMode cm,
 			PaddingMode pm)
 		{
@@ -191,42 +192,14 @@ namespace KeePassLib.Cryptography
 
 		private static SymmetricAlgorithm CreateAesCore()
 		{
-			// https://github.com/dotnet/runtime/issues/18012
-			/* try
-			{
-				Assembly asm = typeof(AesCryptoServiceProvider).Assembly;
-				Type tCng = asm.GetType("System.Security.Cryptography.AesCng", false);
-				if((tCng != null) && !MonoWorkarounds.IsRequired())
-				{
-					Type tLacs = asm.GetType("System.LocalAppContextSwitches", false);
-					if(tLacs != null)
-					{
-						PropertyInfo piNC = tLacs.GetProperty("SymmetricCngAlwaysUseNCrypt",
-							BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
-						if((piNC != null) && !(bool)piNC.GetValue(null, null))
-							return (SymmetricAlgorithm)Activator.CreateInstance(tCng);
-					}
-				}
-			}
-			catch(Exception) { Debug.Assert(false); } */
+			Aes a = Aes.Create();
+			if(a != null) return a;
 
-			try
-			{
-				Aes a = Aes.Create();
-				if(a != null) return a;
-				Debug.Assert(false);
-			}
-			catch(Exception) { Debug.Assert(false); }
-
-			try { return new AesCryptoServiceProvider(); }
-			catch(Exception) { Debug.Assert(false); }
-
-			RijndaelManaged r = new RijndaelManaged();
-			r.BlockSize = 128;
-			return r;
+			Debug.Assert(false);
+			throw new InvalidOperationException("Unable to create AES algorithm.");
 		}
-#endif
 
+#if !KeePassUAP
 		public static byte[] ProtectData(byte[] pb, byte[] pbOptEntropy,
 			DataProtectionScope s)
 		{
@@ -259,5 +232,6 @@ namespace KeePassLib.Cryptography
 			Array.Copy(pb, pbCopy, pb.Length);
 			return pbCopy;
 		}
+#endif // !KeePassUAP
 	}
 }

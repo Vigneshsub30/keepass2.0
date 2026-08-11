@@ -1,11 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!-- Windows TFM required while KeePassLib still references System.Windows.Forms
-         and System.Drawing. These will be removed in WO-027 (IImageService) and
-         WO-034 (decouple KeePassLib from WinForms). -->
-    <TargetFramework>net10.0-windows</TargetFramework>
-    <UseWindowsForms>true</UseWindowsForms>
+    <!-- WO-034: KeePassLib now multi-targets net10.0 (cross-platform) and
+         net10.0-windows.  WinForms APIs are guarded by #if !KeePassUAP in
+         source; KeePassUAP is defined automatically for the net10.0 TFM so
+         those guards compile out the WinForms code on non-Windows builds.
+         UseWindowsForms is only set for the net10.0-windows TFM. -->
+    <TargetFrameworks>net10.0;net10.0-windows</TargetFrameworks>
+    <UseWindowsForms Condition="'$(TargetFramework)' == 'net10.0-windows'">true</UseWindowsForms>
     <OutputType>Library</OutputType>
     <AssemblyName>KeePassLib</AssemblyName>
     <RootNamespace>KeePassLib</RootNamespace>
@@ -29,6 +31,15 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <!-- Define KeePassUAP for the plain net10.0 TFM so that all #if !KeePassUAP
+       guards in source files suppress the WinForms-specific code paths.
+       This group MUST appear after the Debug/Release groups because those
+       groups do a hard-set of DefineConstants (not an append), which would
+       otherwise overwrite the KeePassUAP constant. -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <DefineConstants>$(DefineConstants);KeePassUAP</DefineConstants>
   </PropertyGroup>
 
   <!-- KeePassUAP and KeePassLibSD are optional platform-variant constants.
@@ -89,6 +100,8 @@
     <Compile Include="Native\NativeMethods.cs" />
     <Compile Include="Native\NativeMethods.Unix.cs" />
     <Compile Include="Native\SimpleStat.cs" />
+    <Compile Include="Plugins\IMainWindowService.cs" />
+    <Compile Include="Plugins\PluginMenuCommand.cs" />
     <Compile Include="PwCustomIcon.cs" />
     <Compile Include="PwGroup.Search.cs" />
     <Compile Include="Resources\KLRes.cs" />

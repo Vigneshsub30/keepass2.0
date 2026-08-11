@@ -26,9 +26,7 @@ using System.Security;
 using System.Text;
 using System.Xml;
 
-#if !KeePassUAP
 using System.Security.Cryptography;
-#endif
 
 using KeePassLib.Collections;
 using KeePassLib.Cryptography;
@@ -426,10 +424,10 @@ namespace KeePassLib.Serialization
 				pbCipherKey = CryptoUtil.ResizeKey(pbCmp, 0, 64, cbCipherKey);
 
 				pbCmp[64] = 1;
-				using(SHA512Managed h = new SHA512Managed())
-				{
-					pbHmacKey64 = h.ComputeHash(pbCmp);
-				}
+			using(SHA512 h = SHA512.Create())
+			{
+				pbHmacKey64 = h.ComputeHash(pbCmp);
+			}
 			}
 			finally { MemUtil.ZeroByteArray(pbCmp); }
 		}

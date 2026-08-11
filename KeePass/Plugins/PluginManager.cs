@@ -532,7 +532,8 @@ namespace KeePass.Plugins
 				Plugin p = pi.Interface;
 				if(p == null) { Debug.Assert(false); continue; }
 
-				ToolStripMenuItem tsmi = p.GetMenuItem(t);
+				KeePassLib.Plugins.PluginMenuCommand cmd = p.GetMenuCommand(t);
+				ToolStripMenuItem tsmi = WinFormsPluginMenuAdapter.ToMenuItem(cmd);
 				if(tsmi != null)
 				{
 					// string strTip = tsmi.ToolTipText;

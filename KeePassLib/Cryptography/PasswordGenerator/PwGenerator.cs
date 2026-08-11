@@ -22,9 +22,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
-#if !KeePassUAP
 using System.Security.Cryptography;
-#endif
 
 using KeePassLib.Resources;
 using KeePassLib.Security;
@@ -87,12 +85,12 @@ namespace KeePassLib.Cryptography.PasswordGenerator
 			Debug.Assert(pbKey.Length >= 64);
 			if((pbAdditionalEntropy != null) && (pbAdditionalEntropy.Length != 0))
 			{
-				using(SHA512Managed h = new SHA512Managed())
-				{
-					byte[] pbHash = h.ComputeHash(pbAdditionalEntropy);
-					MemUtil.XorArray(pbHash, 0, pbKey, 0, pbHash.Length);
-					MemUtil.ZeroByteArray(pbHash);
-				}
+			using(SHA512 h = SHA512.Create())
+			{
+				byte[] pbHash = h.ComputeHash(pbAdditionalEntropy);
+				MemUtil.XorArray(pbHash, 0, pbKey, 0, pbHash.Length);
+				MemUtil.ZeroByteArray(pbHash);
+			}
 			}
 
 			return new CryptoRandomStream(CrsAlgorithm.ChaCha20, pbKey);

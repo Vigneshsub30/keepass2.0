@@ -23,7 +23,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 
-#if !KeePassUAP
 using System.Security.Cryptography;
 
 using KeePassLib.Utility;
@@ -64,4 +63,3 @@ namespace KeePassLib.Cryptography
 		}
 	}
 }
-#endif
