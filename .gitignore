@@ -16,3 +16,6 @@ packages/
 
 # macOS
 .DS_Store
+
+# Cursor
+.cursor
