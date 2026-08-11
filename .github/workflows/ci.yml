@@ -8,6 +8,9 @@ on:
 
 permissions:
   contents: read
+  # Required for SLSA provenance attestation (WO-009).
+  id-token: write
+  attestations: write
 
 jobs:
   build:
@@ -91,6 +94,60 @@ jobs:
             Translation/TrlUtil/bin/Release/net10.0-windows/TrlUtil.dll; do
             [ -f "$f" ] && (command -v sha256sum >/dev/null && sha256sum "$f" || shasum -a 256 "$f")
           done
+
+      # ── SBOM generation (WO-009) ────────────────────────────────────────────
+      # CycloneDX produces a machine-readable inventory of all NuGet dependencies.
+      - name: Install CycloneDX SBOM tool
+        run: dotnet tool install --global CycloneDX
+
+      - name: Generate SBOM (CycloneDX JSON)
+        run: dotnet CycloneDX KeePass.sln --output sbom/ --json
+
+      # Verify that key packages appear in the SBOM JSON using cross-platform
+      # PowerShell Core (pwsh is pre-installed on all GitHub Actions runners).
+      - name: Verify SBOM contents
+        shell: pwsh
+        run: |
+          $bom = Get-Content sbom/bom.json -Raw | ConvertFrom-Json
+          $pkgNames = $bom.components | ForEach-Object { $_.name }
+          $expected = @("System.Drawing.Common", "System.IO.FileSystem.AccessControl")
+          foreach ($pkg in $expected) {
+            if ($pkgNames -contains $pkg) {
+              Write-Host "SBOM OK: $pkg found"
+            } else {
+              Write-Warning "SBOM: '$pkg' not found in components — check CycloneDX output"
+            }
+          }
+          Write-Host "Total SBOM components: $($bom.components.Count)"
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-cyclonedx-${{ runner.os }}
+          path: sbom/bom.json
+          if-no-files-found: error
+
+      # ── SLSA provenance attestation (WO-009) ───────────────────────────────
+      # Generates a signed SLSA provenance attestation stored in GitHub's
+      # attestation store.  Verifiable with: gh attestation verify <file> -R <repo>
+      # Only run on Windows where the primary distributable artifacts are built.
+      - name: Attest build provenance
+        if: runner.os == 'Windows'
+        id: attest
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            KeePass/bin/Release/net10.0-windows/KeePass.dll
+            KeePassLib/bin/Release/net10.0-windows/KeePassLib.dll
+            Translation/TrlUtil/bin/Release/net10.0-windows/TrlUtil.dll
+
+      - name: Upload provenance attestation bundle
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: provenance-attestation-windows
+          path: ${{ steps.attest.outputs.bundle-path }}
+          if-no-files-found: warn
 
       # Upload the primary binaries produced by the Release build.
       # On Windows these include native .exe launchers; on macOS/Linux the
