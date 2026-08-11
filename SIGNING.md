@@ -195,3 +195,74 @@ codesign --verify --deep --strict --verbose=4 /Volumes/KeePass/KeePass.app
 # Check notarization ticket is stapled
 xcrun stapler validate KeePass.dmg
 ```
+
+---
+
+# Linux GPG Signing and Checksum Generation
+
+Linux artifacts are accompanied by a `SHA256SUMS` file and a detached GPG
+signature `SHA256SUMS.sig`, enabling users and package managers to verify
+artifact integrity before installation.
+
+## How It Works
+
+1. `sha256sum` generates a `SHA256SUMS` file listing the hash and filename of
+   every Linux build artifact.
+2. The GPG private key (stored as a GitHub Actions secret) is imported into a
+   temporary keyring.
+3. `gpg --detach-sign --armor` creates `SHA256SUMS.sig` — a detached ASCII-armored
+   signature.
+4. Both files are uploaded as `KeePass-linux-checksums` artifacts.
+5. A cleanup step removes the key from the keyring unconditionally.
+
+## GPG Key Setup (One-time)
+
+```bash
+# Generate a dedicated code-signing key (no expiry for CI use)
+gpg --batch --gen-key <<EOF_KEY
+%no-protection
+Key-Type: RSA
+Key-Length: 4096
+Subkey-Type: RSA
+Subkey-Length: 4096
+Name-Real: KeePass Release Signing
+Name-Email: releases@keepass.example.com
+Expire-Date: 0
+EOF_KEY
+
+# Get the key fingerprint
+gpg --list-secret-keys --keyid-format long
+
+# Export the private key (base64-encode for GitHub secret)
+gpg --export-secret-key --armor <FINGERPRINT> | base64
+
+# Publish the public key (GitHub, keyserver, or website)
+gpg --export --armor <FINGERPRINT> > keepass-release-signing.asc
+```
+
+## Configure GitHub Repository Secrets
+
+| Secret name | Value |
+|---|---|
+| `LINUX_GPG_SIGNING_KEY` | Base64-encoded ASCII-armored GPG private key |
+| `LINUX_GPG_KEY_ID` | GPG key fingerprint or email |
+| `LINUX_GPG_PASSPHRASE` | Key passphrase (leave empty for unprotected key) |
+
+Add the following **Repository Variable**:
+
+| Variable name | Value |
+|---|---|
+| `LINUX_SIGNING_ENABLED` | `true` |
+
+## Verifying Checksums and Signature
+
+```bash
+# Import the public key (substitute the actual key URL/file)
+curl -sSL https://keepass.example.com/keepass-release-signing.asc | gpg --import
+
+# Verify the GPG signature
+gpg --verify SHA256SUMS.sig SHA256SUMS
+
+# Verify file checksums
+sha256sum --check SHA256SUMS
+```
