@@ -30,6 +30,25 @@ namespace KeePass.App.Configuration
 		{
 		}
 
+		/// <summary>
+		/// Hex-encoded public key tokens of publishers whose plugins are
+		/// trusted to load.  Each entry is a 16-character lowercase hex string
+		/// (8 bytes = the last 8 bytes of the SHA-1 of the publisher's public
+		/// key, matching the .NET strong-name public key token convention).
+		/// An empty list means no publisher allow-list is enforced (unsigned
+		/// plugins can load, subject to other checks).
+		/// </summary>
+		private List<string> m_trustedPluginPublishers = new List<string>();
+		public List<string> TrustedPluginPublishers
+		{
+			get { return m_trustedPluginPublishers; }
+			set
+			{
+				if(value == null) throw new ArgumentNullException("value");
+				m_trustedPluginPublishers = value;
+			}
+		}
+
 		private AceWorkspaceLocking m_wsl = new AceWorkspaceLocking();
 		public AceWorkspaceLocking WorkspaceLocking
 		{

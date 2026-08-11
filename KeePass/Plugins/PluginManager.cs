@@ -209,6 +209,19 @@ namespace KeePass.Plugins
 						continue;
 					}
 
+					// Code-signing verification against the publisher allow-list.
+					PublisherKeyAllowList allowList =
+						PublisherKeyAllowList.FromConfiguration(
+							Program.Config.Security);
+					PluginSignatureResult sigResult =
+						PluginSignatureVerifier.Verify(strFile, allowList);
+					if(!sigResult.IsValid)
+					{
+						MessageService.ShowWarning(KPRes.PluginLoadFailed,
+							strFile, sigResult.RejectionReason);
+						continue;
+					}
+
 					string strHash = Convert.ToBase64String(CryptoUtil.HashSha256(
 						strFile), Base64FormattingOptions.None);
 
