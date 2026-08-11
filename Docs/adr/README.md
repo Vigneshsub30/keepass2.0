@@ -37,4 +37,12 @@ ADRs follow [Michael Nygard's format](https://cognitect.com/blog/2011/11/15/docu
 |--------|-------|--------|------|
 | [ADR-000](ADR-000-template.md) | ADR Template | Accepted | 2026-08-11 |
 | [ADR-001](ADR-001-image-abstraction-breaking-change.md) | FileFormatProvider.SmallIcon return-type change from System.Drawing.Image to ImageData | Accepted | 2026-08-11 |
+| [ADR-002](ADR-002-kdbx-format-version-selection.md) | KDBX Format-Version Selection Logic | Accepted | 2026-08-11 |
+| [ADR-003](ADR-003-plugin-trust-model.md) | Plugin Trust Model and Isolation | Accepted | 2026-08-11 |
+| [ADR-004](ADR-004-configuration-enforcement-precedence.md) | Configuration Enforcement Precedence Hierarchy | Accepted | 2026-08-11 |
+| [ADR-005](ADR-005-mono-workaround-retirement.md) | Mono Workaround Retirement Strategy | Accepted | 2026-08-11 |
+| [ADR-006](ADR-006-ui-domain-seam.md) | UI-Domain Seam and MVVM Adoption | Accepted | 2026-08-11 |
+| [ADR-007](ADR-007-clipboard-credential-delivery.md) | Clipboard Credential Delivery Mechanism | Accepted | 2026-08-11 |
+| [ADR-008](ADR-008-atomic-save-guarantees.md) | Atomic-Save Transaction Guarantees | Accepted | 2026-08-11 |
+| [ADR-009](ADR-009-platform-capability-tiers.md) | Platform Capability-Tier Matrix Definition | Accepted | 2026-08-11 |
 | [MonoWorkarounds-Classification](MonoWorkarounds-Classification.md) | MonoWorkarounds inventory and classification for .NET 10 migration (WO-043) | Accepted | 2026-08-11 |

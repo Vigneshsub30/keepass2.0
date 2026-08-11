@@ -290,7 +290,7 @@ jobs:
         run: |
           $msiOut = "${{ env.ARTIFACT_DIR }}/packages"
           New-Item -ItemType Directory -Force -Path $msiOut | Out-Null
-          & "build/windows/build-msi.ps1" `
+          & "Build/windows/build-msi.ps1" `
               -Version "${{ steps.version.outputs.version }}" `
               -Arch    "${{ matrix.arch }}" `
               -PublishDir "${{ env.ARTIFACT_DIR }}/publish" `
@@ -303,7 +303,7 @@ jobs:
         run: |
           $zipOut = "${{ env.ARTIFACT_DIR }}/packages"
           New-Item -ItemType Directory -Force -Path $zipOut | Out-Null
-          & "build/windows/build-portable.ps1" `
+          & "Build/windows/build-portable.ps1" `
               -Version    "${{ steps.version.outputs.version }}" `
               -Arch       "${{ matrix.arch }}" `
               -PublishDir "${{ env.ARTIFACT_DIR }}/publish" `
@@ -381,7 +381,7 @@ jobs:
 
           mkdir -p "${{ env.ARTIFACT_DIR }}/packages"
 
-          bash build/macos/build-dmg.sh \
+          bash Build/macos/build-dmg.sh \
             --version    "${{ steps.version.outputs.version }}" \
             --rid        "${{ matrix.rid }}" \
             --publish-dir "${{ env.ARTIFACT_DIR }}/publish" \
@@ -427,7 +427,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           mkdir -p "${{ env.ARTIFACT_DIR }}/packages"
-          bash build/linux/build-deb.sh \
+          bash Build/linux/build-deb.sh \
             --version    "${{ steps.version.outputs.version }}" \
             --rid        "${{ matrix.rid }}" \
             --publish-dir "${{ env.ARTIFACT_DIR }}/publish" \
@@ -436,7 +436,7 @@ jobs:
       - name: Package AppImage (Linux)
         if: runner.os == 'Linux'
         run: |
-          bash build/linux/build-appimage.sh \
+          bash Build/linux/build-appimage.sh \
             --version    "${{ steps.version.outputs.version }}" \
             --rid        "${{ matrix.rid }}" \
             --publish-dir "${{ env.ARTIFACT_DIR }}/publish" \
