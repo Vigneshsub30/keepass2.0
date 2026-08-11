@@ -22,6 +22,14 @@ namespace KeePass.Tests.Platform
         /// <summary>Defaults to <c>false</c> (Windows enforces min sizes natively).</summary>
         public bool RequiresWindowMinSizeEnforcement { get; set; } = false;
 
+        /// <summary>
+        /// Configurable capability tiers.  Defaults to
+        /// <see cref="PlatformCapabilityTier.Unsupported"/> for all capabilities
+        /// so tests that do not care about a capability get a safe default.
+        /// </summary>
+        public Dictionary<PlatformCapability, PlatformCapabilityTier> CapabilityTiers { get; } =
+            new Dictionary<PlatformCapability, PlatformCapabilityTier>();
+
         public IClipboardService     Clipboard        { get; set; }
         public ICredentialStore      CredentialStore  { get; set; }
         public IAutoTypeService      AutoType         { get; set; }
@@ -33,6 +41,15 @@ namespace KeePass.Tests.Platform
             CredentialStore  = new TestCredentialStore();
             AutoType         = new TestAutoTypeService();
             ScreenProtection = new TestScreenProtectionService();
+        }
+
+        /// <inheritdoc/>
+        public PlatformCapabilityTier GetCapabilityTier(PlatformCapability capability)
+        {
+            PlatformCapabilityTier tier;
+            if(CapabilityTiers.TryGetValue(capability, out tier))
+                return tier;
+            return PlatformCapabilityTier.Unsupported;
         }
 
         // ── Nested stub implementations ────────────────────────────────────────

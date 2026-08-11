@@ -27,6 +27,23 @@ namespace KeePass.Platform.Unix.Mac
         public bool RequiresWindowMinSizeEnforcement => false;
 
         /// <inheritdoc/>
+        public PlatformCapabilityTier GetCapabilityTier(PlatformCapability capability)
+        {
+            switch(capability)
+            {
+                case PlatformCapability.Clipboard:               return PlatformCapabilityTier.Full;
+                case PlatformCapability.ClipboardPrivacyMarkers: return PlatformCapabilityTier.Unsupported;
+                case PlatformCapability.CredentialStore:         return PlatformCapabilityTier.Full; // Keychain
+                case PlatformCapability.AutoType:                return PlatformCapabilityTier.Unsupported;
+                case PlatformCapability.SecureDesktop:           return PlatformCapabilityTier.Unsupported;
+                case PlatformCapability.ScreenCaptureProtection: return PlatformCapabilityTier.Partial;
+                case PlatformCapability.ProcessDacl:             return PlatformCapabilityTier.Unsupported;
+                case PlatformCapability.GlobalHotKeys:           return PlatformCapabilityTier.Partial;
+                default:                                         return PlatformCapabilityTier.Unsupported;
+            }
+        }
+
+        /// <inheritdoc/>
         public IClipboardService Clipboard { get; }
 
         /// <inheritdoc/>

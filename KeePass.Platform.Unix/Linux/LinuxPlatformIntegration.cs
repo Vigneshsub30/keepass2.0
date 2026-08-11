@@ -36,6 +36,37 @@ namespace KeePass.Platform.Unix.Linux
         public bool RequiresWindowMinSizeEnforcement => true;
 
         /// <inheritdoc/>
+        public PlatformCapabilityTier GetCapabilityTier(PlatformCapability capability)
+        {
+            switch(capability)
+            {
+                case PlatformCapability.Clipboard:
+                    // Wayland without wlr-data-control = write-only.
+                    return IsWayland()
+                        ? PlatformCapabilityTier.Partial
+                        : PlatformCapabilityTier.Full;
+                case PlatformCapability.ClipboardPrivacyMarkers:
+                    // Wayland compositors with ext-data-control may support this.
+                    return IsWayland()
+                        ? PlatformCapabilityTier.Partial
+                        : PlatformCapabilityTier.Unsupported;
+                case PlatformCapability.CredentialStore:         return PlatformCapabilityTier.Partial; // libsecret
+                case PlatformCapability.AutoType:                return PlatformCapabilityTier.Unsupported;
+                case PlatformCapability.SecureDesktop:           return PlatformCapabilityTier.Unsupported;
+                case PlatformCapability.ScreenCaptureProtection: return PlatformCapabilityTier.Unsupported;
+                case PlatformCapability.ProcessDacl:             return PlatformCapabilityTier.Unsupported;
+                case PlatformCapability.GlobalHotKeys:           return PlatformCapabilityTier.Partial;
+                default:                                         return PlatformCapabilityTier.Unsupported;
+            }
+        }
+
+        private static bool IsWayland()
+        {
+            string display = System.Environment.GetEnvironmentVariable("WAYLAND_DISPLAY") ?? string.Empty;
+            return display.Length > 0;
+        }
+
+        /// <inheritdoc/>
         public IClipboardService Clipboard { get; }
 
         /// <inheritdoc/>

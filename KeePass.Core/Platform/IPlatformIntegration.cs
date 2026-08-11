@@ -61,6 +61,20 @@ namespace KeePass.Core.Platform
         /// </summary>
         bool RequiresWindowMinSizeEnforcement { get; }
 
+        /// <summary>
+        /// Returns the availability tier for a discrete platform capability.
+        ///
+        /// <para>Callers use this to degrade gracefully when a feature is not
+        /// fully supported on the current platform.  Implementations must return
+        /// <see cref="PlatformCapabilityTier.Unsupported"/> for any
+        /// <see cref="PlatformCapability"/> value they do not explicitly handle,
+        /// so that future capabilities added to the enum do not cause exceptions
+        /// on older builds.</para>
+        /// </summary>
+        /// <param name="capability">The capability to query.</param>
+        /// <returns>The tier describing how well the capability is supported.</returns>
+        PlatformCapabilityTier GetCapabilityTier(PlatformCapability capability);
+
         /// <summary>Clipboard read/write operations.</summary>
         IClipboardService Clipboard { get; }
 

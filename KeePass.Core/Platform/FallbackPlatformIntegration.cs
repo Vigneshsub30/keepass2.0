@@ -50,6 +50,17 @@ namespace KeePass.Core.Platform
             PlatformId == PlatformId.Linux;
 
         /// <inheritdoc/>
+        /// <remarks>
+        /// Returns <see cref="PlatformCapabilityTier.Unsupported"/> for all
+        /// capabilities because this implementation is a safe guard — no platform
+        /// APIs are available at the time it is used.
+        /// </remarks>
+        public PlatformCapabilityTier GetCapabilityTier(PlatformCapability capability)
+        {
+            return PlatformCapabilityTier.Unsupported;
+        }
+
+        /// <inheritdoc/>
         public IClipboardService Clipboard => UnsupportedClipboard.Instance;
 
         /// <inheritdoc/>

@@ -49,6 +49,23 @@ namespace KeePass.Platform
         public bool RequiresWindowMinSizeEnforcement => false;
 
         /// <inheritdoc/>
+        public PlatformCapabilityTier GetCapabilityTier(PlatformCapability capability)
+        {
+            switch(capability)
+            {
+                case PlatformCapability.Clipboard:               return PlatformCapabilityTier.Full;
+                case PlatformCapability.ClipboardPrivacyMarkers: return PlatformCapabilityTier.Unsupported;
+                case PlatformCapability.CredentialStore:         return PlatformCapabilityTier.Full;
+                case PlatformCapability.AutoType:                return PlatformCapabilityTier.Full;
+                case PlatformCapability.SecureDesktop:           return PlatformCapabilityTier.Full;
+                case PlatformCapability.ScreenCaptureProtection: return PlatformCapabilityTier.Full;
+                case PlatformCapability.ProcessDacl:             return PlatformCapabilityTier.Full;
+                case PlatformCapability.GlobalHotKeys:           return PlatformCapabilityTier.Full;
+                default:                                         return PlatformCapabilityTier.Unsupported;
+            }
+        }
+
+        /// <inheritdoc/>
         public IClipboardService Clipboard { get; }
 
         /// <inheritdoc/>
