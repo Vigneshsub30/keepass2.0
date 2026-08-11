@@ -190,7 +190,22 @@ namespace KeePassLib.Serialization
 			{
 				if(m_bMadeUnhidden) UrlUtil.HideFile(m_iocTemp.Path, true);
 			}
-			else CommitWriteTransaction();
+			else
+			{
+				try
+				{
+					CommitWriteTransaction();
+				}
+				catch(Exception exCommit)
+				{
+					g_log.LogWarning(
+						exCommit,
+						"FileTransactionEx: commit failed for {Path}, ExceptionType: {ExType}",
+						m_iocBase?.Path ?? "(null)",
+						exCommit.GetType().Name);
+					throw;
+				}
+			}
 
 			m_iocBase = null; // Dispose
 		}

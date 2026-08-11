@@ -39,6 +39,9 @@ using KeePass.Util;
 using KeePass.Core.DataExchange;
 
 using KeePassLib;
+using KeePassLib.Diagnostics;
+
+using Microsoft.Extensions.Logging;
 using KeePassLib.Collections;
 using KeePassLib.Interfaces;
 using KeePassLib.Keys;
@@ -51,6 +54,9 @@ namespace KeePass.DataExchange
 {
 	public static class ImportUtil
 	{
+		private static readonly ILogger s_logger =
+			Program.LoggerFactory.CreateLogger("KeePass.DataExchange.ImportUtil");
+
 		public static bool? Import(PwDatabase pd, out bool bAppendedToRootOnly,
 			Form fParent)
 		{
@@ -176,37 +182,54 @@ namespace KeePass.DataExchange
 						KPRes.ImportingStatusMsg) + " (" + iocIn.GetDisplayName() +
 						")", LogStatusType.Info);
 
-					pdImp.Modified = true;
-					fmtImp.Import(pdImp, sSizeGuard, dlgStatus);
+				pdImp.Modified = true;
+				fmtImp.Import(pdImp, sSizeGuard, dlgStatus);
 
-					// Post-parse: enforce the entry-count ceiling.
-					long entryCount = pdImp.RootGroup?.GetEntriesCount(true) ?? 0L;
-					if(entryCount > valOpts.MaxEntryCount)
-						throw new ImportValidationException(
-							nameof(ImportValidationOptions.MaxEntryCount),
-							valOpts.MaxEntryCount,
-							entryCount);
-				}
-				catch(ImportValidationException ivEx)
+				// Post-parse: enforce the entry-count ceiling.
+				long entryCount = pdImp.RootGroup?.GetEntriesCount(true) ?? 0L;
+				if(entryCount > valOpts.MaxEntryCount)
+					throw new ImportValidationException(
+						nameof(ImportValidationOptions.MaxEntryCount),
+						valOpts.MaxEntryCount,
+						entryCount);
+
+				s_logger.LogInformation(
+					"Import succeeded. Format: {Format}, EntryCount: {EntryCount}",
+					fmtImp.GetType().Name,
+					entryCount);
+			}
+			catch(ImportValidationException ivEx)
+			{
+				s_logger.LogWarning(
+					"Import rejected by validation pipeline. " +
+					"Format: {Format}, Ceiling: {Ceiling}, " +
+					"Limit: {Limit}, Observed: {Observed}",
+					fmtImp.GetType().Name,
+					ivEx.CeilingName,
+					ivEx.ConfiguredLimit,
+					ivEx.ObservedValue);
+				if(!bOnErrorSilent)
+					MessageService.ShowWarning(iocIn.GetDisplayName(),
+						ivEx.Message);
+				continue;
+			}
+			catch(Exception ex)
+			{
+				s_logger.LogWarning(
+					"Import failed. Format: {Format}, ExceptionType: {ExType}",
+					fmtImp.GetType().Name,
+					ex.GetType().Name);
+				if(!bOnErrorSilent)
 				{
-					if(!bOnErrorSilent)
-						MessageService.ShowWarning(iocIn.GetDisplayName(),
-							ivEx.Message);
-					continue;
+					Exception exR = ex;
+					if(bSynchronize && (ex is InvalidCompositeKeyException))
+						exR = new Exception(KLRes.InvalidCompositeKey +
+							MessageService.NewParagraph + KPRes.SynchronizingHint);
+					MessageService.ShowWarning(iocIn.GetDisplayName(),
+						KPRes.FileImportFailed, exR);
 				}
-				catch(Exception ex)
-				{
-					if(!bOnErrorSilent)
-					{
-						Exception exR = ex;
-						if(bSynchronize && (ex is InvalidCompositeKeyException))
-							exR = new Exception(KLRes.InvalidCompositeKey +
-								MessageService.NewParagraph + KPRes.SynchronizingHint);
-						MessageService.ShowWarning(iocIn.GetDisplayName(),
-							KPRes.FileImportFailed, exR);
-					}
-					continue;
-				}
+				continue;
+			}
 				finally { if(s != null) s.Dispose(); }
 
 				if(bUseTempDb)

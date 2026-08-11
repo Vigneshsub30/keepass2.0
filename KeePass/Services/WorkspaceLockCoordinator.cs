@@ -4,6 +4,8 @@ using KeePass.App.Configuration;
 using KeePass.Native;
 using KeePass.Util;
 
+using Microsoft.Extensions.Logging;
+
 namespace KeePass.Services
 {
 	/// <summary>
@@ -17,6 +19,9 @@ namespace KeePass.Services
 	/// </summary>
 	public sealed class WorkspaceLockCoordinator : IWorkspaceLockService, IDisposable
 	{
+		private static readonly ILogger<WorkspaceLockCoordinator> s_log =
+			Program.LoggerFactory.CreateLogger<WorkspaceLockCoordinator>();
+
 		private readonly CriticalSectionEx _csLockTimer = new CriticalSectionEx();
 
 		/// <summary>Ticks at which the per-database inactivity deadline expires.</summary>
@@ -90,8 +95,16 @@ namespace KeePass.Services
 			try
 			{
 				long lCurTicks = utcNow.Ticks;
-				if((lCurTicks >= _lockAtTicks) || (lCurTicks >= _lockAtGlobalTicks))
+				bool bInactivity = lCurTicks >= _lockAtTicks;
+				bool bGlobalIdle  = lCurTicks >= _lockAtGlobalTicks;
+
+				if(bInactivity || bGlobalIdle)
 				{
+					string trigger = bInactivity ? "Inactivity" : "GlobalIdle";
+					s_log.LogInformation(
+						"Workspace locked. Trigger: {Trigger}, UtcNow: {UtcNow}",
+						trigger,
+						utcNow.ToString("o"));
 					OnLockRequested?.Invoke();
 					return true;
 				}
@@ -124,7 +137,16 @@ namespace KeePass.Services
 				(e.Reason == SessionLockReason.UserSwitch   && wl.LockOnSessionSwitch) ||
 				(e.Reason == SessionLockReason.Suspend      && wl.LockOnSuspend);
 
-			if(bLock) OnLockRequested?.Invoke();
+			if(bLock)
+			{
+				s_log.LogInformation(
+					"Workspace locked. Trigger: {Trigger}, SessionReason: {Reason}, " +
+					"UtcNow: {UtcNow}",
+					"SessionEvent",
+					e.Reason.ToString(),
+					DateTime.UtcNow.ToString("o"));
+				OnLockRequested?.Invoke();
+			}
 		}
 
 		// ── IDisposable ───────────────────────────────────────────────── //

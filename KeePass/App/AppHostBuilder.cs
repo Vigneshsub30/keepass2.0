@@ -98,12 +98,29 @@ namespace KeePass.App
 		{
 			if(services == null) throw new ArgumentNullException("services");
 
-			// ── Structured logging (WO-031) ───────────────────────────────────
+			// ── Structured logging (WO-089) ──────────────────────────────────
+			// Logging is opt-in via Logging.Enabled in keepass.config.xml.
+			// When disabled, a NullLoggerFactory is registered so ILogger<T>
+			// injections still resolve without null checks at every call site.
 			services.AddLogging(builder =>
 			{
-				// Default provider; hosts can replace this with AddConsole,
-				// AddEventLog, etc. by reconfiguring the factory after Build().
 				builder.SetMinimumLevel(LogLevel.Information);
+				if(m_config.Logging.Enabled)
+				{
+					// Console sink (debug / development); in Release this is
+					// typically redirected or suppressed by the OS.
+					builder.AddSimpleConsole(opts =>
+					{
+						opts.SingleLine  = true;
+						opts.TimestampFormat = "yyyy-MM-ddTHH:mm:ssZ ";
+					});
+				}
+				else
+				{
+					// All loggers resolve to NullLogger — zero allocation in
+					// the fast path when diagnostics are turned off.
+					builder.AddProvider(NullLoggerFactory.Instance.CreateProvider());
+				}
 			});
 
 			// ── Application configuration / IOptions (WO-032) ────────────────

@@ -35,6 +35,8 @@ using KeePassLib.Native;
 using KeePassLib.Security;
 using KeePassLib.Utility;
 
+using Microsoft.Extensions.Logging;
+
 #if (KeePassUAP && KeePassLibSD)
 #error KeePassUAP and KeePassLibSD are mutually exclusive.
 #endif
@@ -46,10 +48,29 @@ namespace KeePassLib.Cryptography
 	/// </summary>
 	public static class SelfTest
 	{
+		private static readonly ILogger s_log = KeePassLibLog.Logger("KeePassLib.Cryptography.SelfTest");
+
 		/// <summary>
 		/// Perform a self-test.
 		/// </summary>
 		public static void Perform()
+		{
+			try
+			{
+				PerformInternal();
+				s_log.LogInformation("Cryptographic self-test passed successfully.");
+			}
+			catch(Exception ex)
+			{
+				s_log.LogCritical(ex,
+					"Cryptographic self-test FAILED — KeePass cannot run safely. " +
+					"TestName: {TestName}, ExceptionType: {ExType}",
+					ex.Message, ex.GetType().Name);
+				throw;
+			}
+		}
+
+		private static void PerformInternal()
 		{
 #if KeePassUAP
 			Debug.Assert(Marshal.SizeOf<int>() == 4);

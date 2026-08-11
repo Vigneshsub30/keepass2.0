@@ -30,6 +30,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.10" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.10" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.10" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.10" />
     <PackageVersion Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
     <!-- Available for future use if cross-platform GDI+ support is needed

@@ -34,8 +34,11 @@ using KeePass.UI;
 using KeePass.Util;
 
 using KeePassLib;
+using KeePassLib.Diagnostics;
 using KeePassLib.Plugins;
 using KeePassLib.Cryptography;
+
+using Microsoft.Extensions.Logging;
 using KeePassLib.Delegates;
 using KeePassLib.Interfaces;
 using KeePassLib.Native;
@@ -49,6 +52,9 @@ namespace KeePass.Plugins
 		private IPluginHost m_host = null;
 		private KeePassLib.Plugins.IPluginAuditLogger m_auditLogger =
 			KeePassLib.Plugins.NullPluginAuditLogger.Instance;
+
+		private static readonly ILogger<PluginManager> s_logger =
+			Program.LoggerFactory.CreateLogger<PluginManager>();
 
 		private static string g_strUserDir = string.Empty;
 		internal static string UserDirectory
@@ -200,44 +206,61 @@ namespace KeePass.Plugins
 				Exception exShowStd = null;
 				try
 				{
-					// Pre-execution metadata inspection — no plugin code runs yet.
-					PluginInspectionResult inspResult =
-						PluginMetadataInspector.Inspect(strFile);
-					if(!inspResult.IsAdmitted)
-					{
-						string reasons = string.Join("; ", inspResult.RejectionReasons);
-						MessageService.ShowWarning(KPRes.PluginLoadFailed,
-							strFile, reasons);
-						continue;
-					}
+				// Pre-execution metadata inspection — no plugin code runs yet.
+				PluginInspectionResult inspResult =
+					PluginMetadataInspector.Inspect(strFile);
+				if(!inspResult.IsAdmitted)
+				{
+					string reasons = string.Join("; ", inspResult.RejectionReasons);
+					s_logger.LogWarning(
+						"Plugin rejected by metadata inspection. " +
+						"File: {PluginFile}, Reasons: {Reasons}",
+						KeePassLogRedactor.RedactIfVaultField(null, strDisplayFilePath),
+						reasons);
+					MessageService.ShowWarning(KPRes.PluginLoadFailed,
+						strFile, reasons);
+					continue;
+				}
 
-					// Code-signing verification against the publisher allow-list.
-					PublisherKeyAllowList allowList =
-						PublisherKeyAllowList.FromConfiguration(
-							Program.Config.Security);
-					PluginSignatureResult sigResult =
-						PluginSignatureVerifier.Verify(strFile, allowList);
-					if(!sigResult.IsValid)
-					{
-						MessageService.ShowWarning(KPRes.PluginLoadFailed,
-							strFile, sigResult.RejectionReason);
-						continue;
-					}
+				// Code-signing verification against the publisher allow-list.
+				PublisherKeyAllowList allowList =
+					PublisherKeyAllowList.FromConfiguration(
+						Program.Config.Security);
+				PluginSignatureResult sigResult =
+					PluginSignatureVerifier.Verify(strFile, allowList);
+				if(!sigResult.IsValid)
+				{
+					s_logger.LogWarning(
+						"Plugin rejected by signature verification. " +
+						"File: {PluginFile}, Reason: {Reason}, SignatureType: {SignatureType}",
+						KeePassLogRedactor.RedactIfVaultField(null, strDisplayFilePath),
+						sigResult.RejectionReason,
+						sigResult.SignatureType.ToString());
+					MessageService.ShowWarning(KPRes.PluginLoadFailed,
+						strFile, sigResult.RejectionReason);
+					continue;
+				}
 
-					string strHash = Convert.ToBase64String(CryptoUtil.HashSha256(
-						strFile), Base64FormattingOptions.None);
+				string strHash = Convert.ToBase64String(CryptoUtil.HashSha256(
+					strFile), Base64FormattingOptions.None);
 
-					PluginInfo pi = new PluginInfo(strFile, fvi, strDisplayFilePath);
-					pi.Interface = CreatePluginInstance(pi.FilePath, strTypeName);
+				PluginInfo pi = new PluginInfo(strFile, fvi, strDisplayFilePath);
+				pi.Interface = CreatePluginInstance(pi.FilePath, strTypeName);
 
-					m_auditLogger.LogLoadAttempted(strFile);
-					CheckCompatibility(strHash, pi.Interface, m_auditLogger);
-					// CheckCompatibilityRefl(strFile);
+				m_auditLogger.LogLoadAttempted(strFile);
+				CheckCompatibility(strHash, pi.Interface, m_auditLogger);
+				// CheckCompatibilityRefl(strFile);
 
-					if(!pi.Interface.Initialize(m_host))
-						continue; // Fail without error
+				if(!pi.Interface.Initialize(m_host))
+					continue; // Fail without error
 
-					m_lPlugins.Add(pi);
+				m_lPlugins.Add(pi);
+				s_logger.LogInformation(
+					"Plugin loaded successfully. File: {PluginFile}, " +
+					"Type: {PluginType}, SignatureType: {SignatureType}",
+					KeePassLogRedactor.RedactIfVaultField(null, strDisplayFilePath),
+					inspResult.PluginTypeName ?? "(unknown)",
+					sigResult.SignatureType.ToString());
 				}
 				catch(BadImageFormatException exBif)
 				{

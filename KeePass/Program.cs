@@ -215,6 +215,23 @@ namespace KeePass
 		}
 
 		/// <summary>
+		/// Returns the <see cref="Microsoft.Extensions.Logging.ILoggerFactory"/>
+		/// registered in the DI container, or a <c>NullLoggerFactory</c> when the
+		/// container is not yet available (e.g. during early startup).
+		/// </summary>
+		public static Microsoft.Extensions.Logging.ILoggerFactory LoggerFactory
+		{
+			get
+			{
+				IServiceProvider sp = g_serviceProvider;
+				if(sp == null) return Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance;
+				return sp.GetService(typeof(Microsoft.Extensions.Logging.ILoggerFactory))
+					as Microsoft.Extensions.Logging.ILoggerFactory
+					?? Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance;
+			}
+		}
+
+		/// <summary>
 		/// Returns the <see cref="IPlatformIntegration"/> registered in the DI
 		/// container, or <see cref="FallbackPlatformIntegration.Instance"/> if
 		/// the container is not yet available.
