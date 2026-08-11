@@ -204,6 +204,8 @@ namespace KeePass.App
 			public static readonly string WorkaroundDisable = "wa-disable";
 			public static readonly string WorkaroundEnable = "wa-enable";
 
+			public static readonly string SmokeTest = "smoke-test";
+
 			public static readonly string ConfigPathLocal = "cfg-local";
 
 			public static readonly string ConfigSetUrlOverride = "set-urloverride";

@@ -425,6 +425,15 @@ namespace KeePass
 				catch(Exception) { Debug.Assert(false); }
 				return;
 			}
+			if(g_cmdLineArgs[AppDefs.CommandLineOptions.SmokeTest] != null)
+			{
+				// Headless smoke test: runs the full self-test suite plus a
+				// KDBX round-trip verification and exits with a structured code.
+				// Exit 0 = pass, 1 = self-test fail, 2 = round-trip fail, 3 = fixture error.
+				int exitCode = KeePassLib.SmokeTest.SmokeTestRunner.Run();
+				Environment.Exit(exitCode);
+				return;
+			}
 			/* if(g_cmdLineArgs[AppDefs.CommandLineOptions.PreLoadRegister] != null)
 			{
 				string strPreLoadPath = WinUtil.GetExecutable().Trim();

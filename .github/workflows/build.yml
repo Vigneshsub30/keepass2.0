@@ -179,6 +179,19 @@ jobs:
           /p:IncludeNativeLibrariesForSelfExtract=true
           /p:Version=${{ steps.version.outputs.version }}
 
+      # ── Smoke test (post-build, all platforms) ───────────────────────────── #
+      # Runs the headless --smoke-test flag against the published binary.
+      # A non-zero exit code fails the build, blocking artifact upload.
+      - name: Smoke test — ${{ matrix.rid }}
+        run: |
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            "${{ env.ARTIFACT_DIR }}/publish/KeePass.exe" --smoke-test
+          else
+            "${{ env.ARTIFACT_DIR }}/publish/KeePass" --smoke-test
+          fi
+        shell: bash
+        timeout-minutes: 5
+
       # ── Log assembly hashes (determinism check) ───────────────────────────── #
       - name: Log assembly hashes (Windows)
         if: runner.os == 'Windows'

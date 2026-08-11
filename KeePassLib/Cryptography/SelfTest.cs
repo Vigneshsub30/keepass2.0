@@ -53,12 +53,19 @@ namespace KeePassLib.Cryptography
 		/// <summary>
 		/// Perform a self-test.
 		/// </summary>
-		public static void Perform()
+		/// <returns>
+		/// The number of individual test methods that executed successfully.
+		/// Callers can assert this equals <see cref="ExpectedTestCount"/> to
+		/// detect inadvertent skips caused by future refactoring.
+		/// </returns>
+		public static int Perform()
 		{
 			try
 			{
-				PerformInternal();
-				s_log.LogInformation("Cryptographic self-test passed successfully.");
+				int n = PerformInternal();
+				s_log.LogInformation(
+					"Cryptographic self-test passed successfully ({Count} test methods).", n);
+				return n;
 			}
 			catch(Exception ex)
 			{
@@ -70,8 +77,15 @@ namespace KeePassLib.Cryptography
 			}
 		}
 
-		private static void PerformInternal()
+		/// <summary>
+		/// The expected number of individual test methods executed by
+		/// <see cref="Perform()"/>.  Assert against this in smoke tests.
+		/// </summary>
+		public const int ExpectedTestCount = 16;
+
+		private static int PerformInternal()
 		{
+			int nTestCount = 0;
 #if KeePassUAP
 			Debug.Assert(Marshal.SizeOf<int>() == 4);
 			Debug.Assert(Marshal.SizeOf<uint>() == 4);
@@ -95,28 +109,29 @@ namespace KeePassLib.Cryptography
 
 			Random r = CryptoRandom.NewWeakRandom();
 
-			TestFipsComplianceProblems(); // Must be the first test
+			TestFipsComplianceProblems(); ++nTestCount; // Must be the first test
 
-			TestAes();
-			TestSalsa20(r);
-			TestChaCha20(r);
-			TestSha256(r);
-			TestBlake2b(r);
-			TestArgon2();
-			TestHmac();
+			TestAes();              ++nTestCount;
+			TestSalsa20(r);         ++nTestCount;
+			TestChaCha20(r);        ++nTestCount;
+			TestSha256(r);          ++nTestCount;
+			TestBlake2b(r);         ++nTestCount;
+			TestArgon2();           ++nTestCount;
+			TestHmac();             ++nTestCount;
 
-			TestKeyTransform(r);
-			TestNativeKeyTransform(r);
-			
-			TestHmacOtp();
+			TestKeyTransform(r);    ++nTestCount;
+			TestNativeKeyTransform(r); ++nTestCount;
 
-			TestProtectedObjects(r);
-			TestNativeLib();
+			TestHmacOtp();          ++nTestCount;
 
-			TestMemUtil(r);
-			TestStrUtil();
-			TestUrlUtil();
+			TestProtectedObjects(r); ++nTestCount;
+			TestNativeLib();         ++nTestCount;
 
+			TestMemUtil(r);          ++nTestCount;
+			TestStrUtil();           ++nTestCount;
+			TestUrlUtil();           ++nTestCount;
+
+			return nTestCount;
 		}
 
 		internal static void TestFipsComplianceProblems()
@@ -166,7 +181,6 @@ namespace KeePassLib.Cryptography
 
 		private static void TestSalsa20(Random r)
 		{
-#if DEBUG
 			// Test values from official set 6, vector 3
 			byte[] pbKey = new byte[32] {
 				0x0F, 0x62, 0xB5, 0x08, 0x5B, 0xAE, 0x01, 0x54,
@@ -223,10 +237,8 @@ namespace KeePassLib.Cryptography
 				if(!hs.Add(MemUtil.ByteArrayToHexString(z)))
 					throw new SecurityException("Salsa20-4");
 			}
-#endif
 		}
 
-#if DEBUG
 		private static int Salsa20ToPos(Salsa20Cipher c, Random r, int nPos,
 			int nTargetPos)
 		{
@@ -242,7 +254,6 @@ namespace KeePassLib.Cryptography
 
 			return nTargetPos;
 		}
-#endif
 
 		private static void TestChaCha20(Random r)
 		{
@@ -274,11 +285,10 @@ namespace KeePassLib.Cryptography
 				c.Seek(64, SeekOrigin.Begin); // Skip first block
 				c.Encrypt(pb, 0, pb.Length);
 
-				if(!MemUtil.ArraysEqual(pb, pbExpc))
-					throw new SecurityException("ChaCha20-1");
+			if(!MemUtil.ArraysEqual(pb, pbExpc))
+				throw new SecurityException("ChaCha20-1");
 			}
 
-#if DEBUG
 			// ======================================================
 			// Test vector from RFC 8439, section 2.4.2
 
@@ -432,15 +442,13 @@ namespace KeePassLib.Cryptography
 			{
 				c.Decrypt(pb, 0, pb.Length);
 
-				if(!MemUtil.ArraysEqual(pb, pbExpc))
-					throw new SecurityException("ChaCha20-7");
+			if(!MemUtil.ArraysEqual(pb, pbExpc))
+				throw new SecurityException("ChaCha20-7");
 			}
-#endif
 		}
 
 		private static void TestSha256(Random r)
 		{
-#if DEBUG
 			byte[] pbData = new byte[517];
 			r.NextBytes(pbData);
 
@@ -466,12 +474,10 @@ namespace KeePassLib.Cryptography
 
 			if(!MemUtil.ArraysEqual(pbH1, pbH2))
 				throw new SecurityException("SHA-256");
-#endif
 		}
 
 		private static void TestBlake2b(Random r)
 		{
-#if DEBUG
 			Blake2b h = new Blake2b();
 
 			// ======================================================
@@ -545,12 +551,10 @@ namespace KeePassLib.Cryptography
 				throw new SecurityException("Blake2b-3");
 
 			h.Clear();
-#endif
 		}
 
 		private static void TestArgon2()
 		{
-#if DEBUG
 			Argon2Kdf kdf = new Argon2Kdf(Argon2Type.D);
 
 			// ======================================================
@@ -761,12 +765,10 @@ namespace KeePassLib.Cryptography
 
 			if(!MemUtil.ArraysEqual(pb, pbExpc))
 				throw new SecurityException("Argon2id-2");
-#endif // DEBUG
 		}
 
 		private static void TestHmac()
 		{
-#if DEBUG
 			// Test vectors from RFC 4231
 
 			byte[] pbKey = new byte[20];
@@ -793,10 +795,8 @@ namespace KeePassLib.Cryptography
 				0x8A, 0x7F, 0x51, 0x53, 0x5C, 0x3A, 0x35, 0xE2
 			};
 			HmacEval(pbKey, pbMsg, pbExpc, "2");
-#endif
 		}
 
-#if DEBUG
 		private static void HmacEval(byte[] pbKey, byte[] pbMsg,
 			byte[] pbExpc, string strID)
 		{
@@ -819,11 +819,9 @@ namespace KeePassLib.Cryptography
 					throw new SecurityException("HMAC-SHA-256-" + strID + "-R");
 			}
 		}
-#endif
 
 		private static void TestKeyTransform(Random r)
 		{
-#if DEBUG
 			// Up to KeePass 2.34, the OtpKeyProv plugin used the public
 			// CompositeKey.TransformKeyManaged method (and a finalizing
 			// SHA-256 computation), which became an internal method of
@@ -850,12 +848,10 @@ namespace KeePassLib.Cryptography
 
 			if(!MemUtil.ArraysEqual(pbMan, pbKdf))
 				throw new SecurityException("AES-KDF");
-#endif
 		}
 
 		private static void TestNativeKeyTransform(Random r)
 		{
-#if DEBUG
 			byte[] pbOrgKey = CryptoRandom.Instance.GetRandomBytes(32);
 			byte[] pbSeed = CryptoRandom.Instance.GetRandomBytes(32);
 			ulong uRounds = (ulong)r.Next(1, 0x3FFF);
@@ -871,12 +867,11 @@ namespace KeePassLib.Cryptography
 
 			if(!MemUtil.ArraysEqual(pbManaged, pbNative))
 				throw new SecurityException("AES-KDF-N");
-#endif
 		}
 
 		private static void TestHmacOtp()
 		{
-#if (DEBUG && !KeePassLibSD)
+#if !KeePassLibSD
 			byte[] pbSecret = StrUtil.Utf8.GetBytes("12345678901234567890");
 			string[] vExp = new string[] { "755224", "287082", "359152",
 				"969429", "338314", "254676", "287922", "162583", "399871",
@@ -920,12 +915,11 @@ namespace KeePassLib.Cryptography
 				new DateTime(2603, 10, 11, 11, 33, 20, DateTimeKind.Utc), 0, 8,
 				HmacOtp.AlgHmacSha512) != "47863826")
 				throw new SecurityException("TimeOtp-SHA512-2");
-#endif
+#endif // !KeePassLibSD
 		}
 
 		private static void TestProtectedObjects(Random r)
 		{
-#if DEBUG
 			Encoding enc = StrUtil.Utf8;
 
 			byte[] pbData = enc.GetBytes("Test Test Test Test");
@@ -1032,12 +1026,10 @@ namespace KeePassLib.Cryptography
 				throw new SecurityException("ProtectedString-18");
 			if((ps.ReadString() != str.Trim()) || (ps2.ReadString() != str.Trim()))
 				throw new SecurityException("ProtectedString-19");
-#endif
 		}
 
 		private static void TestNativeLib()
 		{
-#if DEBUG
 			if(NativeLib.IsUnix())
 			{
 				if(NativeLib.EncodeDataToArgs("A\"B C\\D") !=
@@ -1057,12 +1049,10 @@ namespace KeePassLib.Cryptography
 			string strDec = NativeLib.DecodeArgsToData(strArgs);
 			if(strDec != strOrg)
 				throw new Exception("NativeLib-Args-EncDec");
-#endif
 		}
 
 		private static void TestMemUtil(Random r)
 		{
-#if DEBUG
 			byte[] pb = CryptoRandom.Instance.GetRandomBytes((uint)r.Next(
 				0, 0x2FFFF));
 
@@ -1175,12 +1165,10 @@ namespace KeePassLib.Cryptography
 			if(MemUtil.VersionToUInt64(new Version(0xABCD, 8, 9, 0xEF01)) !=
 				0xABCD00080009EF01)
 				throw new Exception("VersionToUInt64");
-#endif
 		}
 
 		private static void TestStrUtil()
 		{
-#if DEBUG
 			string[] vSeps = new string[] { "ax", "b", "c" };
 
 			const string str1 = "axbqrstcdeax";
@@ -1303,12 +1291,10 @@ namespace KeePassLib.Cryptography
 				throw new InvalidOperationException("StrUtil-Accel2");
 			if(StrUtil.RemoveAccelerator(@"Test (TA) (&T) (TB)") != "Test (TA) (TB)")
 				throw new InvalidOperationException("StrUtil-Accel3");
-#endif
 		}
 
 		private static void TestUrlUtil()
 		{
-#if DEBUG
 #if !KeePassUAP
 			Debug.Assert(Uri.UriSchemeHttp.Equals("http", StrUtil.CaseIgnoreCmp));
 			Debug.Assert(Uri.UriSchemeHttps.Equals("https", StrUtil.CaseIgnoreCmp));
