@@ -67,6 +67,31 @@ jobs:
           path: KeePass.Tests/TestResults/*.trx
           if-no-files-found: warn
 
+      # Log SHA-256 hashes of the primary assemblies to make deterministic-build
+      # regressions visible in the CI log (WO-008).
+      - name: Log assembly hashes (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $files = @(
+            "KeePass/bin/Release/net10.0-windows/KeePass.dll",
+            "KeePassLib/bin/Release/net10.0-windows/KeePassLib.dll",
+            "Translation/TrlUtil/bin/Release/net10.0-windows/TrlUtil.dll"
+          )
+          foreach ($f in $files) {
+            if (Test-Path $f) { Get-FileHash $f -Algorithm SHA256 | Select-Object Hash, Path | Format-Table -AutoSize }
+          }
+
+      - name: Log assembly hashes (Linux / macOS)
+        if: runner.os != 'Windows'
+        run: |
+          for f in \
+            KeePass/bin/Release/net10.0-windows/KeePass.dll \
+            KeePassLib/bin/Release/net10.0-windows/KeePassLib.dll \
+            Translation/TrlUtil/bin/Release/net10.0-windows/TrlUtil.dll; do
+            [ -f "$f" ] && (command -v sha256sum >/dev/null && sha256sum "$f" || shasum -a 256 "$f")
+          done
+
       # Upload the primary binaries produced by the Release build.
       # On Windows these include native .exe launchers; on macOS/Linux the
       # managed .dll assemblies are still produced and uploaded.

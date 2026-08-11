@@ -62,6 +62,15 @@
          original project settings; documentation will be added incrementally. -->
     <NoWarn>$(NoWarn);1591</NoWarn>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <!-- Reproducible / deterministic builds (WO-008).
+         Deterministic=true instructs the compiler to produce bit-identical
+         output for the same inputs on the same platform, removing ephemeral
+         data such as embedded timestamps.
+         EmbedUntrackedSources=true includes source files that are not tracked
+         by source control (e.g. generated files) in the PDB, ensuring
+         complete source mapping when SourceLink is used. -->
+    <Deterministic>true</Deterministic>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <!-- Strong-name signing.  Convention: each signed project places its
          <ProjectName>.snk beside its .csproj (e.g. KeePass.snk, KeePassLib.snk).
          $(MSBuildProjectName) is a reserved MSBuild property set before any
@@ -71,6 +80,20 @@
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>$(MSBuildProjectName).snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
+
+  <!-- ContinuousIntegrationBuild activates additional determinism guarantees
+       (e.g. normalises embedded paths) when building on a CI server.
+       GitHub Actions sets CI=true automatically; TF_BUILD covers Azure Pipelines. -->
+  <PropertyGroup Condition="'$(CI)' == 'true' or '$(TF_BUILD)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <!-- SourceLink embeds a mapping from PDB source paths to the exact GitHub
+       commit so debuggers can fetch source on demand.  PrivateAssets=all
+       prevents the package from being listed as a runtime dependency. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="all" />
+  </ItemGroup>
 
   <!-- Post-build target: errors if a .cs file is on disk but absent from
        Compile items.  See Build/ValidateFileInclusion.targets for details.
