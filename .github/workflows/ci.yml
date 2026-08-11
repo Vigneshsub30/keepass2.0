@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build & Test / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-14, ubuntu-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # NuGet package cache keyed on OS + Directory.Packages.props hash.
+      # On Windows, ~/.nuget/packages resolves to %USERPROFILE%\.nuget\packages.
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('Directory.Packages.props') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Set up .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore NuGet packages
+        run: dotnet restore KeePass.sln
+
+      # All three projects target net10.0-windows; Directory.Build.props sets
+      # EnableWindowsTargeting=true so the build succeeds on macOS and Linux.
+      - name: Build — Release
+        run: dotnet build KeePass.sln --configuration Release --no-restore
+
+      # The test project (KeePass.Tests) targets net10.0-windows, which requires
+      # the Microsoft.WindowsDesktop.App runtime that is only available on Windows
+      # runners. Skip test execution on macOS and Linux.
+      - name: Run tests
+        if: runner.os == 'Windows'
+        run: >
+          dotnet test KeePass.Tests/KeePass.Tests.csproj
+          --configuration Release
+          --no-build
+          --logger "trx;LogFileName=test-results.trx"
+          --verbosity normal
+
+      - name: Upload test results
+        if: runner.os == 'Windows' && (success() || failure())
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-windows
+          path: KeePass.Tests/TestResults/*.trx
+          if-no-files-found: warn
+
+      # Upload the primary binaries produced by the Release build.
+      # On Windows these include native .exe launchers; on macOS/Linux the
+      # managed .dll assemblies are still produced and uploaded.
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: KeePass-binaries-${{ runner.os }}
+          path: |
+            KeePass/bin/Release/net10.0-windows/KeePass.exe
+            KeePass/bin/Release/net10.0-windows/KeePass.dll
+            KeePassLib/bin/Release/net10.0-windows/KeePassLib.dll
+            Translation/TrlUtil/bin/Release/net10.0-windows/TrlUtil.exe
+            Translation/TrlUtil/bin/Release/net10.0-windows/TrlUtil.dll
+          if-no-files-found: warn
