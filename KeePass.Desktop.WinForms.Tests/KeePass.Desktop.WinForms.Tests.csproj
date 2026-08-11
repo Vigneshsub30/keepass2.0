@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!--
+      net10.0-windows: the smoke tests exercise WinForms P/Invoke surface
+      and ApplicationConfiguration.Initialize(), both Windows-only APIs.
+    -->
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <LangVersion>14</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\KeePass.Desktop.WinForms\KeePass.Desktop.WinForms.csproj" />
+    <ProjectReference Include="..\KeePassLib\KeePassLib.csproj" />
+    <ProjectReference Include="..\KeePass.Core\KeePass.Core.csproj" />
+  </ItemGroup>
+
+</Project>

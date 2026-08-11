@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!--
+      net10.0-windows: Windows-only TFM required for WinForms and P/Invoke APIs.
+      This project is intentionally Windows-only; cross-platform support is
+      provided by KeePass.Desktop.Avalonia targeting net10.0 (no -windows).
+    -->
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <LangVersion>14</LangVersion>
+    <Nullable>enable</Nullable>
+    <!--
+      ImplicitUsings=disable keeps the namespace surface explicit and
+      consistent with the legacy KeePass source style.
+    -->
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(CI)' != ''">true</ContinuousIntegrationBuild>
+    <AssemblyName>KeePass.Desktop.WinForms</AssemblyName>
+    <RootNamespace>KeePass.Desktop.WinForms</RootNamespace>
+    <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
+    <ApplicationIcon>..\KeePass\KeePass.ico</ApplicationIcon>
+    <!--
+      Prevent SDK globbing from absorbing source files owned by sibling
+      projects (KeePass, KeePassLib, etc.).
+    -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);..\**\*.cs;..\**\*.xaml</DefaultItemExcludes>
+    <!-- This project does not ship a signed binary yet. -->
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      Reference KeePassLib and KeePass.Core for the shared domain model.
+      The legacy KeePass WinForms project is included as a reference until
+      all WinForms UI code can be consumed directly without the old-style
+      project boundary.
+    -->
+    <ProjectReference Include="..\KeePassLib\KeePassLib.csproj" />
+    <ProjectReference Include="..\KeePass.Core\KeePass.Core.csproj" />
+  </ItemGroup>
+
+</Project>
