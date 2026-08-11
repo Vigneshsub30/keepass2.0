@@ -1,0 +1,744 @@
+/*
+  KeePass Password Safe - The Open-Source Password Manager
+  Copyright (C) 2003-2026 Dominik Reichl <dominik.reichl@t-online.de>
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+*/
+
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.Text;
+using System.Threading;
+using System.Windows.Forms;
+using System.Xml;
+
+using KeePass.App;
+using KeePass.DataExchange.Formats;
+using KeePass.Ecas;
+using KeePass.Forms;
+using KeePass.Native;
+using KeePass.Resources;
+using KeePass.UI;
+using KeePass.Util;
+
+using KeePassLib;
+using KeePassLib.Collections;
+using KeePassLib.Interfaces;
+using KeePassLib.Keys;
+using KeePassLib.Resources;
+using KeePassLib.Security;
+using KeePassLib.Serialization;
+using KeePassLib.Utility;
+
+namespace KeePass.DataExchange
+{
+	public static class ImportUtil
+	{
+		public static bool? Import(PwDatabase pd, out bool bAppendedToRootOnly,
+			Form fParent)
+		{
+			bAppendedToRootOnly = false;
+
+			if(pd == null) throw new ArgumentNullException("pd");
+			if(!pd.IsOpen) { Debug.Assert(false); return null; }
+			if(!AppPolicy.Try(AppPolicyId.Import)) return null;
+
+			ExchangeDataForm dlg = new ExchangeDataForm();
+			dlg.InitEx(false, pd, pd.RootGroup);
+
+			if(UIUtil.ShowDialogAndDestroy(dlg) != DialogResult.OK) return null;
+
+			FileFormatProvider ffp = dlg.ResultFormat;
+			if(ffp == null)
+			{
+				Debug.Assert(false);
+				MessageService.ShowWarning(KPRes.ImportFailed);
+				return null;
+			}
+
+			bAppendedToRootOnly = ffp.ImportAppendsToRootGroupOnly;
+
+			List<IOConnectionInfo> lConnections = new List<IOConnectionInfo>();
+			foreach(string strFile in dlg.ResultFiles)
+				lConnections.Add(IOConnectionInfo.FromPath(strFile));
+
+			return Import(pd, ffp, lConnections.ToArray(), false, null, false, fParent);
+		}
+
+		public static bool? Import(PwDatabase pd, FileFormatProvider fmtImp,
+			IOConnectionInfo[] vConnections, bool bSynchronize, IUIOperations uiOps,
+			bool bForceSave, Form fParent)
+		{
+			return Import(pd, fmtImp, vConnections, bSynchronize, uiOps, bForceSave,
+				fParent, false, false);
+		}
+
+		internal static bool? Import(PwDatabase pd, FileFormatProvider fmtImp,
+			IOConnectionInfo[] vConnections, bool bSynchronize, IUIOperations uiOps,
+			bool bForceSave, Form fParent, bool bOnErrorSilent, bool bOnErrorContinue)
+		{
+			if(pd == null) throw new ArgumentNullException("pd");
+			if(!pd.IsOpen) { Debug.Assert(false); return null; }
+			if(fmtImp == null) throw new ArgumentNullException("fmtImp");
+			if(vConnections == null) throw new ArgumentNullException("vConnections");
+
+			if(!AppPolicy.Try(AppPolicyId.Import)) return null;
+			if(!fmtImp.TryBeginImport()) return null;
+
+			MainForm mf = Program.MainForm; // Null for KPScript
+			bool bUseTempDb = (fmtImp.SupportsUuids || fmtImp.RequiresKey);
+			List<IOConnectionInfo> lSucceeded = new List<IOConnectionInfo>();
+
+			IStatusLogger dlgStatus;
+			if(Program.Config.UI.ShowImportStatusDialog ||
+				((mf != null) && !mf.HasFormLoaded))
+				dlgStatus = new OnDemandStatusDialog(false, fParent);
+			else dlgStatus = new UIBlockerStatusLogger(fParent);
+
+			dlgStatus.StartLogging(PwDefs.ShortProductName + " - " + (bSynchronize ?
+				KPRes.Synchronizing : KPRes.ImportingStatusMsg), false);
+			dlgStatus.SetText(bSynchronize ? KPRes.Synchronizing :
+				KPRes.ImportingStatusMsg, LogStatusType.Info);
+
+			if(vConnections.Length == 0)
+			{
+				try
+				{
+					pd.Modified = true;
+					fmtImp.Import(pd, null, dlgStatus);
+					return true;
+				}
+				catch(Exception ex)
+				{
+					if(!bOnErrorSilent) MessageService.ShowWarning(ex);
+				}
+				finally { dlgStatus.EndLogging(); }
+
+				return false;
+			}
+
+			foreach(IOConnectionInfo iocIn in vConnections)
+			{
+				if(iocIn == null) { Debug.Assert(false); continue; }
+
+				PwDatabase pdImp;
+
+				Stream s = null;
+				try
+				{
+					s = IOConnection.OpenRead(iocIn);
+					if(s == null) throw new IOException();
+
+					if(bUseTempDb)
+					{
+						pdImp = new PwDatabase();
+						pdImp.New(new IOConnectionInfo(), pd.MasterKey);
+						pdImp.MemoryProtection = pd.MemoryProtection.CloneDeep();
+					}
+					else pdImp = pd;
+
+					if(fmtImp.RequiresKey && !bSynchronize)
+					{
+						KeyPromptFormResult r;
+						DialogResult dr = KeyPromptForm.ShowDialog(iocIn, false, null, out r);
+						if((dr != DialogResult.OK) || (r == null))
+							continue;
+
+						pdImp.MasterKey = r.CompositeKey;
+					}
+					else if(bSynchronize) pdImp.MasterKey = pd.MasterKey;
+
+					dlgStatus.SetText((bSynchronize ? KPRes.Synchronizing :
+						KPRes.ImportingStatusMsg) + " (" + iocIn.GetDisplayName() +
+						")", LogStatusType.Info);
+
+					pdImp.Modified = true;
+					fmtImp.Import(pdImp, s, dlgStatus);
+				}
+				catch(Exception ex)
+				{
+					if(!bOnErrorSilent)
+					{
+						Exception exR = ex;
+						if(bSynchronize && (ex is InvalidCompositeKeyException))
+							exR = new Exception(KLRes.InvalidCompositeKey +
+								MessageService.NewParagraph + KPRes.SynchronizingHint);
+						MessageService.ShowWarning(iocIn.GetDisplayName(),
+							KPRes.FileImportFailed, exR);
+					}
+					continue;
+				}
+				finally { if(s != null) s.Dispose(); }
+
+				if(bUseTempDb)
+				{
+					PwMergeMethod mm;
+					if(!fmtImp.SupportsUuids) mm = PwMergeMethod.CreateNewUuids;
+					else if(bSynchronize) mm = PwMergeMethod.Synchronize;
+					else
+					{
+						ImportMethodForm imf = new ImportMethodForm();
+						if(UIUtil.ShowDialogAndDestroy(imf) != DialogResult.OK)
+							continue;
+						mm = imf.MergeMethod;
+					}
+
+					try
+					{
+						pd.Modified = true;
+						pd.MergeIn(pdImp, mm, dlgStatus);
+					}
+					catch(Exception ex)
+					{
+						if(!bOnErrorSilent)
+							MessageService.ShowWarning(iocIn.GetDisplayName(),
+								KPRes.FileImportFailed, ex);
+						continue;
+					}
+				}
+
+				lSucceeded.Add(iocIn);
+			}
+
+			bool bAllSucceeded = (lSucceeded.Count == vConnections.Length);
+
+			if(bSynchronize && (bAllSucceeded || bOnErrorContinue))
+			{
+				if(uiOps == null) { Debug.Assert(false); throw new ArgumentNullException("uiOps"); }
+
+				dlgStatus.SetText(KPRes.Synchronizing + " (" +
+					KPRes.SavingDatabase + ")", LogStatusType.Info);
+
+				bool bMainCorrect = true;
+				if(mf != null)
+				{
+					try { mf.DocumentManager.ActiveDatabase = pd; }
+					catch(Exception) { Debug.Assert(false); bMainCorrect = false; }
+				}
+
+				bool bMainSaved = (bMainCorrect && uiOps.UIFileSave(bForceSave));
+				if(!bMainSaved)
+				{
+					if(!bOnErrorSilent)
+						MessageService.ShowWarning(pd.IOConnectionInfo.GetDisplayName(),
+							KPRes.SyncFailed); // Save failure probably displayed already
+					bAllSucceeded = false;
+				}
+
+				string strMain = pd.IOConnectionInfo.Path;
+				bool bMainSavedLocal = (bMainSaved && pd.IOConnectionInfo.IsLocalFile());
+
+				foreach(IOConnectionInfo iocOut in lSucceeded)
+				{
+					try
+					{
+						if(iocOut == null) { Debug.Assert(false); continue; }
+
+						// dlgStatus.SetText(KPRes.Synchronizing + " (" +
+						//	KPRes.SavingDatabase + " " + iocOut.GetDisplayName() +
+						//	")", LogStatusType.Info);
+
+						if(string.Equals(iocOut.Path, strMain, StrUtil.CaseIgnoreCmp))
+							continue; // No assert (sync on save)
+
+						if(bMainSavedLocal)
+							IOConnection.CopyData(pd.IOConnectionInfo, iocOut);
+						else pd.SaveAs(iocOut, false, null);
+
+						if(mf != null)
+							mf.FileMruList.AddItem(iocOut.GetDisplayName(),
+								iocOut.CloneDeep());
+					}
+					catch(Exception ex)
+					{
+						if(!bOnErrorSilent)
+							MessageService.ShowWarning(iocOut.GetDisplayName(),
+								KLRes.FileSaveFailed, ex);
+						bAllSucceeded = false;
+					}
+				}
+			}
+
+			dlgStatus.EndLogging();
+			return bAllSucceeded;
+		}
+
+		public static bool? Import(PwDatabase pd, FileFormatProvider fmtImp,
+			IOConnectionInfo iocImp, PwMergeMethod mm, CompositeKey cmpKey)
+		{
+			if(pd == null) throw new ArgumentNullException("pd");
+			if(fmtImp == null) throw new ArgumentNullException("fmtImp");
+			if(iocImp == null) throw new ArgumentNullException("iocImp");
+			if(cmpKey == null) cmpKey = new CompositeKey();
+
+			if(!AppPolicy.Try(AppPolicyId.Import)) return null;
+			if(!fmtImp.TryBeginImport()) return null;
+
+			PwDatabase pdImp = new PwDatabase();
+			pdImp.New(new IOConnectionInfo(), cmpKey);
+			pdImp.MemoryProtection = pd.MemoryProtection.CloneDeep();
+
+			using(Stream s = IOConnection.OpenRead(iocImp))
+			{
+				if(s == null)
+					throw new FileNotFoundException(iocImp.GetDisplayName() +
+						MessageService.NewParagraph + KPRes.FileNotFoundError);
+
+				fmtImp.Import(pdImp, s, null);
+			}
+
+			pd.Modified = true;
+			pd.MergeIn(pdImp, mm);
+			return true;
+		}
+
+		public static bool? Synchronize(PwDatabase pd, IUIOperations uiOps,
+			bool bOpenFromUrl, Form fParent)
+		{
+			if(pd == null) throw new ArgumentNullException("pd");
+			if(!pd.IsOpen) { Debug.Assert(false); return null; }
+			if(!AppPolicy.Try(AppPolicyId.Import)) return null;
+
+			List<IOConnectionInfo> lConnections = new List<IOConnectionInfo>();
+			if(!bOpenFromUrl)
+			{
+				OpenFileDialogEx ofd = UIUtil.CreateOpenFileDialog(KPRes.Synchronize,
+					UIUtil.CreateFileTypeFilter(AppDefs.FileExtension.FileExt,
+					KPRes.KdbxFiles, true), 1, null, true,
+					AppDefs.FileDialogContext.Sync);
+
+				if(ofd.ShowDialog() != DialogResult.OK) return null;
+
+				foreach(string strSelFile in ofd.FileNames)
+					lConnections.Add(IOConnectionInfo.FromPath(strSelFile));
+			}
+			else // Open URL
+			{
+				IOConnectionForm iocf = new IOConnectionForm();
+				iocf.InitEx(false, null, true, true);
+
+				if(UIUtil.ShowDialogAndDestroy(iocf) != DialogResult.OK) return null;
+
+				lConnections.Add(iocf.IOConnectionInfo);
+			}
+
+			return Synchronize(pd, uiOps, lConnections.ToArray(), false, fParent,
+				false, false);
+		}
+
+		public static bool? Synchronize(PwDatabase pd, IUIOperations uiOps,
+			IOConnectionInfo iocSyncWith, bool bForceSave, Form fParent)
+		{
+			return Synchronize(pd, uiOps, new IOConnectionInfo[] { iocSyncWith },
+				bForceSave, fParent, false, false);
+		}
+
+		internal static bool? Synchronize(PwDatabase pd, IUIOperations uiOps,
+			IOConnectionInfo[] vSyncWith, bool bForceSave, Form fParent,
+			bool bOnErrorSilent, bool bOnErrorContinue)
+		{
+			if(pd == null) throw new ArgumentNullException("pd");
+			if(!pd.IsOpen) { Debug.Assert(false); return null; }
+			if(vSyncWith == null) throw new ArgumentNullException("vSyncWith");
+			if(!AppPolicy.Try(AppPolicyId.Import)) return null;
+
+			Program.TriggerSystem.RaiseEvent(EcasEventIDs.SynchronizingDatabaseFile,
+				EcasProperty.Database, pd);
+
+			bool? ob = Import(pd, new KeePassKdbx2(), vSyncWith, true, uiOps,
+				bForceSave, fParent, bOnErrorSilent, bOnErrorContinue);
+
+			// Always raise the post event, such that the event pair can
+			// for instance be used to turn off/on other triggers
+			Program.TriggerSystem.RaiseEvent(EcasEventIDs.SynchronizedDatabaseFile,
+				EcasProperty.Database, pd);
+
+			return ob;
+		}
+
+		public static int CountQuotes(string str, int posMax)
+		{
+			int i = 0, n = 0;
+
+			while(true)
+			{
+				i = str.IndexOf('\"', i);
+				if(i < 0) return n;
+
+				++i;
+				if(i > posMax) return n;
+
+				++n;
+			}
+		}
+
+		public static List<string> SplitCsvLine(string strLine, string strDelimiter)
+		{
+			List<string> list = new List<string>();
+
+			int nOffset = 0;
+			while(true)
+			{
+				int i = strLine.IndexOf(strDelimiter, nOffset);
+				if(i < 0) break;
+
+				int nQuotes = CountQuotes(strLine, i);
+				if((nQuotes & 1) == 0)
+				{
+					list.Add(strLine.Substring(0, i));
+					strLine = strLine.Remove(0, i + strDelimiter.Length);
+					nOffset = 0;
+				}
+				else
+				{
+					nOffset = i + strDelimiter.Length;
+					if(nOffset >= strLine.Length) break;
+				}
+			}
+
+			list.Add(strLine);
+			return list;
+		}
+
+		public static bool SetStatus(IStatusLogger slLogger, uint uPercent)
+		{
+			if(slLogger != null) return slLogger.SetProgress(uPercent);
+			return true;
+		}
+
+		private static readonly string[] m_vTitles = {
+			"title", "system", "account", "entry",
+			"item", "itemname", "item name", "subject",
+			"service", "servicename", "service name",
+			"head", "heading", "card", "product", "provider", "bank",
+			"type",
+
+			// Non-English names
+			"seite"
+		};
+
+		private static readonly string[] m_vTitlesSubstr = {
+			"title", "system", "account", "entry",
+			"item", "subject", "service", "head"
+		};
+
+		private static readonly string[] m_vUserNames = {
+			"user", "name", "username", "user name", "login name",
+			"login", "form_loginname", "wpname", "mail",
+			"email", "e-mail", "id", "userid", "user id",
+			"loginid", "login id", "log", "uin",
+			"first name", "last name", "card#", "account #",
+			"member", "member #", "owner",
+
+			// Non-English names
+			"nom", "benutzername"
+		};
+
+		private static readonly string[] m_vUserNamesSubstr = {
+			"user", "name", "login", "mail", "owner"
+		};
+
+		private static readonly string[] m_vPasswords = {
+			"password", "pass word", "passphrase", "pass phrase",
+			"pass", "code", "code word", "codeword",
+			"secret", "secret word",
+			"key", "keyword", "key word", "keyphrase", "key phrase",
+			"form_pw", "wppassword", "pin", "pwd", "pw", "pword",
+			"p", "serial", "serial#", "license key", "reg #",
+
+			// Non-English names
+			"passwort", "kennwort"
+		};
+
+		private static readonly string[] m_vPasswordsSubstr = {
+			"pass", "code",	"secret", "key", "pw", "pin"
+		};
+
+		private static readonly string[] m_vUrls = {
+			"url", "hyper link", "hyperlink", "link",
+			"host", "hostname", "host name", "server", "address",
+			"hyper ref", "href", "web", "website", "web site", "site",
+			"web-site",
+
+			// Non-English names
+			"ort", "adresse", "webseite"
+		};
+
+		private static readonly string[] m_vUrlsSubstr = {
+			"url", "link", "host", "address", "hyper ref", "href",
+			"web", "site"
+		};
+
+		private static readonly string[] m_vNotes = {
+			"note", "notes", "comment", "comments", "memo",
+			"description", "free form", "freeform",
+			"free text", "freetext", "free",
+
+			// Non-English names
+			"kommentar", "hinweis"
+		};
+
+		private static readonly string[] m_vNotesSubstr = { 
+			"note", "comment", "memo", "description", "free"
+		};
+
+		public static string MapNameToStandardField(string strName, bool bAllowFuzzy)
+		{
+			if(strName == null) { Debug.Assert(false); return string.Empty; }
+
+			string strFind = strName.Trim().ToLower();
+
+			if(Array.IndexOf<string>(m_vTitles, strFind) >= 0)
+				return PwDefs.TitleField;
+			if(Array.IndexOf<string>(m_vUserNames, strFind) >= 0)
+				return PwDefs.UserNameField;
+			if(Array.IndexOf<string>(m_vPasswords, strFind) >= 0)
+				return PwDefs.PasswordField;
+			if(Array.IndexOf<string>(m_vUrls, strFind) >= 0)
+				return PwDefs.UrlField;
+			if(Array.IndexOf<string>(m_vNotes, strFind) >= 0)
+				return PwDefs.NotesField;
+
+			if(strFind.Equals(KPRes.Title, StrUtil.CaseIgnoreCmp))
+				return PwDefs.TitleField;
+			if(strFind.Equals(KPRes.UserName, StrUtil.CaseIgnoreCmp))
+				return PwDefs.UserNameField;
+			if(strFind.Equals(KPRes.Password, StrUtil.CaseIgnoreCmp))
+				return PwDefs.PasswordField;
+			if(strFind.Equals(KPRes.Url, StrUtil.CaseIgnoreCmp))
+				return PwDefs.UrlField;
+			if(strFind.Equals(KPRes.Notes, StrUtil.CaseIgnoreCmp))
+				return PwDefs.NotesField;
+
+			if(!bAllowFuzzy) return string.Empty;
+
+			// Check for passwords first, then user names ("vb_login_password")
+			foreach(string strSub in m_vPasswordsSubstr)
+			{
+				if(strFind.Contains(strSub)) return PwDefs.PasswordField;
+			}
+			foreach(string strSub in m_vUserNamesSubstr)
+			{
+				if(strFind.Contains(strSub)) return PwDefs.UserNameField;
+			}
+			foreach(string strSub in m_vUrlsSubstr)
+			{
+				if(strFind.Contains(strSub)) return PwDefs.UrlField;
+			}
+			foreach(string strSub in m_vNotesSubstr)
+			{
+				if(strFind.Contains(strSub)) return PwDefs.NotesField;
+			}
+			foreach(string strSub in m_vTitlesSubstr)
+			{
+				if(strFind.Contains(strSub)) return PwDefs.TitleField;
+			}
+
+			return string.Empty;
+		}
+
+		internal static string MapName(string strName, bool bAllowFuzzy)
+		{
+			string str = MapNameToStandardField(strName, bAllowFuzzy);
+			return ((str.Length != 0) ? str : (strName ?? string.Empty));
+		}
+
+		public static void AppendToField(PwEntry pe, string strName, string strValue,
+			PwDatabase pdContext)
+		{
+			AppendToField(pe, strName, strValue, pdContext, null, false);
+		}
+
+		public static void AppendToField(PwEntry pe, string strName, string strValue,
+			PwDatabase pdContext, string strSeparator, bool bOnlyIfNotDup)
+		{
+			if(pe == null) { Debug.Assert(false); return; }
+			if(string.IsNullOrEmpty(strName)) { Debug.Assert(false); return; }
+			if(strValue == null) { Debug.Assert(false); strValue = string.Empty; }
+
+			if(strSeparator == null)
+				strSeparator = (PwDefs.IsMultiLineField(strName) ?
+					MessageService.NewLine : ", ");
+
+			ProtectedString psEx = pe.Strings.Get(strName);
+			if((psEx == null) || psEx.IsEmpty)
+			{
+				MemoryProtectionConfig mpc = ((pdContext != null) ?
+					pdContext.MemoryProtection : new MemoryProtectionConfig());
+				bool bProtect = mpc.GetProtection(strName);
+
+				pe.Strings.Set(strName, new ProtectedString(bProtect, strValue));
+			}
+			else if(strValue.Length != 0)
+			{
+				bool bAppend = true;
+				if(bOnlyIfNotDup)
+				{
+					ProtectedString psValue = new ProtectedString(false, strValue);
+					bAppend = !psEx.Equals(psValue, false);
+				}
+
+				if(bAppend)
+					pe.Strings.Set(strName, psEx + (strSeparator + strValue));
+			}
+		}
+
+		internal static void CreateFieldWithIndex(ProtectedStringDictionary d,
+			string strName, string strValue, PwDatabase pdContext, bool bAllowEmptyValue)
+		{
+			if(string.IsNullOrEmpty(strName)) { Debug.Assert(false); return; }
+
+			MemoryProtectionConfig mpc = ((pdContext != null) ?
+				pdContext.MemoryProtection : new MemoryProtectionConfig());
+			bool bProtect = mpc.GetProtection(strName);
+
+			CreateFieldWithIndex(d, strName, strValue, bProtect, bAllowEmptyValue);
+		}
+
+		internal static void CreateFieldWithIndex(ProtectedStringDictionary d,
+			string strName, string strValue, bool bProtect, bool bAllowEmptyValue)
+		{
+			if(d == null) { Debug.Assert(false); return; }
+			if(string.IsNullOrEmpty(strName)) { Debug.Assert(false); return; }
+			if(strValue == null) { Debug.Assert(false); strValue = string.Empty; }
+			if((strValue.Length == 0) && !bAllowEmptyValue) return;
+
+			ProtectedString psValue = new ProtectedString(bProtect, strValue);
+
+			ProtectedString psEx = d.Get(strName);
+			if((psEx == null) || (PwDefs.IsStandardField(strName) && psEx.IsEmpty))
+			{
+				d.Set(strName, psValue);
+				return;
+			}
+
+			NumberFormatInfo nfi = NumberFormatInfo.InvariantInfo;
+			for(int i = 2; i < int.MaxValue; ++i)
+			{
+				string strNameI = strName + " (" + i.ToString(nfi) + ")";
+				if(!d.Exists(strNameI))
+				{
+					d.Set(strNameI, psValue);
+					break;
+				}
+			}
+		}
+
+		internal static void Add(PwEntry pe, string strName, string strValue,
+			PwDatabase pdContext)
+		{
+			if((strName == PwDefs.TitleField) || (strName == PwDefs.NotesField))
+				AppendToField(pe, strName, strValue, pdContext);
+			else if(pe != null)
+				CreateFieldWithIndex(pe.Strings, strName, strValue, pdContext, false);
+			else { Debug.Assert(false); }
+		}
+
+		internal static void Add(PwEntry pe, string strName, XmlNode xnValue,
+			PwDatabase pdContext)
+		{
+			Add(pe, strName, XmlUtil.SafeInnerText(xnValue), pdContext);
+		}
+
+		public static bool EntryEquals(PwEntry pe1, PwEntry pe2)
+		{
+			if(pe1.ParentGroup == null) return false;
+			if(pe2.ParentGroup == null) return false;
+			if(pe1.ParentGroup.Name != pe2.ParentGroup.Name)
+				return false;
+
+			return pe1.Strings.EqualsDictionary(pe2.Strings,
+				PwCompareOptions.NullEmptyEquivStd, MemProtCmpMode.None);
+		}
+
+		internal static string GuiSendRetrieve(string strSendPrefix)
+		{
+			if(strSendPrefix.Length > 0)
+				GuiSendKeysPrc(strSendPrefix);
+
+			return GuiRetrieveDataField();
+		}
+
+		private static string GuiRetrieveDataField()
+		{
+			ClipboardUtil.Clear();
+			Application.DoEvents();
+
+			GuiSendKeysPrc(@"^c");
+
+			try
+			{
+				if(ClipboardUtil.ContainsText())
+					return (ClipboardUtil.GetText() ?? string.Empty);
+			}
+			catch(Exception) { Debug.Assert(false); } // Opened by other process
+
+			return string.Empty;
+		}
+
+		internal static void GuiSendKeysPrc(string strSend)
+		{
+			if(strSend.Length > 0)
+				SendInputEx.SendKeysWait(strSend, false);
+
+			Application.DoEvents();
+			Thread.Sleep(100);
+			Application.DoEvents();
+		}
+		
+		internal static void GuiSendWaitWindowChange(string strSend)
+		{
+			IntPtr ptrCur = NativeMethods.GetForegroundWindowHandle();
+
+			ImportUtil.GuiSendKeysPrc(strSend);
+
+			int nRound = 0;
+			while(true)
+			{
+				Application.DoEvents();
+
+				IntPtr ptr = NativeMethods.GetForegroundWindowHandle();
+				if(ptr != ptrCur) break;
+
+				++nRound;
+				if(nRound > 1000)
+					throw new InvalidOperationException();
+
+				Thread.Sleep(50);
+			}
+
+			Thread.Sleep(100);
+			Application.DoEvents();
+		}
+
+		internal static string FixUrl(string strUrl)
+		{
+			strUrl = (strUrl ?? string.Empty).Trim();
+
+			if((strUrl.Length > 0) && (strUrl.IndexOf('.') >= 0) &&
+				(strUrl.IndexOf(':') < 0) && (strUrl.IndexOf('@') < 0))
+			{
+				string strNew = ("https://" + strUrl.ToLower());
+				if(strUrl.IndexOf('/') < 0) strNew += "/";
+				return strNew;
+			}
+
+			return strUrl;
+		}
+	}
+}
