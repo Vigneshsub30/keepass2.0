@@ -44,6 +44,8 @@ using KeePassLib.Delegates;
 using KeePassLib.Interfaces;
 using KeePassLib.Utility;
 
+using KeePass.Core.UI;
+
 using NativeLib = KeePassLib.Native.NativeLib;
 
 namespace KeePass.UI
@@ -80,7 +82,7 @@ namespace KeePass.UI
 		// Windows 7 Theme:    259 / 259,
 		// Windows 8.1:        255 / 259,
 		// Windows 11:         255 / 259.
-		internal const int MaxWindowTitleLength = 254;
+		internal const int MaxWindowTitleLength = UIUtilCore.MaxWindowTitleLength;
 
 		private static bool g_bVistaStyleLists = false;
 		public static bool VistaStyleListsSupported
@@ -996,55 +998,13 @@ namespace KeePass.UI
 		public static string CreateFileTypeFilter(string strExtension, string strDescription,
 			bool bIncludeAllFiles)
 		{
-			StringBuilder sb = new StringBuilder();
-
-			if(!string.IsNullOrEmpty(strExtension) && !string.IsNullOrEmpty(
-				strDescription))
-			{
-				// str += strDescription + @" (*." + strExtension +
-				//	@")|*." + strExtension;
-
-				string[] vExts = strExtension.Split(new char[] { '|' },
-					StringSplitOptions.RemoveEmptyEntries);
-				if(vExts.Length > 0)
-				{
-					sb.Append(strDescription);
-					sb.Append(@" (*.");
-
-					for(int i = 0; i < vExts.Length; ++i)
-					{
-						if(i > 0) sb.Append(@", *.");
-						sb.Append(vExts[i]);
-					}
-
-					sb.Append(@")|*.");
-
-					for(int i = 0; i < vExts.Length; ++i)
-					{
-						if(i > 0) sb.Append(@";*.");
-						sb.Append(vExts[i]);
-					}
-				}
-			}
-
-			if(bIncludeAllFiles)
-			{
-				if(sb.Length > 0) sb.Append('|');
-				sb.Append(KPRes.AllFiles);
-				sb.Append(@" (*.*)|*.*");
-			}
-
-			return sb.ToString();
+			return UIUtilCore.CreateFileTypeFilter(strExtension, strDescription,
+				bIncludeAllFiles, KPRes.AllFiles);
 		}
 
 		public static string GetPrimaryFileTypeExt(string strExtensions)
 		{
-			if(strExtensions == null) { Debug.Assert(false); return string.Empty; }
-
-			int i = strExtensions.IndexOf('|');
-			if(i >= 0) return strExtensions.Substring(0, i);
-
-			return strExtensions; // Single extension
+			return UIUtilCore.GetPrimaryFileTypeExt(strExtensions);
 		}
 
 		[Obsolete("Use the overload with the strContext parameter.")]
@@ -1995,9 +1955,13 @@ namespace KeePass.UI
 
 		public static bool ColorsEqual(Color c1, Color c2)
 		{
-			// return ((c1.R == c2.R) && (c1.G == c2.G) && (c1.B == c2.B) &&
-			//	(c1.A == c2.A));
-			return (c1.ToArgb() == c2.ToArgb());
+			return UIUtilCore.ColorsEqual(ColorToHex(c1), ColorToHex(c2));
+		}
+
+		/// <summary>Converts a <see cref="Color"/> to an <c>#AARRGGBB</c> hex string.</summary>
+		private static string ColorToHex(Color c)
+		{
+			return string.Format("#{0:X2}{1:X2}{2:X2}{3:X2}", c.A, c.R, c.G, c.B);
 		}
 
 		public static Color GetAlternateColor(Color clrBase)
@@ -2207,8 +2171,7 @@ namespace KeePass.UI
 
 		public static bool IsDarkColor(Color clr)
 		{
-			Color clrLvl = ColorToGrayscale(clr);
-			return (clrLvl.R < 128);
+			return UIUtilCore.IsDarkColor(ColorToHex(clr));
 		}
 
 		public static Color ColorMiddle(Color clrA, Color clrB)
@@ -2660,29 +2623,7 @@ namespace KeePass.UI
 
 		internal static string ScaleWindowScreenRect(string strRect, double sX, double sY)
 		{
-			if(string.IsNullOrEmpty(strRect)) return strRect;
-
-			try
-			{
-				string str = strRect.Replace(",", string.Empty); // Backward compat.
-
-				int[] v = StrUtil.DeserializeIntArray(str);
-				if((v == null) || (v.Length < 2)) { Debug.Assert(false); return strRect; }
-
-				v[0] = (int)Math.Round((double)v[0] * sX); // X
-				v[1] = (int)Math.Round((double)v[1] * sY); // Y
-
-				if(v.Length >= 4)
-				{
-					v[2] = (int)Math.Round((double)v[2] * sX); // Width
-					v[3] = (int)Math.Round((double)v[3] * sY); // Height
-				}
-
-				return StrUtil.SerializeIntArray(v);
-			}
-			catch(Exception) { Debug.Assert(false); }
-
-			return strRect;
+			return UIUtilCore.ScaleWindowScreenRect(strRect, sX, sY);
 		}
 
 		public static string GetColumnWidths(ListView lv)
