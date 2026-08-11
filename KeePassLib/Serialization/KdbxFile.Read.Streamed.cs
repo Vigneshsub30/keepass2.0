@@ -98,7 +98,12 @@ namespace KeePassLib.Serialization
 
 		private void ReadXmlStreamed(Stream sXml, Stream sParent)
 		{
-			using(XmlReader xr = XmlUtilEx.CreateXmlReader(sXml))
+			// Use the secure reader settings to prohibit DTDs, disable external
+			// entity resolution, and cap entity expansion to protect against
+			// billion-laughs and XXE attacks in hostile KDBX files.
+			System.Xml.XmlReaderSettings xrs = XmlUtilEx.CreateSecureReaderSettings();
+			xrs.CloseInput = false;
+			using(System.Xml.XmlReader xr = System.Xml.XmlReader.Create(sXml, xrs))
 			{
 				ReadDocumentStreamed(xr, sParent);
 			}

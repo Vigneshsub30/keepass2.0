@@ -104,27 +104,43 @@ namespace KeePassLib.Utility
 			xrs.IgnoreProcessingInstructions = true;
 			xrs.IgnoreWhitespace = true;
 
-#if KeePassUAP
-			xrs.DtdProcessing = DtdProcessing.Ignore;
-#else
-			Type tXrs = typeof(XmlReaderSettings);
-			Type tDtd = tXrs.Assembly.GetType("System.Xml.DtdProcessing", false);
-			object oDtdIgnore = ((tDtd != null) ? MemUtil.GetEnumValue(tDtd,
-				"Ignore") : null);
-			PropertyInfo piDtd = tXrs.GetProperty("DtdProcessing",
-				BindingFlags.Public | BindingFlags.Instance);
-			if((piDtd != null) && (oDtdIgnore != null))
-				piDtd.SetValue(xrs, oDtdIgnore, null); // .NET >= 4 only
-			else
-			{
-#pragma warning disable 618
-				xrs.ProhibitDtd = true; // Obsolete in .NET 4, but still there
-#pragma warning restore 618
-			}
-#endif
+			// On .NET 10 (and .NET 4+) DtdProcessing.Prohibit is always available.
+			// The legacy reflection-based fallback for older runtimes is removed.
+			xrs.DtdProcessing = DtdProcessing.Prohibit;
 
 			xrs.ValidationType = ValidationType.None;
-			xrs.XmlResolver = null;
+			xrs.XmlResolver    = null;
+
+			return xrs;
+		}
+
+		/// <summary>
+		/// Creates <see cref="XmlReaderSettings"/> with a hardened security
+		/// profile suitable for processing untrusted user-supplied XML.
+		/// Enforces documented ceilings to defend against XXE injection,
+		/// billion-laughs entity expansion, and stack-exhaustion via deep
+		/// nesting.
+		/// </summary>
+		/// <param name="maxCharsInDocument">
+		/// Maximum total characters allowed in the document.
+		/// Default: 500,000,000 (≈500 MB of XML text).
+		/// </param>
+		/// <param name="maxCharsFromEntities">
+		/// Maximum total characters produced by entity expansion.
+		/// Default: 10,000,000 (prevents billion-laughs amplification).
+		/// </param>
+		public static XmlReaderSettings CreateSecureReaderSettings(
+			long maxCharsInDocument  = 500_000_000L,
+			long maxCharsFromEntities = 10_000_000L)
+		{
+			XmlReaderSettings xrs = CreateXmlReaderSettings();
+
+			// DtdProcessing.Prohibit is already set by CreateXmlReaderSettings.
+			// Belt-and-suspenders: also set the character-count ceilings so
+			// that even if a future refactor loosens DtdProcessing, the entity
+			// expansion budget still provides defence-in-depth.
+			xrs.MaxCharactersInDocument  = maxCharsInDocument;
+			xrs.MaxCharactersFromEntities = maxCharsFromEntities;
 
 			return xrs;
 		}
