@@ -33,6 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Extensions.Options" />
@@ -371,6 +372,7 @@
     <Compile Include="Plugins\PluginSignatureResult.cs" />
     <Compile Include="Plugins\PluginSignatureVerifier.cs" />
     <Compile Include="Plugins\PublisherKeyAllowList.cs" />
+    <Compile Include="Plugins\RoslynPlgxCompiler.cs" />
     <Compile Include="Plugins\PluginManager.cs" />
     <Compile Include="Plugins\WinFormsPluginMenuAdapter.cs" />
     <Compile Include="Program.cs" />

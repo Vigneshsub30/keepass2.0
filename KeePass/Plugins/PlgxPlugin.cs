@@ -18,7 +18,7 @@
 */
 
 using System;
-using System.CodeDom.Compiler;
+// System.CodeDom.Compiler removed — PLGX now compiled via Roslyn (RoslynPlgxCompiler).
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -507,84 +507,51 @@ namespace KeePass.Plugins
 				vCustomRefs.Add(strCached);
 			}
 
-			CompilerParameters cp = plgx.CompilerParameters;
-			cp.OutputAssembly = UrlUtil.EnsureTerminatingSeparator(strTmpRoot, false) +
-				UrlUtil.GetFileName(PlgxCache.GetCacheFile(plgx, false, false));
-			cp.GenerateExecutable = false;
-			cp.GenerateInMemory = false;
-			cp.IncludeDebugInformation = false;
-			cp.TreatWarningsAsErrors = false;
-			cp.ReferencedAssemblies.Add(WinUtil.GetExecutable());
-			foreach(string strCustomRef in vCustomRefs)
-				cp.ReferencedAssemblies.Add(strCustomRef);
+			// Emit a deprecation warning for every PLGX compilation attempt.
+			MessageService.ShowInfo(
+				"PLGX format is deprecated.",
+				"The PLGX runtime-compilation format will be removed in a future " +
+				"major release. Please repackage your plugin as a pre-compiled, " +
+				"signed .dll assembly. See PLGX-MIGRATION.md for guidance.");
 
-			cp.CompilerOptions = "-define:" + GetDefines();
+			string strOutputPath = UrlUtil.EnsureTerminatingSeparator(strTmpRoot, false) +
+				UrlUtil.GetFileName(PlgxCache.GetCacheFile(plgx, false, false));
 
 			CompileEmbeddedRes(plgx);
 			PrepareSourceFiles(plgx);
 
-			string[] vCompilers;
-			Version vClr = Environment.Version;
-			int iClrMajor = vClr.Major, iClrMinor = vClr.Minor;
-			if((iClrMajor >= 5) || ((iClrMajor == 4) && (iClrMinor >= 5)))
+			// Gather source files from the temp directory.
+			List<string> lSources = new List<string>(
+				System.IO.Directory.GetFiles(strTmpRoot, "*.cs",
+					System.IO.SearchOption.AllDirectories));
+
+			// Gather reference assemblies: host exe + cached custom references.
+			List<string> lRefs = new List<string>();
+			lRefs.Add(WinUtil.GetExecutable());
+			lRefs.AddRange(vCustomRefs);
+
+			// Build preprocessor symbols from the -define options.
+			string strDefines = GetDefines();
+			IEnumerable<string> defines = strDefines.Split(
+				new char[] { ';', ',' }, StringSplitOptions.RemoveEmptyEntries);
+
+			PlgxCompilationResult result = RoslynPlgxCompiler.Compile(
+				lSources, lRefs, defines, strOutputPath);
+
+			if(!result.IsSuccess)
 			{
-				vCompilers = new string[] {
-					null,
-					"v4.5",
-					"v4", // Suggested in CodeDomProvider.CreateProvider doc
-					"v4.0", // Suggested in community content of the above
-					"v4.0.30319", // Deduced from file system
-					"v3.5"
-				};
-			}
-			else if(iClrMajor == 4) // 4.0
-			{
-				vCompilers = new string[] {
-					null,
-					"v4", // Suggested in CodeDomProvider.CreateProvider doc
-					"v4.0", // Suggested in community content of the above
-					"v4.0.30319", // Deduced from file system
-					"v4.5",
-					"v3.5"
-				};
-			}
-			else // <= 3.5
-			{
-				vCompilers = new string[] {
-					null,
-					"v3.5",
-					"v4", // Suggested in CodeDomProvider.CreateProvider doc
-					"v4.0", // Suggested in community content of the above
-					"v4.0.30319", // Deduced from file system
-					"v4.5"
-				};
+				StringBuilder sbErrors = new StringBuilder();
+				foreach(PlgxDiagnostic d in result.Errors)
+					sbErrors.AppendLine(d.ToString());
+				if(PwDefs.DebugMode)
+					MessageService.ShowInfo("PLGX compilation errors:", sbErrors.ToString());
+				throw new InvalidOperationException(
+					"Roslyn PLGX compilation failed: " + sbErrors);
 			}
 
-			CompilerResults cr = null;
-			StringBuilder sbCompilerLog = new StringBuilder();
-			bool bCompiled = false;
-			for(int iCmp = 0; iCmp < vCompilers.Length; ++iCmp)
-			{
-				if(CompileAssembly(plgx, out cr, vCompilers[iCmp]))
-				{
-					bCompiled = true;
-					break;
-				}
+			Program.TempFilesPool.Add(result.OutputAssemblyPath);
 
-				if(cr != null)
-					AppendCompilerResults(sbCompilerLog, vCompilers[iCmp], cr);
-			}
-
-			if(!bCompiled)
-			{
-				if(PwDefs.DebugMode) SaveCompilerResults(plgx, sbCompilerLog);
-				throw new InvalidOperationException();
-			}
-
-			Program.TempFilesPool.Add(cr.PathToAssembly);
-
-			Debug.Assert(cr.PathToAssembly == cp.OutputAssembly);
-			string strCacheAsm = PlgxCache.AddCacheAssembly(cr.PathToAssembly, plgx);
+			string strCacheAsm = PlgxCache.AddCacheAssembly(result.OutputAssemblyPath, plgx);
 
 			RunBuildCommand(strBuildPost, UrlUtil.EnsureTerminatingSeparator(
 				strTmpRoot, false), UrlUtil.GetFileDirectory(strCacheAsm, true, false));
@@ -592,81 +559,8 @@ namespace KeePass.Plugins
 			return strCacheAsm;
 		}
 
-		private static bool CompileAssembly(PlgxPluginInfo plgx,
-			out CompilerResults cr, string strCompilerVersion)
-		{
-			cr = null;
-
-			const string StrCoreRef = "System.Core";
-			const string StrCoreDll = "System.Core.dll";
-			bool bHasCore = false, bCoreAdded = false;
-			foreach(string strAsm in plgx.CompilerParameters.ReferencedAssemblies)
-			{
-				if(UrlUtil.AssemblyEquals(strAsm, StrCoreRef))
-				{
-					bHasCore = true;
-					break;
-				}
-			}
-			if((strCompilerVersion != null) && strCompilerVersion.StartsWith(
-				"v", StrUtil.CaseIgnoreCmp))
-			{
-				ulong v = StrUtil.ParseVersion(strCompilerVersion.Substring(1));
-				if(!bHasCore && (v >= 0x0003000500000000UL))
-				{
-					plgx.CompilerParameters.ReferencedAssemblies.Add(StrCoreDll);
-					bCoreAdded = true;
-				}
-			}
-
-			bool bResult = false;
-			try
-			{
-				Dictionary<string, string> dictOpt = new Dictionary<string, string>();
-				if(!string.IsNullOrEmpty(strCompilerVersion))
-					dictOpt.Add("CompilerVersion", strCompilerVersion);
-
-				// Windows 98 only supports the parameterless constructor;
-				// check must be separate from the instantiation method
-				if(WinUtil.IsWindows9x) dictOpt.Clear();
-
-			throw new PlatformNotSupportedException(
-				"PLGX runtime compilation is not supported on .NET 10. " +
-				"Repackage the plugin as a pre-compiled .dll assembly. " +
-				"See PLGX-MIGRATION.md at the repository root for migration guidance.");
-			}
-			catch(Exception) { }
-
-			if(bCoreAdded)
-				plgx.CompilerParameters.ReferencedAssemblies.Remove(StrCoreDll);
-
-			return bResult;
-		}
-
-		private static void AppendCompilerResults(StringBuilder sb, string strCompiler,
-			CompilerResults cr)
-		{
-			if((sb == null) || (cr == null)) { Debug.Assert(false); return; }
-			// strCompiler may be null
-
-			if(sb.Length > 0)
-			{
-				sb.AppendLine();
-				sb.AppendLine();
-				sb.AppendLine();
-			}
-
-			sb.AppendLine(new string('=', 78));
-			sb.AppendLine("Compiler '" + (strCompiler ?? "null") + "':");
-			sb.AppendLine();
-
-			foreach(string str in cr.Output)
-			{
-				if(str == null) { Debug.Assert(false); continue; }
-
-				sb.AppendLine(str.Trim());
-			}
-		}
+		// CompileAssembly and AppendCompilerResults removed —
+		// CodeDom/CSharpCodeProvider path replaced by RoslynPlgxCompiler.
 
 		private static void SaveCompilerResults(PlgxPluginInfo plgx,
 			StringBuilder sb)
