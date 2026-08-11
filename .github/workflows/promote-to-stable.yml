@@ -176,16 +176,9 @@ jobs:
           PROMO_TIME=$(date -u +"%Y-%m-%d %H:%M UTC")
           PROMO_ACTOR="${{ github.actor }}"
 
-          NOTES="${{ inputs.release_notes }}
-
----
-**Promoted from beta:** \`${BETA_TAG}\`
-**Promoted by:** ${PROMO_ACTOR}
-**Promotion time:** ${PROMO_TIME}
-**Source commit:** ${BETA_SHA}
-
-This stable release was reviewed and manually promoted from the beta channel
-by ${PROMO_ACTOR}.  No code changes were made during promotion."
+          NOTES=$(printf '%s\n\n---\n**Promoted from beta:** `%s`\n**Promoted by:** %s\n**Promotion time:** %s\n**Source commit:** %s\n\nThis stable release was reviewed and manually promoted from the beta channel\nby %s.  No code changes were made during promotion.' \
+            "${{ inputs.release_notes }}" "${BETA_TAG}" "${PROMO_ACTOR}" \
+            "${PROMO_TIME}" "${BETA_SHA}" "${PROMO_ACTOR}")
 
           gh release create "$STABLE_TAG" \
             --repo "${{ github.repository }}" \
@@ -205,12 +198,15 @@ by ${PROMO_ACTOR}.  No code changes were made during promotion."
             --json body \
             --jq '.body' 2>/dev/null || echo "")
 
+          UPDATED_NOTES=$(printf '%s\n\n---\n**Promoted to stable:** `%s` by %s at %s' \
+            "${EXISTING_NOTES}" \
+            "${{ inputs.stable_tag }}" \
+            "${{ github.actor }}" \
+            "$(date -u)")
+
           gh release edit "${{ inputs.beta_tag }}" \
             --repo "${{ github.repository }}" \
-            --notes "${EXISTING_NOTES}
-
----
-**Promoted to stable:** \`${{ inputs.stable_tag }}\` by ${{ github.actor }} at $(date -u)" \
+            --notes "${UPDATED_NOTES}" \
             2>/dev/null || echo "Note: could not update beta release notes (continuing)"
 
       - name: Emit promotion summary

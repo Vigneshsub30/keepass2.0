@@ -107,18 +107,15 @@ jobs:
           git tag -d "$TAG" 2>/dev/null || true
           git push origin ":refs/tags/$TAG" 2>/dev/null || true
 
+          RELEASE_NOTES=$(printf 'Automated beta build from commit %s.\n\nThis is a **pre-release** build intended for beta testers who have enabled\nthe Beta release channel in KeePass Options \u2192 Advanced.\n\n**Do not use this in production without testing.**\n\nBuild commit: %s\nBuild run: %s' \
+            "${SHORT_SHA}" \
+            "${{ github.event.workflow_run.head_sha }}" \
+            "${{ github.event.workflow_run.html_url }}")
+
           gh release create "$TAG" \
             --prerelease \
             --title "KeePass Beta ${VER_DISPLAY}" \
-            --notes "Automated beta build from commit ${SHORT_SHA}.
-
-This is a **pre-release** build intended for beta testers who have enabled
-the Beta release channel in KeePass Options → Advanced.
-
-**Do not use this in production without testing.**
-
-Build commit: ${{ github.event.workflow_run.head_sha }}
-Build run: ${{ github.event.workflow_run.html_url }}" \
+            --notes "${RELEASE_NOTES}" \
             flat/*
 
       - name: Emit summary

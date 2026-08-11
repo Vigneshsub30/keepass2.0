@@ -385,6 +385,8 @@ jobs:
         if: runner.os == 'macOS'
         env:
           APPLE_API_KEY_PATH: /tmp/apple_api.p8
+          APPLE_API_KEY_ID:   ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER:   ${{ secrets.APPLE_API_ISSUER_ID }}
           SKIP_NOTARIZE: ${{ (github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) && vars.MACOS_SIGNING_ENABLED == 'true') && 'false' || 'true' }}
         run: |
           # Write API key to temp file (only populated when signing is enabled).
@@ -404,9 +406,6 @@ jobs:
           if [[ -f /tmp/apple_api.p8 ]]; then
             rm -f /tmp/apple_api.p8
           fi
-        env:
-          APPLE_API_KEY_ID:  ${{ secrets.APPLE_API_KEY_ID }}
-          APPLE_API_ISSUER:  ${{ secrets.APPLE_API_ISSUER_ID }}
 
       - name: Upload macOS .dmg
         if: runner.os == 'macOS'
