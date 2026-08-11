@@ -247,8 +247,7 @@ namespace KeePass.Native
 			public int iIcon;
 			public uint dwAttributes;
 
-			[MarshalAs(UnmanagedType.ByValTStr, SizeConst =
-				KeePassLib.Native.NativeMethods.MAX_PATH)]
+			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = MAX_PATH)]
 			public string szDisplayName;
 
 			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 80)]
@@ -322,8 +321,7 @@ namespace KeePass.Native
 			public int pcPriClassBase;
 			public uint dwFlags;
 
-			[MarshalAs(UnmanagedType.ByValTStr, SizeConst =
-				KeePassLib.Native.NativeMethods.MAX_PATH)]
+			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = MAX_PATH)]
 			public string szExeFile;
 		}
 

@@ -875,7 +875,7 @@ namespace KeePass
 				ms.AddAccessRule(mar);
 
 				bool bCreatedNew;
-				return new Mutex(false, strName, out bCreatedNew, ms);
+				return MutexAcl.Create(false, strName, out bCreatedNew, ms);
 			}
 			catch(Exception) { } // Windows 9x and Mono 2.0+ (AddAccessRule) throw
 

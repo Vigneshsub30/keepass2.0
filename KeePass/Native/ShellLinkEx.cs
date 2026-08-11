@@ -85,7 +85,7 @@ namespace KeePass.Native
 				pf.Load(strLnkFilePath, (int)(NativeMethods.STGM.Read |
 					NativeMethods.STGM.ShareDenyWrite));
 
-				const int ccMaxPath = KeePassLib.Native.NativeMethods.MAX_PATH;
+				const int ccMaxPath = NativeMethods.MAX_PATH;
 				const int ccInfoTip = NativeMethods.INFOTIPSIZE;
 
 				ShellLinkEx r = new ShellLinkEx();

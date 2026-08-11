@@ -27,6 +27,8 @@ namespace KeePass.Native
 {
 	internal static partial class NativeMethods
 	{
+		internal const int MAX_PATH = 260;
+
 		[DllImport("Kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		internal static extern bool SetDllDirectory(string lpPathName);

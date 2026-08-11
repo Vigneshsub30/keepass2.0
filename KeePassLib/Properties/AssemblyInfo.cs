@@ -40,3 +40,6 @@ using System.Runtime.InteropServices;
 // Assembly version information
 [assembly: AssemblyVersion("2.61.1.0")]
 [assembly: AssemblyFileVersion("2.61.1.0")]
+
+// Allow KeePass.exe to access internal members (replaces legacy linked-file approach)
+[assembly: InternalsVisibleTo("KeePass, PublicKey=00240000048000009400000006020000002400005253413100040000010001001f618048344c3cd2c878889433979fea90e4f5615cf89dda25a29e15ba787be8106c14667b12c7a7c2ca4c2d9cf017e1c2c63fe60053501780bb6d4526a2cb196a23e608810ac1ae3c779d4b32a3622d13483939653c719b6da9dbad125c438983ee3e4b1d5ca89e6ac3be6345781977db0e56dbe5795064078f3bf5df5e79b8")]
