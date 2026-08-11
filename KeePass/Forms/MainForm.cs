@@ -437,6 +437,14 @@ namespace KeePass.Forms
 #endif
 
 			m_sessionLockNotifier.Install(this.OnSessionLock);
+
+			// Initialise the extracted lock coordinator.  It owns its own
+			// SessionLockNotifier internally; the legacy m_sessionLockNotifier
+			// above remains for backward compatibility during phased extraction.
+			m_workspaceLockCoordinator = new Services.WorkspaceLockCoordinator(
+				m_nLockTimerMax);
+			m_workspaceLockCoordinator.OnLockRequested += OnWorkspaceLockRequested;
+
 			IpcBroadcast.StartServer();
 
 			HotKeyManager.Initialize(this);

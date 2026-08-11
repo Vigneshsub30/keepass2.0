@@ -127,6 +127,12 @@ namespace KeePass.Forms
 		private uint m_uLastInputTime = uint.MaxValue;
 		private long m_lLockAtGlobalTicks = long.MaxValue;
 
+		/// <summary>
+		/// Extracted coordinator for workspace-lock logic.
+		/// Created during OnFormLoad once config is available.
+		/// </summary>
+		private Services.WorkspaceLockCoordinator m_workspaceLockCoordinator = null;
+
 		private ComboBox m_cmbQuickFind = null;
 		private uint m_uBlockQuickFind = 0;
 		private DateTime m_dtLastQuickFind = DateTime.UtcNow;
@@ -447,6 +453,14 @@ namespace KeePass.Forms
 			SaveConfig(); // After unloading plugins
 
 			m_sessionLockNotifier.Uninstall();
+
+			if(m_workspaceLockCoordinator != null)
+			{
+				m_workspaceLockCoordinator.OnLockRequested -= OnWorkspaceLockRequested;
+				m_workspaceLockCoordinator.Dispose();
+				m_workspaceLockCoordinator = null;
+			}
+
 			HotKeyManager.UnregisterAll();
 
 			EntryTemplates.Release();
@@ -3038,6 +3052,24 @@ namespace KeePass.Forms
 
 				m_uLastInputTime = uLastInputTime.Value;
 			}
+
+			// Delegate to the coordinator so its state stays consistent with
+			// the legacy inline fields during the phased extraction.
+			if(m_workspaceLockCoordinator != null)
+				m_workspaceLockCoordinator.UpdateGlobalLockTimeout(utcNow);
+		}
+
+		/// <summary>
+		/// Called by <see cref="Services.WorkspaceLockCoordinator"/> when a
+		/// lock condition is met.  Drives the existing LockAllDocuments path.
+		/// </summary>
+		private void OnWorkspaceLockRequested()
+		{
+			if(!this.InvokeRequired)
+			{
+				if(IsAtLeastOneFileOpen()) LockAllDocuments();
+			}
+			else this.BeginInvoke(new Action(OnWorkspaceLockRequested));
 		}
 
 		/// <summary>
