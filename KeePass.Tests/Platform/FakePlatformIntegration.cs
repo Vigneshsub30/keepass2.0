@@ -137,13 +137,14 @@ namespace KeePass.Tests.Platform
 					}
 
 				case PlatformId.Linux:
+					// Defaults represent a standard X11 Linux desktop with secret-tool available.
+					// Wayland-specific tiers (Clipboard=Partial, ClipboardPrivacyMarkers=Partial)
+					// must be tested via CapabilityOverrides.
 					switch(capability)
 					{
-						case PlatformCapability.Clipboard:               return PlatformCapabilityTier.Full;
-						case PlatformCapability.ClipboardPrivacyMarkers: return PlatformCapabilityTier.Partial;
-						case PlatformCapability.CredentialStore:         return PlatformCapabilityTier.Partial;
-						case PlatformCapability.GlobalHotKeys:           return PlatformCapabilityTier.Partial;
-						default:                                         return PlatformCapabilityTier.Unsupported;
+						case PlatformCapability.Clipboard:       return PlatformCapabilityTier.Full;
+						case PlatformCapability.CredentialStore: return PlatformCapabilityTier.Full;
+						default:                                 return PlatformCapabilityTier.Unsupported;
 					}
 
 				default:

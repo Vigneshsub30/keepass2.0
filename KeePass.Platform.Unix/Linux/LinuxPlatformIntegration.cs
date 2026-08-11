@@ -50,12 +50,16 @@ namespace KeePass.Platform.Unix.Linux
                     return IsWayland()
                         ? PlatformCapabilityTier.Partial
                         : PlatformCapabilityTier.Unsupported;
-                case PlatformCapability.CredentialStore:         return PlatformCapabilityTier.Partial; // libsecret
+                case PlatformCapability.CredentialStore:
+                    // Full when secret-tool is available; Unsupported otherwise.
+                    return CredentialStore.IsSupported
+                        ? PlatformCapabilityTier.Full
+                        : PlatformCapabilityTier.Unsupported;
                 case PlatformCapability.AutoType:                return PlatformCapabilityTier.Unsupported;
                 case PlatformCapability.SecureDesktop:           return PlatformCapabilityTier.Unsupported;
                 case PlatformCapability.ScreenCaptureProtection: return PlatformCapabilityTier.Unsupported;
                 case PlatformCapability.ProcessDacl:             return PlatformCapabilityTier.Unsupported;
-                case PlatformCapability.GlobalHotKeys:           return PlatformCapabilityTier.Partial;
+                case PlatformCapability.GlobalHotKeys:           return PlatformCapabilityTier.Unsupported;
                 default:                                         return PlatformCapabilityTier.Unsupported;
             }
         }
