@@ -37,3 +37,4 @@ ADRs follow [Michael Nygard's format](https://cognitect.com/blog/2011/11/15/docu
 |--------|-------|--------|------|
 | [ADR-000](ADR-000-template.md) | ADR Template | Accepted | 2026-08-11 |
 | [ADR-001](ADR-001-image-abstraction-breaking-change.md) | FileFormatProvider.SmallIcon return-type change from System.Drawing.Image to ImageData | Accepted | 2026-08-11 |
+| [MonoWorkarounds-Classification](MonoWorkarounds-Classification.md) | MonoWorkarounds inventory and classification for .NET 10 migration (WO-043) | Accepted | 2026-08-11 |
