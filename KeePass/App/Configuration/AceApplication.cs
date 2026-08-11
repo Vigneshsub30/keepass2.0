@@ -255,6 +255,13 @@ namespace KeePass.App.Configuration
 			}
 		}
 
+		/// <summary>
+		/// Update-check release channel.  Defaults to <see cref="KeePassReleaseChannel.Stable"/>.
+		/// Users must explicitly opt into <see cref="KeePassReleaseChannel.Beta"/>.
+		/// </summary>
+		[DefaultValue(KeePassReleaseChannel.Stable)]
+		public KeePassReleaseChannel ReleaseChannel { get; set; }
+
 		private int m_iExpirySoonDays = 7;
 		[DefaultValue(7)]
 		public int ExpirySoonDays
@@ -408,6 +415,25 @@ namespace KeePass.App.Configuration
 			if(m_lPluginCompat.Contains(str)) { Debug.Assert(false); return; }
 			m_lPluginCompat.Insert(0, str); // See auto. maintenance
 		}
+	}
+
+	/// <summary>
+	/// Release channel that the application uses for update checks.
+	/// </summary>
+	public enum KeePassReleaseChannel
+	{
+		/// <summary>
+		/// Stable releases only.  This is the default and should be used by
+		/// the majority of users.
+		/// </summary>
+		Stable = 0,
+
+		/// <summary>
+		/// Beta pre-releases.  Users who opt into this channel receive
+		/// updates ahead of the stable channel to help surface regressions
+		/// before they reach the general user base.
+		/// </summary>
+		Beta = 1,
 	}
 
 	internal enum AceDir

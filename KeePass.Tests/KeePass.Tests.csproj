@@ -49,6 +49,9 @@
     <EmbeddedResource Include="Fixtures\Config\default-config.xml" />
     <EmbeddedResource Include="Fixtures\Config\user-config.xml" />
     <EmbeddedResource Include="Fixtures\Config\enforced-config.xml" />
+    <!-- Mock version-info files for update-channel unit tests (WO-102). -->
+    <EmbeddedResource Include="Fixtures\VersionInfo\stable-version-info.txt" />
+    <EmbeddedResource Include="Fixtures\VersionInfo\beta-version-info.txt" />
   </ItemGroup>
 
 </Project>

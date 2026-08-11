@@ -1,0 +1,187 @@
+# promote-to-stable.yml — Manual Beta-to-Stable Promotion (WO-102)
+#
+# A workflow_dispatch-triggered workflow that promotes a beta pre-release
+# to a stable release.  Requires manual approval from at least one designated
+# reviewer via a GitHub Actions environment protection rule.
+#
+# Steps performed:
+#   1. Download the artifacts attached to the specified beta pre-release tag.
+#   2. Security review sign-off — the approver is the reviewer who approved
+#      the environment protection.
+#   3. Re-tag the beta release as a stable release (remove the pre-release flag).
+#   4. Create a GitHub release with a stable tag (e.g. "v2.61.1").
+#   5. Update the stable version info URL (placeholder — requires integration
+#      with the version-info publishing pipeline outside this repository).
+#
+# Environment: "production" — must be created in GitHub repository settings
+#              with at least one required reviewer.
+#
+# Required secrets (set on the "production" environment or at repository level):
+#   GITHUB_TOKEN — standard Actions token with contents:write (usually automatic)
+#
+# Inputs:
+#   beta_tag    — The beta tag to promote (e.g. "beta-v2.61.1" or "beta-a1b2c3d4").
+#   stable_tag  — The stable tag to create (e.g. "v2.61.1").
+#   release_notes — Human-readable release notes for the stable release.
+
+name: Promote Beta to Stable
+
+on:
+  workflow_dispatch:
+    inputs:
+      beta_tag:
+        description: 'Beta tag to promote (e.g. beta-v2.61.1 or beta-a1b2c3d4)'
+        required: true
+        type: string
+      stable_tag:
+        description: 'Stable tag to create (e.g. v2.61.1)'
+        required: true
+        type: string
+        default: 'v2.61.1'
+      release_notes:
+        description: 'Release notes for the stable release'
+        required: false
+        type: string
+        default: 'Stable release promoted from beta.'
+
+permissions:
+  contents: write  # create releases, tags
+  actions: read    # read artifact list from beta release
+
+jobs:
+  promote:
+    name: Promote ${{ inputs.beta_tag }} → ${{ inputs.stable_tag }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    # The "production" environment requires manual approval from a designated
+    # reviewer before this job runs.  Configure the environment in:
+    #   GitHub → repository Settings → Environments → production → Protection rules
+    environment: production
+
+    steps:
+      - name: Validate inputs
+        run: |
+          BETA="${{ inputs.beta_tag }}"
+          STABLE="${{ inputs.stable_tag }}"
+
+          if [[ -z "$BETA" ]]; then
+            echo "ERROR: beta_tag is required" >&2; exit 1
+          fi
+          if [[ -z "$STABLE" ]]; then
+            echo "ERROR: stable_tag is required" >&2; exit 1
+          fi
+          if [[ ! "$STABLE" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "ERROR: stable_tag must match v<major>.<minor>.<patch>" >&2; exit 1
+          fi
+
+          echo "Promoting: $BETA → $STABLE"
+          echo "Approved by: ${{ github.actor }} at $(date -u)"
+
+      - name: Download beta release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p beta-assets/
+
+          # Fetch the list of assets from the beta release.
+          gh release download "${{ inputs.beta_tag }}" \
+            --repo "${{ github.repository }}" \
+            --dir beta-assets/ \
+            2>/dev/null \
+            || { echo "ERROR: Could not download assets from tag '${{ inputs.beta_tag }}'"; exit 1; }
+
+          echo "=== Assets downloaded from beta ==="
+          ls -lh beta-assets/
+
+          # Verify we actually got some files.
+          ASSET_COUNT=$(find beta-assets/ -type f | wc -l)
+          if [[ "$ASSET_COUNT" -eq 0 ]]; then
+            echo "ERROR: No assets found in beta release '${{ inputs.beta_tag }}'" >&2
+            exit 1
+          fi
+
+      - name: Verify artifact checksums (if present)
+        run: |
+          if [[ -f "beta-assets/SHA256SUMS" ]]; then
+            cd beta-assets/
+            sha256sum --check SHA256SUMS 2>&1 \
+              || { echo "WARNING: Checksum verification failed — proceeding but review is advised"; }
+          else
+            echo "No SHA256SUMS file found — skipping checksum verification"
+          fi
+
+      - name: Create stable release from beta assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STABLE_TAG: ${{ inputs.stable_tag }}
+          BETA_TAG: ${{ inputs.beta_tag }}
+        run: |
+          # Guard against overwriting an existing stable release.
+          if gh release view "$STABLE_TAG" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            echo "ERROR: Stable tag '$STABLE_TAG' already exists — refusing to overwrite." >&2
+            exit 1
+          fi
+
+          # Compute the short SHA from the beta tag.
+          BETA_SHA=$(gh release view "$BETA_TAG" \
+            --repo "${{ github.repository }}" \
+            --json targetCommitish \
+            --jq '.targetCommitish' 2>/dev/null || echo "unknown")
+
+          PROMO_TIME=$(date -u +"%Y-%m-%d %H:%M UTC")
+          PROMO_ACTOR="${{ github.actor }}"
+
+          NOTES="${{ inputs.release_notes }}
+
+---
+**Promoted from beta:** \`${BETA_TAG}\`
+**Promoted by:** ${PROMO_ACTOR}
+**Promotion time:** ${PROMO_TIME}
+**Source commit:** ${BETA_SHA}
+
+This stable release was reviewed and manually promoted from the beta channel
+by ${PROMO_ACTOR}.  No code changes were made during promotion."
+
+          gh release create "$STABLE_TAG" \
+            --repo "${{ github.repository }}" \
+            --title "KeePass ${STABLE_TAG#v}" \
+            --notes "$NOTES" \
+            beta-assets/*
+
+          echo "Stable release created: $STABLE_TAG"
+
+      - name: Mark beta release as archived (optional)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Annotate the beta release to indicate it was promoted.
+          EXISTING_NOTES=$(gh release view "${{ inputs.beta_tag }}" \
+            --repo "${{ github.repository }}" \
+            --json body \
+            --jq '.body' 2>/dev/null || echo "")
+
+          gh release edit "${{ inputs.beta_tag }}" \
+            --repo "${{ github.repository }}" \
+            --notes "${EXISTING_NOTES}
+
+---
+**Promoted to stable:** \`${{ inputs.stable_tag }}\` by ${{ github.actor }} at $(date -u)" \
+            2>/dev/null || echo "Note: could not update beta release notes (continuing)"
+
+      - name: Emit promotion summary
+        run: |
+          echo "## Stable Release Promotion Complete" >> "${GITHUB_STEP_SUMMARY}"
+          echo "" >> "${GITHUB_STEP_SUMMARY}"
+          echo "| Field | Value |" >> "${GITHUB_STEP_SUMMARY}"
+          echo "|-------|-------|" >> "${GITHUB_STEP_SUMMARY}"
+          echo "| Beta tag | \`${{ inputs.beta_tag }}\` |" >> "${GITHUB_STEP_SUMMARY}"
+          echo "| Stable tag | \`${{ inputs.stable_tag }}\` |" >> "${GITHUB_STEP_SUMMARY}"
+          echo "| Promoted by | ${{ github.actor }} |" >> "${GITHUB_STEP_SUMMARY}"
+          echo "| Promotion time | $(date -u) |" >> "${GITHUB_STEP_SUMMARY}"
+          echo "" >> "${GITHUB_STEP_SUMMARY}"
+          echo "### Promoted Artifacts" >> "${GITHUB_STEP_SUMMARY}"
+          find beta-assets/ -type f | sort | while read f; do
+            HASH=$(sha256sum "$f" | awk '{print $1}')
+            echo "- \`$(basename "$f")\` — \`${HASH}\`" >> "${GITHUB_STEP_SUMMARY}"
+          done

@@ -1,0 +1,137 @@
+# publish-beta.yml — Automated Beta Release Publisher (WO-102)
+#
+# Triggered when build.yml completes successfully on the main branch.
+# Downloads all platform artifacts from the completed build workflow run,
+# creates a GitHub pre-release tagged "beta-<sha>", and attaches the
+# signed artifacts.
+#
+# Every merge to main that passes all CI gates therefore automatically
+# produces a new beta build available to opted-in users.
+#
+# Requirements:
+#   - GH_RELEASE_TOKEN — a PAT with contents:write and actions:read scope,
+#     or rely on the built-in GITHUB_TOKEN (needs contents:write permission).
+
+name: Publish Beta
+
+on:
+  workflow_run:
+    workflows: ["Build"]
+    types:
+      - completed
+    branches:
+      - main
+
+permissions:
+  contents: write  # needed to create GitHub Releases and upload assets
+  actions: read    # needed to download artifacts from the triggering run
+
+jobs:
+  publish-beta:
+    name: Publish Beta Pre-Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    # Only publish when the triggering build succeeded.
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Checkout (for version resolution)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+
+      - name: Resolve version and tag
+        id: version
+        run: |
+          SHA="${{ github.event.workflow_run.head_sha }}"
+          SHORT_SHA="${SHA:0:8}"
+
+          # Use the git tag on the triggering commit when one exists.
+          TAG=$(git tag --points-at "$SHA" | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1 || true)
+          if [[ -z "$TAG" ]]; then
+            # No tag — derive a beta pre-release version.
+            VER=$(git describe --tags --match "v[0-9]*" --abbrev=0 2>/dev/null \
+                  | sed 's/^v//' || echo "0.0.0")
+            TAG="beta-${SHORT_SHA}"
+            VER_DISPLAY="${VER}-beta+${SHORT_SHA}"
+          else
+            VER_DISPLAY="${TAG#v}"
+            TAG="beta-${TAG}"
+          fi
+
+          echo "tag=${TAG}"                 >> "${GITHUB_OUTPUT}"
+          echo "short_sha=${SHORT_SHA}"     >> "${GITHUB_OUTPUT}"
+          echo "ver_display=${VER_DISPLAY}" >> "${GITHUB_OUTPUT}"
+
+      - name: Download all platform artifacts
+        uses: actions/download-artifact@v4
+        with:
+          # Download artifacts produced by the triggering workflow run.
+          run-id: ${{ github.event.workflow_run.id }}
+          path: release-artifacts/
+          # Merge all artifact directories into a flat structure.
+          merge-multiple: false
+
+      - name: Flatten and list artifacts
+        id: artifacts
+        run: |
+          mkdir -p flat/
+          # Walk every sub-directory downloaded by actions/download-artifact.
+          find release-artifacts/ -type f \( \
+              -name "*.msi" -o -name "*portable*.zip" \
+              -o -name "*.dmg" \
+              -o -name "*.deb" -o -name "*.AppImage" \
+              -o -name "SHA256SUMS" -o -name "SHA256SUMS.sig" \
+          \) | while read f; do
+            cp "$f" flat/
+          done
+
+          echo "=== Artifacts to publish ==="
+          ls -lh flat/
+
+          # Produce a pipe-separated list of file paths for the release step.
+          FILES=$(find flat/ -type f | paste -sd ',' -)
+          echo "files=${FILES}" >> "${GITHUB_OUTPUT}"
+
+      - name: Create / update GitHub pre-release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.version.outputs.tag }}
+          VER_DISPLAY: ${{ steps.version.outputs.ver_display }}
+          SHORT_SHA: ${{ steps.version.outputs.short_sha }}
+        run: |
+          # Delete any existing pre-release with the same tag (idempotent republish).
+          gh release delete "$TAG" --yes 2>/dev/null || true
+          git tag -d "$TAG" 2>/dev/null || true
+          git push origin ":refs/tags/$TAG" 2>/dev/null || true
+
+          gh release create "$TAG" \
+            --prerelease \
+            --title "KeePass Beta ${VER_DISPLAY}" \
+            --notes "Automated beta build from commit ${SHORT_SHA}.
+
+This is a **pre-release** build intended for beta testers who have enabled
+the Beta release channel in KeePass Options → Advanced.
+
+**Do not use this in production without testing.**
+
+Build commit: ${{ github.event.workflow_run.head_sha }}
+Build run: ${{ github.event.workflow_run.html_url }}" \
+            flat/*
+
+      - name: Emit summary
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          echo "## Beta Release Published" >> "${GITHUB_STEP_SUMMARY}"
+          echo "" >> "${GITHUB_STEP_SUMMARY}"
+          echo "- **Tag:** \`${TAG}\`" >> "${GITHUB_STEP_SUMMARY}"
+          echo "- **Version:** ${{ steps.version.outputs.ver_display }}" >> "${GITHUB_STEP_SUMMARY}"
+          echo "- **Commit:** ${{ github.event.workflow_run.head_sha }}" >> "${GITHUB_STEP_SUMMARY}"
+          echo "- **Artifacts:**" >> "${GITHUB_STEP_SUMMARY}"
+          find flat/ -type f | sort | while read f; do
+            HASH=$(sha256sum "$f" | awk '{print $1}')
+            echo "  - \`$(basename "$f")\` — \`${HASH}\`" >> "${GITHUB_STEP_SUMMARY}"
+          done

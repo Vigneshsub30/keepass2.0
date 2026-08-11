@@ -1,0 +1,4 @@
+:NOSIG:
+KeePass:2.61.1
+KeePassLib:2.61.1
+:

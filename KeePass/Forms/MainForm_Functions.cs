@@ -710,9 +710,20 @@ namespace KeePass.Forms
 
 		// Workarounds #801414 and ExchangeFormShownRaised retired: dead on .NET 10.
 
-		// Compact the title again (it could be that a translator used
-		// a string in KPRes that is too long to be displayed)
-		this.Text = StrUtil.CompactString3Dots(strTitle, cchTitle);
+	// Compact the title again (it could be that a translator used
+		// a string in KPRes that is too long to be displayed).
+		// When the beta release channel is active, append a visible indicator so
+		// users know they are running pre-release software.
+		if(Program.Config.Application.ReleaseChannel ==
+			KeePass.App.Configuration.KeePassReleaseChannel.Beta)
+		{
+			const string strBetaSuffix = " [Beta]";
+			// Reserve room for the suffix before compacting.
+			string strTitleBase = StrUtil.CompactString3Dots(strTitle,
+				cchTitle - strBetaSuffix.Length);
+			strTitle = strTitleBase + strBetaSuffix;
+		}
+	this.Text = StrUtil.CompactString3Dots(strTitle, cchTitle);
 
 			strNtf = StrUtil.EncodeToolTipText(strNtf);
 			m_ntfTray.Text = StrUtil.CompactString3Dots(strNtf, cchNtf);

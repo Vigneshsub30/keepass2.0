@@ -56,6 +56,10 @@ namespace KeePass.Forms
 		private CheckedLVItemDXList m_cdxGuiOptions = null;
 		private CheckedLVItemDXList m_cdxAdvanced = null;
 
+		// Release-channel dropdown — added dynamically to the Advanced tab
+		// because the designer does not need to be touched for this minimal addition.
+		private ComboBox m_cmbReleaseChannel = null;
+
 		private readonly Dictionary<int, string> m_dTsrUuids = new Dictionary<int, string>();
 
 		private FontControlGroup m_fcgList = null;
@@ -750,13 +754,40 @@ namespace KeePass.Forms
 			m_cdxAdvanced.CreateItem(Program.Config.UI, "OptimizeForScreenReader",
 				lvg, KPRes.OptimizeForScreenReader);
 
-			m_cdxAdvanced.UpdateData(false);
-			UIUtil.ResizeColumns(m_lvAdvanced, true);
+		m_cdxAdvanced.UpdateData(false);
+		UIUtil.ResizeColumns(m_lvAdvanced, true);
 
-			if(AppConfigEx.IsOptionEnforced(Program.Config.Integration, "ProxyType") ||
-				AppConfigEx.IsOptionEnforced(Program.Config.Integration, "ProxyAddress"))
-				m_btnProxy.Enabled = false;
-		}
+		if(AppConfigEx.IsOptionEnforced(Program.Config.Integration, "ProxyType") ||
+			AppConfigEx.IsOptionEnforced(Program.Config.Integration, "ProxyAddress"))
+			m_btnProxy.Enabled = false;
+
+		// Release channel selector — dynamically added below the proxy button.
+		// Layout: "Release channel:" label + ComboBox, both in the bottom strip
+		// of the Advanced tab next to the existing Proxy button.
+		Label lblCh = new Label();
+		lblCh.AutoSize = true;
+		lblCh.Text = "Release &channel:";
+		lblCh.Location = new Point(6, m_btnProxy.Top + 5);
+		lblCh.Name = "m_lblReleaseChannel";
+
+		m_cmbReleaseChannel = new ComboBox();
+		m_cmbReleaseChannel.DropDownStyle = ComboBoxStyle.DropDownList;
+		m_cmbReleaseChannel.FormattingEnabled = true;
+		m_cmbReleaseChannel.Location = new Point(lblCh.Right + 4, m_btnProxy.Top);
+		m_cmbReleaseChannel.Size = new Size(140, m_btnProxy.Height);
+		m_cmbReleaseChannel.Name = "m_cmbReleaseChannel";
+
+		// Items must match KeePassReleaseChannel ordinal values.
+		m_cmbReleaseChannel.Items.Add("Stable");
+		m_cmbReleaseChannel.Items.Add("Beta");
+
+		int iCh = (int)Program.Config.Application.ReleaseChannel;
+		m_cmbReleaseChannel.SelectedIndex = (iCh >= 0 && iCh < m_cmbReleaseChannel.Items.Count)
+			? iCh : 0;
+
+		m_tabAdvanced.Controls.Add(lblCh);
+		m_tabAdvanced.Controls.Add(m_cmbReleaseChannel);
+	}
 
 		private bool ValidateOptions()
 		{
@@ -857,9 +888,16 @@ namespace KeePass.Forms
 
 			// Program.Config.UI.TrayIcon.SingleClickDefault = m_cbSingleClickTrayAction.Checked;
 
-			m_cdxAdvanced.UpdateData(true);
+		m_cdxAdvanced.UpdateData(true);
 
-			Program.Config.Apply(AceApplyFlags.All);
+		if(m_cmbReleaseChannel != null)
+		{
+			int iSel = m_cmbReleaseChannel.SelectedIndex;
+			if(iSel >= 0 && iSel < Enum.GetValues(typeof(KeePassReleaseChannel)).Length)
+				Program.Config.Application.ReleaseChannel = (KeePassReleaseChannel)iSel;
+		}
+
+		Program.Config.Apply(AceApplyFlags.All);
 		}
 
 		private void OnFormClosed(object sender, FormClosedEventArgs e)

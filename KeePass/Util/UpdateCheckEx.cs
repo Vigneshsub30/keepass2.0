@@ -472,9 +472,14 @@ namespace KeePass.Util
 					KPRes.Plugins));
 			}
 
-			// Add KeePass at the end to override any buggy plugin names
-			AddComponent(l, new UpdateComponentInfo(CompMain, PwDefs.FileVersion64,
-				PwDefs.VersionUrl, PwDefs.ShortProductName));
+		// Add KeePass at the end to override any buggy plugin names.
+		// Use the beta version URL when the user has opted into the beta channel;
+		// fall back to the stable URL for all other cases.
+		bool bBeta = (Program.Config.Application.ReleaseChannel ==
+			KeePass.App.Configuration.KeePassReleaseChannel.Beta);
+		string strVersionUrl = bBeta ? PwDefs.BetaVersionUrl : PwDefs.VersionUrl;
+		AddComponent(l, new UpdateComponentInfo(CompMain, PwDefs.FileVersion64,
+			strVersionUrl, PwDefs.ShortProductName));
 
 			l.Sort(UpdateCheckEx.CompareComponents);
 			return l;
@@ -493,7 +498,11 @@ namespace KeePass.Util
 		private static void MergeInfo(List<UpdateComponentInfo> lInst,
 			Dictionary<string, List<UpdateComponentInfo>> dictAvail)
 		{
-			string strOvrId = PwDefs.VersionUrl.ToLower();
+			// When in the beta channel the override source is the beta URL;
+			// otherwise it is the standard stable URL.
+			bool bBeta = (Program.Config.Application.ReleaseChannel ==
+				KeePass.App.Configuration.KeePassReleaseChannel.Beta);
+			string strOvrId = (bBeta ? PwDefs.BetaVersionUrl : PwDefs.VersionUrl).ToLower();
 			List<UpdateComponentInfo> lOvr;
 			dictAvail.TryGetValue(strOvrId, out lOvr);
 
@@ -594,6 +603,8 @@ namespace KeePass.Util
 		public static void EnsureConfigured(Form fParent)
 		{
 			SetFileSigKey(PwDefs.VersionUrl, AppDefs.Rsa4096PublicKeyXml);
+			// Beta version info is signed with the same key as stable releases.
+			SetFileSigKey(PwDefs.BetaVersionUrl, AppDefs.Rsa4096PublicKeyXml);
 
 			if(Program.Config.Application.Start.CheckForUpdateConfigured) return;
 

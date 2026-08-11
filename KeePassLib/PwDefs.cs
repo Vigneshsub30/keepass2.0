@@ -104,6 +104,13 @@ namespace KeePassLib
 		public static readonly string VersionUrl = "https://www.dominik-reichl.de/update/version2x.txt.gz";
 
 		/// <summary>
+		/// URL to a TXT file that contains information about the latest KeePass
+		/// beta pre-release.  Used when the user has opted into the beta channel.
+		/// The file is signed with the same RSA-4096 key as <see cref="VersionUrl"/>.
+		/// </summary>
+		public static readonly string BetaVersionUrl = "https://www.dominik-reichl.de/update/version2x-beta.txt.gz";
+
+		/// <summary>
 		/// A <c>DateTime</c> object that represents the time when the assembly
 		/// was loaded.
 		/// </summary>
