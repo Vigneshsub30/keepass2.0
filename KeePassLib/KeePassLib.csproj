@@ -1,0 +1,196 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Windows TFM required while KeePassLib still references System.Windows.Forms
+         and System.Drawing. These will be removed in WO-027 (IImageService) and
+         WO-034 (decouple KeePassLib from WinForms). -->
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <!-- Allows cross-compilation of Windows-targeted projects on macOS/Linux hosts.
+         Has no effect when building on Windows. -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <OutputType>Library</OutputType>
+
+    <!-- Disable SDK item globbing; all sources are listed explicitly below to
+         preserve the exact set from the legacy ToolsVersion 3.5 project. -->
+    <EnableDefaultItems>false</EnableDefaultItems>
+
+    <!-- Suppress SDK-generated AssemblyInfo; Properties\AssemblyInfo.cs is the
+         authoritative source for version, GUID and copyright attributes. -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+
+    <!-- Disable implicit global usings introduced in .NET 6+ SDK projects to
+         avoid shadowing or conflicting with the explicit usings in every file. -->
+    <ImplicitUsings>disable</ImplicitUsings>
+
+    <!-- Nullable reference types: keep disabled. The legacy codebase was written
+         without NRT annotations; enabling would produce thousands of warnings.
+         Enable incrementally as part of a dedicated NRT adoption work order. -->
+    <Nullable>disable</Nullable>
+
+    <AssemblyName>KeePassLib</AssemblyName>
+    <RootNamespace>KeePassLib</RootNamespace>
+
+    <!-- Strong-name signing. The .snk was derived from the dummy KeePassLib.pfx
+         (password: 123123) because the .NET Core SDK does not support PFX-based
+         signing. Official builds use the separately-stored private key SNK.
+         KeePassLib.pfx is retained as-is for reference; signing uses the SNK. -->
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>KeePassLib.snk</AssemblyOriginatorKeyFile>
+
+    <!-- Mirror the legacy project's warning settings. -->
+    <WarningLevel>4</WarningLevel>
+    <!-- 1591: Missing XML documentation comment. Suppressed to keep parity with
+         the legacy project which used <NoWarn>1591</NoWarn>. -->
+    <NoWarn>1591</NoWarn>
+
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <!-- KeePassUAP and KeePassLibSD are optional platform-variant constants.
+       Pass /p:DefineConstants="TRACE;KeePassUAP" on the command line, or add
+       a dedicated PropertyGroup when UAP/SD build configurations are needed. -->
+
+  <ItemGroup>
+    <Compile Include="Collections\AutoTypeConfig.cs" />
+    <Compile Include="Collections\ProtectedBinaryDictionary.cs" />
+    <Compile Include="Collections\ProtectedBinarySet.cs" />
+    <Compile Include="Collections\ProtectedStringDictionary.cs" />
+    <Compile Include="Collections\PwObjectList.cs" />
+    <Compile Include="Collections\PwObjectPool.cs" />
+    <Compile Include="Collections\StringDictionaryEx.cs" />
+    <Compile Include="Collections\VariantDictionary.cs" />
+    <Compile Include="Cryptography\Cipher\ChaCha20Cipher.cs" />
+    <Compile Include="Cryptography\Cipher\ChaCha20Engine.cs" />
+    <Compile Include="Cryptography\Cipher\CipherPool.cs" />
+    <Compile Include="Cryptography\Cipher\CtrBlockCipher.cs" />
+    <Compile Include="Cryptography\Cipher\Salsa20Cipher.cs" />
+    <Compile Include="Cryptography\Cipher\StandardAesEngine.cs" />
+    <Compile Include="Cryptography\CryptoRandom.cs" />
+    <Compile Include="Cryptography\CryptoRandomStream.cs" />
+    <Compile Include="Cryptography\Cipher\ICipherEngine.cs" />
+    <Compile Include="Cryptography\CryptoStreamEx.cs" />
+    <Compile Include="Cryptography\CryptoUtil.cs" />
+    <Compile Include="Cryptography\HashingStreamEx.cs" />
+    <Compile Include="Cryptography\Hash\Blake2b.cs" />
+    <Compile Include="Cryptography\HmacOtp.cs" />
+    <Compile Include="Cryptography\KeyDerivation\AesKdf.cs" />
+    <Compile Include="Cryptography\KeyDerivation\AesKdf.GCrypt.cs" />
+    <Compile Include="Cryptography\KeyDerivation\Argon2Kdf.Core.cs" />
+    <Compile Include="Cryptography\KeyDerivation\Argon2Kdf.cs" />
+    <Compile Include="Cryptography\KeyDerivation\KdfParameters.cs" />
+    <Compile Include="Cryptography\KeyDerivation\KdfPool.cs" />
+    <Compile Include="Cryptography\KeyDerivation\KdfEngine.cs" />
+    <Compile Include="Cryptography\PasswordGenerator\CharSetBasedGenerator.cs" />
+    <Compile Include="Cryptography\PasswordGenerator\CustomPwGenerator.cs" />
+    <Compile Include="Cryptography\PasswordGenerator\CustomPwGeneratorPool.cs" />
+    <Compile Include="Cryptography\PasswordGenerator\PatternBasedGenerator.cs" />
+    <Compile Include="Cryptography\PasswordGenerator\PwCharSet.cs" />
+    <Compile Include="Cryptography\PasswordGenerator\PwProfile.cs" />
+    <Compile Include="Cryptography\PopularPasswords.cs" />
+    <Compile Include="Cryptography\QualityEstimation.cs" />
+    <Compile Include="Cryptography\SelfTest.cs" />
+    <Compile Include="Interfaces\IStructureItem.cs" />
+    <Compile Include="Interfaces\IUIOperations.cs" />
+    <Compile Include="Interfaces\IXmlSerializerEx.cs" />
+    <Compile Include="Keys\KcpCustomKey.cs" />
+    <Compile Include="Keys\KcpKeyFile.Xml.cs" />
+    <Compile Include="Keys\KeyProvider.cs" />
+    <Compile Include="Keys\KeyProviderPool.cs" />
+    <Compile Include="Keys\KeyValidator.cs" />
+    <Compile Include="Keys\KeyValidatorPool.cs" />
+    <Compile Include="Keys\UserKeyType.cs" />
+    <Compile Include="Native\ClipboardU.cs" />
+    <Compile Include="Native\NativeBufferEx.cs" />
+    <Compile Include="Native\NativeMethods.cs" />
+    <Compile Include="Native\NativeMethods.Unix.cs" />
+    <Compile Include="Native\SimpleStat.cs" />
+    <Compile Include="PwCustomIcon.cs" />
+    <Compile Include="PwGroup.Search.cs" />
+    <Compile Include="Resources\KLRes.cs" />
+    <Compile Include="Resources\KLRes.Generated.cs" />
+    <Compile Include="Resources\KSRes.Generated.cs" />
+    <Compile Include="Security\XorredBuffer.cs" />
+    <Compile Include="Delegates\Handlers.cs" />
+    <Compile Include="Interfaces\IDeepCloneable.cs" />
+    <Compile Include="Interfaces\IStatusLogger.cs" />
+    <Compile Include="Interfaces\ITimeLogger.cs" />
+    <Compile Include="Keys\KcpKeyFile.cs" />
+    <Compile Include="Keys\IUserKey.cs" />
+    <Compile Include="Keys\KcpPassword.cs" />
+    <Compile Include="Keys\KcpUserAccount.cs" />
+    <Compile Include="PwDeletedObject.cs" />
+    <Compile Include="PwUuid.cs" />
+    <Compile Include="Security\ProtectedBinary.cs" />
+    <Compile Include="Security\ProtectedString.cs" />
+    <Compile Include="PwDefs.cs" />
+    <Compile Include="PwEntry.cs" />
+    <Compile Include="PwGroup.cs" />
+    <Compile Include="Keys\CompositeKey.cs" />
+    <Compile Include="PwDatabase.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="PwEnums.cs" />
+    <Compile Include="Serialization\BinaryReaderEx.cs" />
+    <Compile Include="Serialization\FileLock.cs" />
+    <Compile Include="Serialization\FileTransactionEx.cs" />
+    <Compile Include="Serialization\HashedBlockStream.cs" />
+    <Compile Include="Serialization\HmacBlockStream.cs" />
+    <Compile Include="Serialization\IOConnection.cs" />
+    <Compile Include="Serialization\IocProperties.cs" />
+    <Compile Include="Serialization\IocPropertyInfo.cs" />
+    <Compile Include="Serialization\IocPropertyInfoPool.cs" />
+    <Compile Include="Serialization\KdbxFile.cs" />
+    <Compile Include="Serialization\KdbxFile.Read.cs" />
+    <Compile Include="Serialization\KdbxFile.Read.Streamed.cs" />
+    <Compile Include="Serialization\KdbxFile.Write.cs" />
+    <Compile Include="Serialization\IOConnectionInfo.cs" />
+    <Compile Include="Serialization\OldFormatException.cs" />
+    <Compile Include="Translation\KPControlCustomization.cs" />
+    <Compile Include="Translation\KPFormCustomization.cs" />
+    <Compile Include="Translation\KPStringTable.cs" />
+    <Compile Include="Translation\KPStringTableItem.cs" />
+    <Compile Include="Translation\KPTranslation.cs" />
+    <Compile Include="Translation\KPTranslationProperties.cs" />
+    <Compile Include="Utility\AppLogEx.cs" />
+    <Compile Include="Utility\ExtendedException.cs" />
+    <Compile Include="Utility\GfxUtil.cs" />
+    <Compile Include="Utility\MemUtil.cs" />
+    <Compile Include="Utility\MessageService.cs" />
+    <Compile Include="Native\NativeLib.cs" />
+    <Compile Include="Cryptography\PasswordGenerator\PwGenerator.cs" />
+    <Compile Include="Utility\MonoWorkarounds.cs" />
+    <Compile Include="Utility\StrUtil.cs" />
+    <Compile Include="Utility\TypeOverridePool.cs" />
+    <Compile Include="Utility\UrlUtil.cs" />
+    <Compile Include="Utility\TimeUtil.cs" />
+    <Compile Include="Utility\XmlUtilEx.cs" />
+  </ItemGroup>
+
+  <!-- System.IO.FileSystem.AccessControl provides FileInfo.GetAccessControl(sections)
+       and FileInfo.SetAccessControl(FileSecurity) extension methods (FileSystemAclExtensions)
+       which replaced the removed File.Get/SetAccessControl(string, …) overloads in .NET Core. -->
+  <ItemGroup>
+    <PackageReference Include="System.IO.FileSystem.AccessControl" Version="5.*" />
+  </ItemGroup>
+
+  <!-- KeePassLib.pfx is a dummy signing key included in source control.
+       It is listed here so it appears in the project's file inventory but
+       is not compiled. Official builds use the separately-stored private key. -->
+  <ItemGroup>
+    <None Include="KeePassLib.pfx" />
+  </ItemGroup>
+
+</Project>
