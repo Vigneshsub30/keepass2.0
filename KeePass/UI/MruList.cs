@@ -89,6 +89,15 @@ namespace KeePass.UI
 			set { m_bMarkOpened = value; }
 		}
 
+		/// <summary>
+		/// Optional delegate that returns the display names of all currently
+		/// open databases.  When <see cref="MarkOpened"/> is true, MruList
+		/// calls this delegate instead of <c>Program.MainForm.DocumentManager</c>
+		/// to avoid a direct controller dependency.
+		/// Set by the owning form after construction.
+		/// </summary>
+		public Func<IEnumerable<string>>? OpenDatabaseDisplayNamesProvider { get; set; }
+
 		public uint ItemCount
 		{
 			get { return (uint)m_lItems.Count; }
@@ -294,12 +303,13 @@ namespace KeePass.UI
 			if(oTag != null) tsmi.Tag = oTag;
 
 			IOConnectionInfo ioc = (oTag as IOConnectionInfo);
-			if(m_bMarkOpened && (ioc != null) && (Program.MainForm != null))
+			Func<IEnumerable<string>>? namesProvider = OpenDatabaseDisplayNamesProvider;
+			if(m_bMarkOpened && (ioc != null) && (namesProvider != null))
 			{
-				foreach(PwDatabase pd in Program.MainForm.DocumentManager.GetOpenDatabases())
+				string iocName = ioc.GetDisplayName();
+				foreach(string openName in namesProvider())
 				{
-					if(pd.IOConnectionInfo.GetDisplayName().Equals(
-						ioc.GetDisplayName(), StrUtil.CaseIgnoreCmp))
+					if(openName.Equals(iocName, StrUtil.CaseIgnoreCmp))
 					{
 						// if(m_fItalic == null)
 						// {
@@ -310,7 +320,24 @@ namespace KeePass.UI
 						// }
 
 						// if(m_fItalic != null) tsmi.Font = m_fItalic;
-						// 153, 51, 153
+						tsmi.ForeColor = Color.FromArgb(64, 64, 255);
+						tsmi.Text += " (" + KPRes.Opened + ")";
+						break;
+					}
+				}
+			}
+			else if(m_bMarkOpened && (ioc != null) && (namesProvider == null) &&
+				(Program.MainForm != null))
+			{
+				// Legacy fallback: if no provider is configured, fall back to
+				// the direct MainForm reference so existing behaviour is
+				// preserved while callers migrate to OpenDatabaseDisplayNamesProvider.
+				string iocName = ioc.GetDisplayName();
+				foreach(PwDatabase pd in Program.MainForm.DocumentManager.GetOpenDatabases())
+				{
+					if(pd.IOConnectionInfo.GetDisplayName().Equals(
+						iocName, StrUtil.CaseIgnoreCmp))
+					{
 						tsmi.ForeColor = Color.FromArgb(64, 64, 255);
 						tsmi.Text += " (" + KPRes.Opened + ")";
 						break;
