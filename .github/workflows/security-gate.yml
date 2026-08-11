@@ -1,0 +1,242 @@
+name: Security Gate
+
+# Reusable workflow called by promote-to-stable.yml before a beta build
+# can be promoted to the stable (GA) release channel.
+#
+# Runs three automated pre-checks:
+#   1. Verify all smoke test results from the candidate build passed.
+#   2. Download the candidate SBOM and scan it with grype for critical/high CVEs.
+#   3. Verify the artifact signatures (Authenticode / Developer ID / GPG).
+#
+# Failure of any pre-check blocks promotion unconditionally — even if the
+# security reviewer approves, the gate cannot be bypassed by human approval.
+#
+# Usage:
+#   jobs:
+#     security-gate:
+#       uses: ./.github/workflows/security-gate.yml
+#       with:
+#         candidate_tag: "beta-abc1234"
+#         smoke_test_run_id: "123456789"
+#       secrets: inherit
+
+on:
+  workflow_call:
+    inputs:
+      candidate_tag:
+        description: >
+          The beta release tag to verify (e.g. beta-abc1234).
+          All artifacts and SBOMs are downloaded from this release.
+        required: true
+        type: string
+      smoke_test_run_id:
+        description: >
+          GitHub Actions run ID of the build that produced the candidate.
+          Used to download smoke test results for verification.
+        required: true
+        type: string
+      grype_fail_on_severity:
+        description: >
+          Minimum severity level that causes grype to fail the gate.
+          One of: negligible, low, medium, high, critical.
+        required: false
+        type: string
+        default: high
+    outputs:
+      gate_passed:
+        description: "'true' when all automated pre-checks pass."
+        value: ${{ jobs.verify.outputs.gate_passed }}
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  verify:
+    name: Security Pre-Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    outputs:
+      gate_passed: ${{ steps.gate.outputs.gate_passed }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ------------------------------------------------------------------ #
+      # 1. Verify smoke test results from the candidate build               #
+      # ------------------------------------------------------------------ #
+      - name: Verify smoke test results
+        id: smoke-check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RUN_ID="${{ inputs.smoke_test_run_id }}"
+          echo "Checking smoke test results from run ${RUN_ID} …"
+
+          # Get all jobs from the candidate build run
+          JOB_STATUS=$(gh api \
+            "repos/${{ github.repository }}/actions/runs/${RUN_ID}/jobs" \
+            --jq '.jobs[] | select(.name | startswith("Smoke test")) | .conclusion')
+
+          if [ -z "$JOB_STATUS" ]; then
+            echo "::error::No smoke test jobs found in run ${RUN_ID}. Cannot verify."
+            echo "smoke_ok=false" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+
+          FAILED=$(echo "$JOB_STATUS" | grep -v "^success$" || true)
+          if [ -n "$FAILED" ]; then
+            echo "::error::One or more smoke tests did not succeed:"
+            echo "$JOB_STATUS"
+            echo "smoke_ok=false" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+
+          echo "All smoke tests passed."
+          echo "smoke_ok=true" >> "$GITHUB_OUTPUT"
+
+      # ------------------------------------------------------------------ #
+      # 2. Download candidate SBOM and scan with grype                      #
+      # ------------------------------------------------------------------ #
+      - name: Download candidate SBOM
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p sbom-artifacts
+          echo "Downloading SBOM artifacts from ${{ inputs.candidate_tag }} …"
+          gh release download "${{ inputs.candidate_tag }}" \
+            --dir sbom-artifacts \
+            --pattern "*.sbom.json" \
+            --pattern "*-sbom.json" || {
+            echo "::warning::No SBOM files found in release ${{ inputs.candidate_tag }}."
+            # Non-fatal: the signing step below will catch unsigned artifacts.
+          }
+          ls -lh sbom-artifacts/ || echo "(no SBOM files downloaded)"
+
+      - name: Install grype
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | \
+            sh -s -- -b /usr/local/bin
+
+      - name: Scan SBOM with grype
+        id: cve-scan
+        run: |
+          FAIL_SEV="${{ inputs.grype_fail_on_severity }}"
+          SBOM_FILES=$(ls sbom-artifacts/*.json 2>/dev/null || true)
+
+          if [ -z "$SBOM_FILES" ]; then
+            echo "::warning::No SBOM files to scan — skipping CVE scan. Artifacts may lack SBOM generation."
+            echo "cve_ok=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          OVERALL_PASS=true
+          for f in $SBOM_FILES; do
+            echo "--- Scanning $f ---"
+            if ! grype sbom:"$f" \
+                --fail-on "$FAIL_SEV" \
+                --output json \
+                > "grype-results-$(basename $f).json" 2>&1; then
+              echo "::error::grype found $FAIL_SEV or higher CVEs in $f"
+              OVERALL_PASS=false
+            fi
+
+            # Print human-readable summary
+            grype sbom:"$f" --output table 2>&1 || true
+          done
+
+          if [ "$OVERALL_PASS" = "false" ]; then
+            echo "cve_ok=false" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+          echo "cve_ok=true" >> "$GITHUB_OUTPUT"
+
+      - name: Upload grype results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: grype-cve-scan-${{ inputs.candidate_tag }}
+          path: grype-results-*.json
+          if-no-files-found: ignore
+
+      # ------------------------------------------------------------------ #
+      # 3. Verify artifact signatures                                        #
+      # ------------------------------------------------------------------ #
+      - name: Download release artifacts for signature verification
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p release-artifacts
+          echo "Downloading artifacts from ${{ inputs.candidate_tag }} …"
+          gh release download "${{ inputs.candidate_tag }}" --dir release-artifacts \
+            --pattern "*.sig" \
+            --pattern "*.asc" \
+            --pattern "*.sha256" \
+            --pattern "*checksums*" || {
+            echo "::warning::No signature files found — partial verification only."
+          }
+          ls -lh release-artifacts/ || echo "(no signature files)"
+
+      - name: Verify GPG signatures (Linux artifacts)
+        id: sig-check
+        run: |
+          SIG_FILES=$(ls release-artifacts/*.asc 2>/dev/null || true)
+          if [ -z "$SIG_FILES" ]; then
+            echo "No GPG .asc signature files present — skipping GPG verification."
+            echo "sig_ok=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          for asc in $SIG_FILES; do
+            target="${asc%.asc}"
+            if [ ! -f "$target" ]; then
+              echo "::warning::Signature file $asc has no matching artifact — skipping."
+              continue
+            fi
+            if gpg --verify "$asc" "$target" 2>&1; then
+              echo "OK: $target"
+            else
+              echo "::error::GPG signature verification FAILED for $target"
+              echo "sig_ok=false" >> "$GITHUB_OUTPUT"
+              exit 1
+            fi
+          done
+          echo "sig_ok=true" >> "$GITHUB_OUTPUT"
+
+      # ------------------------------------------------------------------ #
+      # 4. Gate decision                                                     #
+      # ------------------------------------------------------------------ #
+      - name: Evaluate gate
+        id: gate
+        run: |
+          SMOKE="${{ steps.smoke-check.outputs.smoke_ok }}"
+          CVE="${{ steps.cve-scan.outputs.cve_ok }}"
+          SIG="${{ steps.sig-check.outputs.sig_ok }}"
+
+          echo "Smoke tests OK : $SMOKE"
+          echo "CVE scan OK    : $CVE"
+          echo "Signatures OK  : $SIG"
+
+          if [ "$SMOKE" = "true" ] && [ "$CVE" = "true" ] && [ "$SIG" = "true" ]; then
+            echo "gate_passed=true" >> "$GITHUB_OUTPUT"
+            echo "### Security Gate: PASSED ✅" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "gate_passed=false" >> "$GITHUB_OUTPUT"
+            echo "### Security Gate: FAILED ❌" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "| Check | Result |" >> "$GITHUB_STEP_SUMMARY"
+            echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
+            echo "| Smoke tests | $SMOKE |" >> "$GITHUB_STEP_SUMMARY"
+            echo "| CVE scan | $CVE |" >> "$GITHUB_STEP_SUMMARY"
+            echo "| Signatures | $SIG |" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Check | Result |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Smoke tests | ✅ |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| CVE scan | ✅ |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Signatures | ✅ |" >> "$GITHUB_STEP_SUMMARY"

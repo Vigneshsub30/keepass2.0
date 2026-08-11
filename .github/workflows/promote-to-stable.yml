@@ -1,17 +1,24 @@
-# promote-to-stable.yml — Manual Beta-to-Stable Promotion (WO-102)
+# promote-to-stable.yml — Manual Beta-to-Stable Promotion (WO-102 / WO-105)
 #
 # A workflow_dispatch-triggered workflow that promotes a beta pre-release
-# to a stable release.  Requires manual approval from at least one designated
-# reviewer via a GitHub Actions environment protection rule.
+# to a stable release.  Two mandatory gates must clear before promotion:
 #
-# Steps performed:
+#   Gate 1 — Automated Security Pre-Checks (security-gate.yml):
+#     • All smoke test jobs from the candidate build must have passed.
+#     • grype SBOM scan must report zero critical/high CVEs.
+#     • Artifact GPG signatures must verify.
+#     This gate runs immediately and blocks human review on failure.
+#
+#   Gate 2 — Human Security Sign-Off (GitHub Environment protection rule):
+#     • At least one reviewer in the "production" environment must approve.
+#     • The approver acknowledges the completed security-review-checklist.md.
+#     This gate runs after Gate 1 passes; it cannot be bypassed by automation.
+#
+# Steps performed after both gates clear:
 #   1. Download the artifacts attached to the specified beta pre-release tag.
-#   2. Security review sign-off — the approver is the reviewer who approved
-#      the environment protection.
-#   3. Re-tag the beta release as a stable release (remove the pre-release flag).
-#   4. Create a GitHub release with a stable tag (e.g. "v2.61.1").
-#   5. Update the stable version info URL (placeholder — requires integration
-#      with the version-info publishing pipeline outside this repository).
+#   2. Create a stable GitHub release from the verified beta artifacts.
+#   3. Annotate the beta release as promoted.
+#   4. Emit an immutable audit summary.
 #
 # Environment: "production" — must be created in GitHub repository settings
 #              with at least one required reviewer.
@@ -20,9 +27,10 @@
 #   GITHUB_TOKEN — standard Actions token with contents:write (usually automatic)
 #
 # Inputs:
-#   beta_tag    — The beta tag to promote (e.g. "beta-v2.61.1" or "beta-a1b2c3d4").
-#   stable_tag  — The stable tag to create (e.g. "v2.61.1").
-#   release_notes — Human-readable release notes for the stable release.
+#   beta_tag           — The beta tag to promote (e.g. "beta-v2.61.1").
+#   stable_tag         — The stable tag to create (e.g. "v2.61.1").
+#   smoke_test_run_id  — Run ID of the build that produced the candidate.
+#   release_notes      — Human-readable release notes for the stable release.
 
 name: Promote Beta to Stable
 
@@ -38,6 +46,10 @@ on:
         required: true
         type: string
         default: 'v2.61.1'
+      smoke_test_run_id:
+        description: 'Run ID of the build workflow that produced the candidate (from build.yml)'
+        required: true
+        type: string
       release_notes:
         description: 'Release notes for the stable release'
         required: false
@@ -49,7 +61,26 @@ permissions:
   actions: read    # read artifact list from beta release
 
 jobs:
+  # ────────────────────────────────────────────────────────────────────────── #
+  # Gate 1: Automated security pre-checks (no human approval required).       #
+  # This job must pass before Gate 2 (human sign-off) is reached.             #
+  # ────────────────────────────────────────────────────────────────────────── #
+  security-gate:
+    name: Automated Security Gate
+    uses: ./.github/workflows/security-gate.yml
+    with:
+      candidate_tag: ${{ inputs.beta_tag }}
+      smoke_test_run_id: ${{ inputs.smoke_test_run_id }}
+      grype_fail_on_severity: high
+    secrets: inherit
+
+  # ────────────────────────────────────────────────────────────────────────── #
+  # Gate 2 + Promotion: Runs only after Gate 1 passes.                        #
+  # The "production" environment enforces human reviewer approval here.        #
+  # ────────────────────────────────────────────────────────────────────────── #
   promote:
+    needs: security-gate
+    if: needs.security-gate.outputs.gate_passed == 'true'
     name: Promote ${{ inputs.beta_tag }} → ${{ inputs.stable_tag }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -60,6 +91,19 @@ jobs:
     environment: production
 
     steps:
+      - name: Emit security gate audit record
+        run: |
+          echo "### Security Gate Status" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Field | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|-------|-------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Automated gate | ✅ Passed |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Human sign-off | ✅ Approved by ${{ github.actor }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Candidate tag | \`${{ inputs.beta_tag }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Smoke test run | ${{ inputs.smoke_test_run_id }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Approval time | $(date -u) |" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
       - name: Validate inputs
         run: |
           BETA="${{ inputs.beta_tag }}"

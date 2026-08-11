@@ -1,0 +1,57 @@
+# CODEOWNERS — KeePass 2.x / .NET 10 port
+#
+# GitHub automatically requests a review from the listed owners whenever a
+# pull request touches a matching path.  Owners can be GitHub usernames
+# (@handle) or team references (@org/team-slug).
+#
+# Rules are evaluated bottom-to-top: the last matching rule wins.
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# ── Default owner (entire repository) ──────────────────────────────────────
+*                                   @keepass-maintainers
+
+# ── Cryptography and key derivation ─────────────────────────────────────────
+KeePassLib/Cryptography/            @keepass-security-team @keepass-maintainers
+KeePassLib/Keys/                    @keepass-security-team @keepass-maintainers
+
+# ── Serialisation and file I/O (includes vault save integrity check) ────────
+KeePassLib/Serialization/           @keepass-security-team @keepass-maintainers
+
+# ── Self-test suite ──────────────────────────────────────────────────────────
+KeePassLib/Cryptography/SelfTest.cs @keepass-security-team @keepass-maintainers
+
+# ── Smoke-test infrastructure ────────────────────────────────────────────────
+KeePassLib/SmokeTest/               @keepass-security-team @keepass-maintainers
+
+# ── Plugin trust model ───────────────────────────────────────────────────────
+KeePass/Plugins/                    @keepass-security-team @keepass-maintainers
+
+# ── Security-sensitive application code ─────────────────────────────────────
+KeePass/UI/UIUtil.cs                @keepass-security-team @keepass-maintainers
+KeePass/App/AppDefs.cs              @keepass-security-team @keepass-maintainers
+
+# ── CI/CD workflows ──────────────────────────────────────────────────────────
+.github/workflows/                  @keepass-devops-team @keepass-maintainers
+
+# ── Security gate and promotion workflows (stricter ownership) ───────────────
+.github/workflows/security-gate.yml     @keepass-security-team @keepass-maintainers
+.github/workflows/promote-to-stable.yml @keepass-security-team @keepass-maintainers
+.github/workflows/rollback.yml          @keepass-security-team @keepass-maintainers
+.github/CODEOWNERS                      @keepass-security-team @keepass-maintainers
+
+# ── Build infrastructure ─────────────────────────────────────────────────────
+Build/                              @keepass-devops-team @keepass-maintainers
+Directory.Packages.props            @keepass-devops-team @keepass-maintainers
+Directory.Build.props               @keepass-devops-team @keepass-maintainers
+
+# ── Documentation ────────────────────────────────────────────────────────────
+docs/security-review-checklist.md  @keepass-security-team @keepass-maintainers
+docs/runbooks/                      @keepass-devops-team @keepass-maintainers
+docs/                               @keepass-maintainers
+
+# ── Architecture Decision Records ────────────────────────────────────────────
+docs/architecture/decisions/        @keepass-maintainers
+
+# ── Test projects ────────────────────────────────────────────────────────────
+KeePass.Tests.Platform/             @keepass-maintainers
+KeePass.Desktop.Avalonia.Tests/     @keepass-maintainers
