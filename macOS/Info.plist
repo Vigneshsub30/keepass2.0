@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+    "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- ── Bundle identity ── -->
+    <key>CFBundleIdentifier</key>
+    <string>com.dominik-reichl.keepass</string>
+
+    <key>CFBundleName</key>
+    <string>KeePass</string>
+
+    <key>CFBundleDisplayName</key>
+    <string>KeePass</string>
+
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+
+    <key>CFBundleExecutable</key>
+    <string>KeePass.Desktop.Avalonia</string>
+
+    <!-- ── Versioning ── -->
+    <!-- Overridden at build time via the build script using --version flag -->
+    <key>CFBundleVersion</key>
+    <string>2.61.1.0</string>
+
+    <key>CFBundleShortVersionString</key>
+    <string>2.61.1</string>
+
+    <!-- ── Icon ── -->
+    <key>CFBundleIconFile</key>
+    <string>KeePass</string>
+
+    <!-- ── OS requirements ── -->
+    <key>LSMinimumSystemVersion</key>
+    <string>12.0</string>
+
+    <key>NSHighResolutionCapable</key>
+    <true/>
+
+    <!-- ── UI idiom ── -->
+    <key>NSPrincipalClass</key>
+    <string>NSApplication</string>
+
+    <key>NSSupportsAutomaticTermination</key>
+    <false/>
+
+    <!-- ── Document types (.kdbx) ── -->
+    <key>CFBundleDocumentTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>KeePass Database</string>
+
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+
+            <key>CFBundleTypeIconFile</key>
+            <string>KeePass</string>
+
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>com.dominik-reichl.kdbx</string>
+            </array>
+
+            <key>LSHandlerRank</key>
+            <string>Owner</string>
+        </dict>
+    </array>
+
+    <!-- ── Exported UTI for .kdbx ── -->
+    <key>UTExportedTypeDeclarations</key>
+    <array>
+        <dict>
+            <key>UTTypeIdentifier</key>
+            <string>com.dominik-reichl.kdbx</string>
+
+            <key>UTTypeDescription</key>
+            <string>KeePass Database</string>
+
+            <key>UTTypeConformsTo</key>
+            <array>
+                <string>public.data</string>
+            </array>
+
+            <key>UTTypeTagSpecification</key>
+            <dict>
+                <key>public.filename-extension</key>
+                <array>
+                    <string>kdbx</string>
+                </array>
+            </dict>
+        </dict>
+    </array>
+
+    <!-- ── Hardened runtime — required for notarization ── -->
+    <!-- See also entitlements.plist -->
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <false/>
+    </dict>
+</dict>
+</plist>

@@ -1,42 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
     "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<!--
-  Hardened Runtime entitlements for KeePass.app (macOS Avalonia head).
-
-  These entitlements are required for .NET 10 applications running under
-  macOS Hardened Runtime (which is mandatory for notarization):
-
-  allow-jit
-      .NET CoreCLR uses JIT compilation.  Without this entitlement, the
-      W^X memory-protection policy enforced by Hardened Runtime prevents
-      the JIT from writing executable code.
-
-  allow-unsigned-executable-memory
-      Some .NET runtime internals (stubs, trampolines) write executable
-      memory that is not covered by the JIT entitlement alone.
-
-  disable-library-validation
-      .NET loads platform assemblies (e.g. libSystem.Security.Cryptography*)
-      at runtime that are not signed by the same team as the application
-      bundle.  Without this entitlement, Hardened Runtime rejects those
-      dynamic libraries.
-
-  References:
-    https://learn.microsoft.com/dotnet/core/install/macos
-    https://developer.apple.com/documentation/security/hardened-runtime
--->
 <plist version="1.0">
 <dict>
-    <!-- JIT execution required by CoreCLR -->
+    <!--
+        Hardened runtime entitlements for KeePass on macOS.
+
+        com.apple.security.cs.allow-jit
+            Required for .NET's JIT compiler on macOS 10.14+.
+
+        com.apple.security.cs.allow-unsigned-executable-memory
+            Required because the .NET runtime dynamically generates
+            executable code in writable memory regions.
+
+        com.apple.security.cs.disable-library-validation
+            Allows loading third-party frameworks (e.g. Avalonia native
+            libraries) that are not signed by Apple or the same team.
+    -->
     <key>com.apple.security.cs.allow-jit</key>
     <true/>
 
-    <!-- Unsigned executable memory for runtime stubs -->
     <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
     <true/>
 
-    <!-- Allow loading platform .NET libraries not signed by this team -->
     <key>com.apple.security.cs.disable-library-validation</key>
     <true/>
 </dict>
