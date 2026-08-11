@@ -1,0 +1,18 @@
+{
+  "description": "Golden scaling outputs from DpiUtil.ScaleIntX/ScaleIntY formula at standard DPI levels. Generated analytically: scale = round(value * dpi / 96.0).",
+  "formula": "result = (int)Math.Round(value * (dpi / 96.0))",
+  "cases": [
+    { "dpi": 96,  "label": "100%", "input": 16, "expectedX": 16, "expectedY": 16 },
+    { "dpi": 96,  "label": "100%", "input": 32, "expectedX": 32, "expectedY": 32 },
+    { "dpi": 96,  "label": "100%", "input":  0, "expectedX":  0, "expectedY":  0 },
+    { "dpi": 120, "label": "125%", "input": 16, "expectedX": 20, "expectedY": 20 },
+    { "dpi": 120, "label": "125%", "input": 32, "expectedX": 40, "expectedY": 40 },
+    { "dpi": 144, "label": "150%", "input": 16, "expectedX": 24, "expectedY": 24 },
+    { "dpi": 144, "label": "150%", "input": 32, "expectedX": 48, "expectedY": 48 },
+    { "dpi": 144, "label": "150%", "input":  1, "expectedX":  2, "expectedY":  2 },
+    { "dpi": 192, "label": "200%", "input": 16, "expectedX": 32, "expectedY": 32 },
+    { "dpi": 192, "label": "200%", "input": 32, "expectedX": 64, "expectedY": 64 },
+    { "dpi": 192, "label": "200%", "input":  7, "expectedX": 14, "expectedY": 14 },
+    { "dpi": 96,  "label": "100%", "input": 100, "expectedX": 100, "expectedY": 100 }
+  ]
+}
