@@ -374,6 +374,8 @@
     <Compile Include="UI\StatusBarLogger.cs" />
     <Compile Include="UI\UIUtil.cs" />
     <Compile Include="Forms\WinFormsMainWindowService.cs" />
+    <Compile Include="Services\DatabaseEventArgs.cs" />
+    <Compile Include="Services\DatabaseSessionCoordinator.cs" />
     <Compile Include="Services\WinFormsDialogService.cs" />
     <Compile Include="Services\WinFormsMessageService.cs" />
     <Compile Include="Util\AppLocator.cs" />

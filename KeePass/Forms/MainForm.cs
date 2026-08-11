@@ -108,11 +108,13 @@ namespace KeePass.Forms
 				catch(Exception) { Debug.Assert(false); }
 			}
 
-			UIUtil.Initialize(false);
+		UIUtil.Initialize(false);
 
-			InitializeComponent();
+		InitializeComponent();
 
-			m_asyncListUpdate = new AsyncPwListUpdate(m_lvEntries);
+		CreateSessionCoordinator();
+
+		m_asyncListUpdate = new AsyncPwListUpdate(m_lvEntries);
 
 			m_splitHorizontal.InitEx(this.Controls, m_menuMain);
 			m_splitVertical.InitEx(this.Controls, m_menuMain);
@@ -749,12 +751,16 @@ namespace KeePass.Forms
 			swLogger.StartLogging(KPRes.SavingDatabase, true);
 			m_sCancellable.Push(swLogger);
 
-			bool bSuccess = true;
+			bool bSuccess;
 			try
 			{
 				PreSavingEx(pd, pd.IOConnectionInfo);
-				pd.Save(swLogger);
-				PostSavingEx(true, pd, pd.IOConnectionInfo, swLogger);
+
+				// Delegate core save + event to the coordinator.
+				bSuccess = m_sessionCoordinator.SaveDatabase(pd, swLogger);
+
+				if(bSuccess)
+					PostSavingEx(true, pd, pd.IOConnectionInfo, swLogger);
 			}
 			catch(Exception exSave)
 			{

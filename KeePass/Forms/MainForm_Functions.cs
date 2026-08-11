@@ -30,6 +30,7 @@ using System.Windows.Forms;
 using KeePass.App;
 using KeePass.App.Configuration;
 using KeePass.DataExchange;
+using KeePass.Services;
 using KeePass.DataExchange.Formats;
 using KeePass.Ecas;
 using KeePass.Native;
@@ -60,6 +61,13 @@ namespace KeePass.Forms
 	public partial class MainForm : Form
 	{
 		private readonly DocumentManagerEx m_docMgr = new DocumentManagerEx();
+
+		/// <summary>
+		/// Coordinator that encapsulates vault lifecycle (save, close, lock,
+		/// synchronize).  Initialised during <see cref="MainForm"/> construction
+		/// via <see cref="CreateSessionCoordinator"/>.
+		/// </summary>
+		private DatabaseSessionCoordinator m_sessionCoordinator;
 
 		private ListViewGroup m_lvgLastEntryGroup = null;
 		private bool m_bEntryGrouping = false;
@@ -194,6 +202,71 @@ namespace KeePass.Forms
 		public DocumentManagerEx DocumentManager { get { return m_docMgr; } }
 		public PwDatabase ActiveDatabase { get { return m_docMgr.ActiveDatabase; } }
 		public ImageList ClientIcons { get { return m_ilCurrentIcons; } }
+
+		/// <summary>
+		/// Vault lifecycle coordinator.  Available once the constructor has run.
+		/// </summary>
+		public DatabaseSessionCoordinator SessionCoordinator { get { return m_sessionCoordinator; } }
+
+		/// <summary>
+		/// Builds and caches the <see cref="DatabaseSessionCoordinator"/>.
+		/// Call once, early in <see cref="MainForm"/> construction.
+		/// </summary>
+		private void CreateSessionCoordinator()
+		{
+			IServiceProvider sp = Program.Services;
+
+			Core.Services.IMessageService msg = (sp != null)
+				? (Core.Services.IMessageService)sp.GetService(typeof(Core.Services.IMessageService))
+				: null;
+			if(msg == null) msg = new Services.WinFormsMessageService();
+
+			Microsoft.Extensions.Options.IOptions<App.Configuration.AppConfigEx> cfg =
+				(sp != null)
+				? (Microsoft.Extensions.Options.IOptions<App.Configuration.AppConfigEx>)
+					sp.GetService(typeof(Microsoft.Extensions.Options.IOptions<App.Configuration.AppConfigEx>))
+				: null;
+			if(cfg == null)
+				cfg = new App.Configuration.AppConfigExOptions(Program.Config);
+
+			Microsoft.Extensions.Logging.ILogger<DatabaseSessionCoordinator> log =
+				(sp != null)
+				? (Microsoft.Extensions.Logging.ILogger<DatabaseSessionCoordinator>)
+					sp.GetService(typeof(Microsoft.Extensions.Logging.ILogger<DatabaseSessionCoordinator>))
+				: null;
+			if(log == null)
+				log = Microsoft.Extensions.Logging.Abstractions.NullLogger<DatabaseSessionCoordinator>.Instance;
+
+			m_sessionCoordinator = new DatabaseSessionCoordinator(m_docMgr, cfg, msg, log);
+
+			// Subscribe to coordinator events for UI updates.
+			m_sessionCoordinator.DatabaseSaved += OnCoordinatorDatabaseSaved;
+			m_sessionCoordinator.DatabaseClosed += OnCoordinatorDatabaseClosed;
+			m_sessionCoordinator.WorkspaceLocked += OnCoordinatorWorkspaceLocked;
+		}
+
+		private void OnCoordinatorDatabaseSaved(object sender, DatabaseSavedEventArgs e)
+		{
+			// Refresh the modified-flag indicator; UpdateUIState handles all state.
+			UpdateUIState(false);
+		}
+
+		private void OnCoordinatorDatabaseClosed(object sender, DatabaseClosedEventArgs e)
+		{
+			UpdateUI(true, null, true, null, true, null, false);
+			RestoreViewState(true);
+			Program.TempFilesPool.Clear(Util.TempClearFlags.ContentTaggedFiles);
+		}
+
+		private void OnCoordinatorWorkspaceLocked(object sender, WorkspaceLockedEventArgs e)
+		{
+			UpdateUI(true, null, true, null, true, null, false);
+			RestoreViewState(true);
+
+			if(Program.Config.MainWindow.MinimizeAfterLocking &&
+				!IsAtLeastOneFileOpen())
+				UIUtil.SetWindowState(this, System.Windows.Forms.FormWindowState.Minimized);
+		}
 
 		/// <summary>
 		/// Get a reference to the main menu.
@@ -2623,6 +2696,9 @@ namespace KeePass.Forms
 			Program.TriggerSystem.RaiseEvent(EcasEventIDs.OpenedDatabaseFile,
 				EcasProperty.Database, pwOpenedDb);
 
+			// Notify the coordinator so it can raise its own DatabaseOpened event.
+			m_sessionCoordinator.NotifyOpened(pwOpenedDb);
+
 			if(bCorrectDbActive && pwOpenedDb.IsOpen)
 			{
 				ShowExpiredEntries(true,
@@ -2937,7 +3013,11 @@ namespace KeePass.Forms
 				m_lLockAtTicks = utcLockAt.Ticks;
 			}
 
-			Program.TriggerSystem.NotifyUserActivity();
+			// Delegate to the coordinator so its timer state stays consistent.
+			if(m_sessionCoordinator != null)
+				m_sessionCoordinator.NotifyUserActivity();
+			else
+				Program.TriggerSystem.NotifyUserActivity();
 
 			if(this.UserActivityPost != null)
 				this.UserActivityPost(null, EventArgs.Empty);
@@ -4069,35 +4149,34 @@ namespace KeePass.Forms
 				if(fcea.Cancel) return;
 			}
 
-			if(pd.Modified) // Implies pd.IsOpen
-			{
-				bool bInvokeSave = false;
+			// Build the coordinator close-flags mirror.
+			Services.DatabaseCloseFlags coordFlags = Services.DatabaseCloseFlags.None;
+			if(bLocking) coordFlags |= Services.DatabaseCloseFlags.Locking;
+			if(bExiting) coordFlags |= Services.DatabaseCloseFlags.Exiting;
+			if(bEcas)    coordFlags |= Services.DatabaseCloseFlags.Ecas;
 
-				// https://sourceforge.net/p/keepass/discussion/329220/thread/c3c823c6/
-				bool bCanAutoSave = AppPolicy.Current.SaveFile;
-
-				if(Program.Config.Application.FileClosing.AutoSave && bCanAutoSave)
-					bInvokeSave = true;
-				else
+			// Delegate core close logic to the coordinator.  The "ask save"
+			// delegate uses WinForms dialogs and remains here in MainForm.
+			bool bClosed = m_sessionCoordinator.CloseDatabase(
+				ds, coordFlags, new NullStatusLogger(),
+				(database, flags) =>
 				{
+					bool bIsLocking = (flags & Services.DatabaseCloseFlags.Locking) != 0;
+					bool bIsExiting = (flags & Services.DatabaseCloseFlags.Exiting) != 0;
+
 					FileSaveOrigin fso = FileSaveOrigin.Closing;
-					if(bLocking) fso = FileSaveOrigin.Locking;
-					if(bExiting) fso = FileSaveOrigin.Exiting;
+					if(bIsLocking) fso = FileSaveOrigin.Locking;
+					if(bIsExiting) fso = FileSaveOrigin.Exiting;
 
 					DialogResult dr = FileDialogsEx.ShowFileSaveQuestion(
-						pd.IOConnectionInfo.GetDisplayName(), fso);
+						database.IOConnectionInfo.GetDisplayName(), fso);
 
-					if(dr == DialogResult.Cancel) return;
-					else if(dr == DialogResult.Yes) bInvokeSave = true;
-					else if(dr == DialogResult.No) { } // Changes are lost
-				}
+					if(dr == DialogResult.Cancel) return null;   // Cancel close
+					if(dr == DialogResult.Yes)    return true;   // Save then close
+					return false;                                 // Discard changes
+				});
 
-				if(bInvokeSave)
-				{
-					SaveDatabase(pd, null);
-					if(pd.Modified) return;
-				}
-			}
+			if(!bClosed) return;
 
 			Program.TriggerSystem.RaiseEvent(EcasEventIDs.ClosingDatabaseFilePost,
 				EcasProperty.Database, pd);
@@ -4105,13 +4184,8 @@ namespace KeePass.Forms
 			{
 				FileClosingEventArgs fcea = new FileClosingEventArgs(pd, f);
 				this.FileClosingPost(null, fcea);
-				if(fcea.Cancel) return;
+				// Cannot cancel at this point; close has already occurred.
 			}
-
-			IOConnectionInfo ioClosing = pd.IOConnectionInfo.CloneDeep();
-
-			pd.Close();
-			if(!bLocking) m_docMgr.CloseDatabase(pd);
 
 			if(bIsActive)
 			{
@@ -4139,7 +4213,7 @@ namespace KeePass.Forms
 			Program.TempFilesPool.Clear(TempClearFlags.ContentTaggedFiles);
 
 			if(this.FileClosed != null)
-				this.FileClosed(null, new FileClosedEventArgs(ioClosing, f));
+				this.FileClosed(null, new FileClosedEventArgs(pd.IOConnectionInfo, f));
 		}
 
 		// Public for plugins
