@@ -118,6 +118,7 @@ namespace KeePass.Tests.Platform
 					switch(capability)
 					{
 						case PlatformCapability.Clipboard:               return PlatformCapabilityTier.Full;
+						case PlatformCapability.ClipboardPrivacyMarkers: return PlatformCapabilityTier.Full;
 						case PlatformCapability.CredentialStore:         return PlatformCapabilityTier.Full;
 						case PlatformCapability.AutoType:                return PlatformCapabilityTier.Full;
 						case PlatformCapability.SecureDesktop:           return PlatformCapabilityTier.Full;
