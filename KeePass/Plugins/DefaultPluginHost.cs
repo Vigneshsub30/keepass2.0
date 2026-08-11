@@ -40,7 +40,10 @@ namespace KeePass.Plugins
 {
 	internal sealed class DefaultPluginHost : IPluginHost, IPluginHostV2
 	{
-		private MainForm m_form = null;
+		// IMainFormFacade instead of concrete MainForm breaks the direct
+		// coupling; the cast in WinFormsApplicationHost preserves the WinForms
+		// integration for the MainWindow backward-compatibility property.
+		private KeePass.Services.IMainFormFacade m_facade = null;
 		private WinFormsApplicationHost m_applicationHost = null;
 		private CommandLineArgs m_cmdLineArgs = null;
 		private CipherPool m_cipherPool = null;
@@ -49,24 +52,34 @@ namespace KeePass.Plugins
 		{
 		}
 
-		public void Initialize(MainForm form, CommandLineArgs cmdLineArgs,
-			CipherPool cipherPool)
+		/// <param name="facade">
+		/// In the WinForms head this is the <c>MainForm</c> instance (which
+		/// implements <c>IMainFormFacade</c>).  Avalonia or test hosts may
+		/// supply a different implementation.
+		/// </param>
+		public void Initialize(KeePass.Services.IMainFormFacade facade,
+			CommandLineArgs cmdLineArgs, CipherPool cipherPool)
 		{
-			Debug.Assert(form != null);
+			Debug.Assert(facade != null);
 			Debug.Assert(cmdLineArgs != null);
 			Debug.Assert(cipherPool != null);
 
-			m_form            = form;
-			m_applicationHost = new WinFormsApplicationHost(form);
-			m_cmdLineArgs     = cmdLineArgs;
-			m_cipherPool      = cipherPool;
+			m_facade = facade;
+			// WinFormsApplicationHost still needs the concrete MainForm for
+			// WinForms-specific UI calls.  The cast is safe because in the
+			// WinForms head the facade IS the MainForm.
+			m_applicationHost = facade is MainForm mf
+				? new WinFormsApplicationHost(mf)
+				: null;
+			m_cmdLineArgs = cmdLineArgs;
+			m_cipherPool  = cipherPool;
 		}
 
 		// ── IPluginHost (legacy) ────────────────────────────────────── //
 
 		public IMainWindowService MainWindow
 		{
-			get { return m_applicationHost.MainWindowService; }
+			get { return m_applicationHost?.MainWindowService; }
 		}
 
 		// ── IPluginHostV2 (modern) ──────────────────────────────────── //
@@ -78,7 +91,7 @@ namespace KeePass.Plugins
 
 		public PwDatabase Database
 		{
-			get { return m_form.ActiveDatabase; }
+			get { return m_facade?.ActiveDatabase; }
 		}
 
 		public CommandLineArgs CommandLineArgs

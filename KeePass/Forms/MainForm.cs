@@ -53,7 +53,8 @@ namespace KeePass.Forms
 	/// <summary>
 	/// KeePass main window.
 	/// </summary>
-	public partial class MainForm : Form, IMruExecuteHandler, IUIOperations
+	public partial class MainForm : Form, IMruExecuteHandler, IUIOperations,
+		Services.IMainFormFacade
 	{
 		private NotifyIconEx m_ntfTray = null;
 

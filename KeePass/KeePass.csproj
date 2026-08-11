@@ -388,6 +388,7 @@
     <Compile Include="Services\DatabaseEventArgs.cs" />
     <Compile Include="Services\DatabaseSessionCoordinator.cs" />
     <Compile Include="Services\IClipboardCredentialService.cs" />
+    <Compile Include="Services\IMainFormFacade.cs" />
     <Compile Include="Services\ClipboardCredentialService.cs" />
     <Compile Include="Services\IWorkspaceLockService.cs" />
     <Compile Include="Services\WorkspaceLockCoordinator.cs" />
