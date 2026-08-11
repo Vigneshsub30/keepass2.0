@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Cross-platform: interfaces must not depend on Windows-specific APIs. -->
+    <TargetFramework>net10.0</TargetFramework>
+    <!-- Consistent with Directory.Build.props defaults. -->
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <LangVersion>10</LangVersion>
+    <!-- No strong-name signing for the abstraction library. -->
+    <SignAssembly>false</SignAssembly>
+    <AssemblyName>KeePass.Core</AssemblyName>
+    <RootNamespace>KeePass.Core</RootNamespace>
+    <!-- Enable SDK globbing and disable the validation target that requires
+         explicit Compile items (this is a new library, not a legacy project). -->
+    <EnableDefaultItems>true</EnableDefaultItems>
+    <EnableFileInclusionValidation>false</EnableFileInclusionValidation>
+  </PropertyGroup>
+
+</Project>
