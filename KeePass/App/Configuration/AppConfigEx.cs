@@ -294,7 +294,6 @@ namespace KeePass.App.Configuration
 		{
 			ulong uVersion = this.Meta.GetVersion();
 			AceApplication aceApp = this.Application;
-			AceDefaults aceDef = this.Defaults;
 			AceIntegration aceInt = this.Integration;
 			AceMainWindow aceMW = this.MainWindow;
 			AceSearch aceSearch = this.Search;
@@ -347,18 +346,10 @@ namespace KeePass.App.Configuration
 					aceInt.UrlSchemeOverrides.BuiltInOverridesEnabled = 0;
 			}
 
-			// When the regular configuration file contains an MRU item with a
-			// relative path and the enforced configuration file contains a
-			// corresponding one with an absolute path, the path conversion may
-			// result in duplicate MRU items;
-			// cf. GetNodeKey and MruList.AddItem (CaseIgnoreCmp)
-			aceApp.MostRecentlyUsed.Items = new List<IOConnectionInfo>(
-				MemUtil.Distinct<IOConnectionInfo, string>(aceApp.MostRecentlyUsed.Items,
-				(ioc => ioc.GetDisplayName().ToUpperInvariant()), true));
-			// Cf. GetNodeKey and AceDefaults.GetKeyAssocIndex (CaseIgnoreCmp)
-			aceDef.KeySources = new List<AceKeyAssoc>(
-				MemUtil.Distinct<AceKeyAssoc, string>(aceDef.KeySources,
-				(a => a.DatabasePath.ToUpperInvariant()), true));
+			// MRU and key-source deduplication was removed from here and moved to
+			// MruInitializationService.Initialize(), called from Program.cs after
+			// config load.  Keeping the dedup here created a layer violation because
+			// config loading should not need to know about MruList.AddItem semantics.
 
 			if(NativeLib.IsUnix())
 			{

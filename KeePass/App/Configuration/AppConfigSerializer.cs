@@ -71,6 +71,17 @@ namespace KeePass.App.Configuration
 		}
 
 		/// <summary>
+		/// Path to the per-user configuration XML file.  May be <c>null</c> before
+		/// the first call to <see cref="Load()"/> or a <c>BaseName</c> assignment.
+		/// Used by <see cref="AppConfigExOptionsMonitor"/> to set up file-change
+		/// watching for runtime reload.
+		/// </summary>
+		internal static string UserConfigFile
+		{
+			get { GetConfigPaths(); return g_strUserConfigFile; }
+		}
+
+		/// <summary>
 		/// Get/set the base name for the configuration. If this property is
 		/// <c>null</c>, the class constructs names based on the current
 		/// assembly and the product name.

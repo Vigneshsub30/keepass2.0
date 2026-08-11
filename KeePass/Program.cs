@@ -132,6 +132,13 @@ namespace KeePass
 		}
 
 		private static AppConfigEx g_appConfig = null;
+
+		/// <summary>
+		/// The application configuration. Backed by the static field for code that
+		/// has not yet migrated to DI; the DI-side <see cref="IOptions{AppConfigEx}"/>
+		/// registered via <c>AppConfigServiceExtensions.AddAppConfig</c> wraps the
+		/// same instance, so both views are always in sync.
+		/// </summary>
 		public static AppConfigEx Config
 		{
 			get
@@ -139,6 +146,18 @@ namespace KeePass
 				if(g_appConfig == null) { Debug.Assert(false); g_appConfig = new AppConfigEx(); }
 				return g_appConfig;
 			}
+		}
+
+		/// <summary>
+		/// Replaces the global configuration instance.  Called by
+		/// <see cref="KeePass.App.Configuration.AppConfigExOptionsMonitor"/> when a
+		/// config-file change is detected at runtime so that
+		/// <see cref="Config"/> immediately reflects the reloaded values.
+		/// </summary>
+		public static void ReplaceConfig(AppConfigEx config)
+		{
+			if(config == null) throw new ArgumentNullException("config");
+			g_appConfig = config;
 		}
 
 		private static KeyProviderPool g_keyProviderPool = null;
@@ -634,6 +653,11 @@ namespace KeePass
 
 			Debug.Assert(g_appConfig == null);
 			g_appConfig = AppConfigSerializer.Load();
+
+			// Deduplicate MRU file list and key sources.  This logic was removed
+			// from AppConfigEx.OnLoad to break the config->MruList layer violation;
+			// it now runs here, in the application startup layer where it belongs.
+			MruInitializationService.Initialize(g_appConfig);
 
 			if(g_appConfig.Logging.Enabled)
 				AppLogEx.Open(PwDefs.ShortProductName);

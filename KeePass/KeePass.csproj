@@ -29,6 +29,11 @@
     <ProjectReference Include="..\KeePass.Core\KeePass.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+  </ItemGroup>
+
   <!-- 401 KeePass-own .cs files -->
   <ItemGroup>
     <Compile Include="App\AppDefs.cs" />
@@ -50,8 +55,12 @@
     <Compile Include="App\Configuration\AceUI.cs" />
     <Compile Include="App\Configuration\AppConfigEx.cs" />
     <Compile Include="App\Configuration\AppConfigEx.Sections.cs" />
+    <Compile Include="App\Configuration\AppConfigExOptions.cs" />
+    <Compile Include="App\Configuration\AppConfigExOptionsMonitor.cs" />
     <Compile Include="App\Configuration\AppConfigSerializer.cs" />
+    <Compile Include="App\Configuration\AppConfigServiceExtensions.cs" />
     <Compile Include="App\Configuration\AppEnforcedConfig.cs" />
+    <Compile Include="App\Configuration\MruInitializationService.cs" />
     <Compile Include="DataExchange\CsvStreamReader.cs" />
     <Compile Include="DataExchange\CsvStreamReaderEx.cs" />
     <Compile Include="DataExchange\CsvStreamWriter.cs" />

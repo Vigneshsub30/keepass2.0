@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  User-customized AppConfigEx fixture.
+  Contains a few settings changed from defaults to exercise config loading:
+    - RememberKeySources = false   (AceDefaults)
+    - LockAfterTime = 900          (AceSecurity.WorkspaceLocking, 0 = disabled)
+    - MRU list contains two entries
+-->
+<Configuration xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Defaults>
+    <RememberKeySources>false</RememberKeySources>
+  </Defaults>
+  <Security>
+    <WorkspaceLocking>
+      <LockAfterTime>900</LockAfterTime>
+    </WorkspaceLocking>
+  </Security>
+  <Application>
+    <MostRecentlyUsed>
+      <MaxItemCount>12</MaxItemCount>
+      <Items>
+        <ConnectionInfo>
+          <Url>C:\Vaults\Personal.kdbx</Url>
+        </ConnectionInfo>
+        <ConnectionInfo>
+          <Url>C:\Vaults\Work.kdbx</Url>
+        </ConnectionInfo>
+      </Items>
+    </MostRecentlyUsed>
+  </Application>
+</Configuration>
