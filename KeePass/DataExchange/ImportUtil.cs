@@ -36,6 +36,8 @@ using KeePass.Resources;
 using KeePass.UI;
 using KeePass.Util;
 
+using KeePass.Core.DataExchange;
+
 using KeePassLib;
 using KeePassLib.Collections;
 using KeePassLib.Interfaces;
@@ -139,10 +141,17 @@ namespace KeePass.DataExchange
 				PwDatabase pdImp;
 
 				Stream s = null;
+				SizeLimitingStream sSizeGuard = null;
 				try
 				{
 					s = IOConnection.OpenRead(iocIn);
 					if(s == null) throw new IOException();
+
+					// Wrap in the validation pipeline before any provider
+					// receives the stream, enforcing file-size and count ceilings.
+					var pipeline = new ImportValidationPipeline(
+						ImportValidationOptions.Default());
+					sSizeGuard = pipeline.Validate(s);
 
 					if(bUseTempDb)
 					{
@@ -168,7 +177,16 @@ namespace KeePass.DataExchange
 						")", LogStatusType.Info);
 
 					pdImp.Modified = true;
-					fmtImp.Import(pdImp, s, dlgStatus);
+					// Use the size-guarded wrapper stream so that oversized
+					// inputs are rejected before the provider can allocate memory.
+					fmtImp.Import(pdImp, sSizeGuard ?? s, dlgStatus);
+				}
+				catch(ImportValidationException ivEx)
+				{
+					if(!bOnErrorSilent)
+						MessageService.ShowWarning(iocIn.GetDisplayName(),
+							ivEx.Message);
+					continue;
 				}
 				catch(Exception ex)
 				{
