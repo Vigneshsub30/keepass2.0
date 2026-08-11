@@ -118,3 +118,80 @@ gh attestation verify KeePass.dll -R Vigneshsub30/keepass2.0
 | Timestamp server | `http://timestamp.acs.microsoft.com` |
 | Certificate profile | `KeePassPublicTrust` (Public Trust profile) |
 | Signing action | `azure/trusted-signing-action@v0.4` |
+
+---
+
+# macOS Developer ID Signing and Notarization
+
+macOS Gatekeeper requires every distributed application to be signed with a
+**Developer ID Application** certificate and notarized by Apple.  This pipeline
+uses `codesign`, `hdiutil`, and `xcrun notarytool` on the `macos-14` runner.
+
+> **Prerequisite**: The Avalonia macOS head (`build/KeePass.app`) must exist
+> before these steps execute.  Until WO-052 lands the steps are no-ops
+> (skipped via the `bundle-check` output).
+
+## How It Works
+
+1. The Developer ID certificate (base64 .p12) is imported into a temporary
+   keychain created for the CI job.
+2. `codesign --deep --hardened-runtime --entitlements macOS/entitlements.plist`
+   signs every binary inside the `.app` bundle.
+3. `hdiutil create` produces a `.dmg` and `codesign` signs the disk image.
+4. `xcrun notarytool submit --wait` submits the `.dmg` to Apple and blocks
+   until the submission is approved (timeout 30 minutes).
+5. `xcrun stapler staple` attaches the notarization ticket to the `.dmg` so
+   it can be verified offline.
+6. `spctl --assess` verifies the full chain.
+7. The temporary keychain is deleted in a final `always()` cleanup step.
+
+## Apple Setup (One-time)
+
+### 1 — Export the Developer ID certificate
+
+In Xcode → Settings → Accounts → Manage Certificates, export the
+**Developer ID Application** certificate as a `.p12` file.
+
+```bash
+# Convert .p12 to base64 for storage in GitHub secrets
+base64 -i developer_id.p12 | pbcopy   # copies to clipboard on macOS
+```
+
+### 2 — Generate an App Store Connect API key
+
+1. Sign in to [App Store Connect](https://appstoreconnect.apple.com).
+2. Users and Access → Keys → Generate API Key (role: Developer).
+3. Download the `.p8` file — it can only be downloaded once.
+4. Note the **Key ID** and **Issuer ID** from the Keys page.
+
+### 3 — Configure GitHub repository secrets
+
+Add the following **Repository Secrets**:
+
+| Secret name | Value |
+|---|---|
+| `MACOS_DEVELOPER_ID_CERTIFICATE` | Base64-encoded `.p12` file |
+| `MACOS_CERTIFICATE_PASSWORD` | `.p12` export password |
+| `MACOS_KEYCHAIN_PASSWORD` | Any strong password for the temporary CI keychain |
+| `APPLE_API_KEY_ID` | App Store Connect API Key ID |
+| `APPLE_API_ISSUER_ID` | App Store Connect Issuer ID |
+| `APPLE_API_KEY_CONTENT` | Contents of the `.p8` API key file |
+
+Add the following **Repository Variable** to enable/disable signing:
+
+| Variable name | Value |
+|---|---|
+| `MACOS_SIGNING_ENABLED` | `true` (set to `false` to disable without removing steps) |
+
+## Verifying a Signed .dmg
+
+```bash
+# Verify the app bundle inside the mounted DMG
+spctl --assess --type open --context context:primary-signature -v /Volumes/KeePass/KeePass.app
+
+# Verify codesign
+codesign --verify --deep --strict --verbose=4 /Volumes/KeePass/KeePass.app
+
+# Check notarization ticket is stapled
+xcrun stapler validate KeePass.dmg
+```

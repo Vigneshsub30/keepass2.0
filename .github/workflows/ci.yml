@@ -234,6 +234,128 @@ jobs:
           }
           if ($failed) { exit 1 }
 
+      # ── macOS Developer ID signing and notarization (WO-011) ───────────────
+      # Steps below require the Avalonia .app bundle to exist at build/KeePass.app.
+      # Until WO-052 (Avalonia bootstrap) lands, bundle-check outputs 'false' and
+      # all subsequent signing steps are automatically skipped.
+      - name: Check for macOS app bundle
+        id: bundle-check
+        if: runner.os == 'macOS'
+        run: |
+          if [ -d "build/KeePass.app" ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::build/KeePass.app not found — macOS signing skipped (add Avalonia head in WO-052)"
+          fi
+
+      - name: Import Developer ID certificate into temporary keychain
+        if: >
+          runner.os == 'macOS' &&
+          github.event_name == 'push' &&
+          (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) &&
+          vars.MACOS_SIGNING_ENABLED == 'true' &&
+          steps.bundle-check.outputs.exists == 'true'
+        env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_DEVELOPER_ID_CERTIFICATE }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.MACOS_KEYCHAIN_PASSWORD }}
+        run: |
+          echo "$MACOS_CERTIFICATE" | base64 --decode > /tmp/developer_id.p12
+          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security import /tmp/developer_id.p12 -k build.keychain \
+            -P "$MACOS_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: \
+            -s -k "$KEYCHAIN_PASSWORD" build.keychain
+          rm /tmp/developer_id.p12
+
+      - name: Sign app bundle (codesign — hardened runtime)
+        if: >
+          runner.os == 'macOS' &&
+          github.event_name == 'push' &&
+          (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) &&
+          vars.MACOS_SIGNING_ENABLED == 'true' &&
+          steps.bundle-check.outputs.exists == 'true'
+        run: |
+          codesign --force --deep --sign "Developer ID Application" \
+            --entitlements macOS/entitlements.plist \
+            --options runtime \
+            --timestamp \
+            build/KeePass.app
+
+      - name: Create DMG (hdiutil)
+        if: >
+          runner.os == 'macOS' &&
+          github.event_name == 'push' &&
+          (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) &&
+          vars.MACOS_SIGNING_ENABLED == 'true' &&
+          steps.bundle-check.outputs.exists == 'true'
+        run: |
+          mkdir -p dist
+          hdiutil create -volname KeePass \
+            -srcfolder build/KeePass.app \
+            -ov -format UDZO \
+            dist/KeePass.dmg
+          codesign --sign "Developer ID Application" --timestamp dist/KeePass.dmg
+
+      - name: Notarize DMG (xcrun notarytool)
+        if: >
+          runner.os == 'macOS' &&
+          github.event_name == 'push' &&
+          (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) &&
+          vars.MACOS_SIGNING_ENABLED == 'true' &&
+          steps.bundle-check.outputs.exists == 'true'
+        env:
+          APPLE_API_KEY_CONTENT: ${{ secrets.APPLE_API_KEY_CONTENT }}
+        run: |
+          echo "$APPLE_API_KEY_CONTENT" > /tmp/apple_api_key.p8
+          xcrun notarytool submit dist/KeePass.dmg \
+            --key /tmp/apple_api_key.p8 \
+            --key-id "${{ secrets.APPLE_API_KEY_ID }}" \
+            --issuer "${{ secrets.APPLE_API_ISSUER_ID }}" \
+            --wait \
+            --timeout 30m
+          rm /tmp/apple_api_key.p8
+
+      - name: Staple notarization ticket
+        if: >
+          runner.os == 'macOS' &&
+          github.event_name == 'push' &&
+          (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) &&
+          vars.MACOS_SIGNING_ENABLED == 'true' &&
+          steps.bundle-check.outputs.exists == 'true'
+        run: xcrun stapler staple dist/KeePass.dmg
+
+      - name: Verify DMG signature and notarization
+        if: >
+          runner.os == 'macOS' &&
+          github.event_name == 'push' &&
+          (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) &&
+          vars.MACOS_SIGNING_ENABLED == 'true' &&
+          steps.bundle-check.outputs.exists == 'true'
+        run: |
+          spctl --assess --type open --context context:primary-signature \
+            -v build/KeePass.app
+          xcrun stapler validate dist/KeePass.dmg
+
+      - name: Upload notarized DMG
+        if: >
+          runner.os == 'macOS' &&
+          github.event_name == 'push' &&
+          (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) &&
+          vars.MACOS_SIGNING_ENABLED == 'true' &&
+          steps.bundle-check.outputs.exists == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: KeePass-macos-signed-dmg
+          path: dist/KeePass.dmg
+
+      - name: Cleanup temporary keychain
+        if: always() && runner.os == 'macOS'
+        run: security delete-keychain build.keychain 2>/dev/null || true
+
       # Upload the primary binaries produced by the Release build.
       # On Windows these include native .exe launchers; on macOS/Linux the
       # managed .dll assemblies are still produced and uploaded.
