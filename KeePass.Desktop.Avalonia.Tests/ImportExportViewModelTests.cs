@@ -100,6 +100,9 @@ namespace KeePass.Desktop.Avalonia.Tests
 
 			public Task<string?> OpenFileAsync(string title, IReadOnlyList<FileDialogFilter> filters)
 				=> Task.FromResult(ReturnPath);
+
+			public Task<string?> SaveFileAsync(string title, IReadOnlyList<FileDialogFilter> filters, string? defaultFileName = null)
+				=> Task.FromResult(ReturnPath);
 		}
 
 		// ------------------------------------------------------------------ //

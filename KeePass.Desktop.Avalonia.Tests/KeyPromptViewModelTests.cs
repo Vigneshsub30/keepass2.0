@@ -43,6 +43,9 @@ namespace KeePass.Desktop.Avalonia.Tests
 				LastTitle = title;
 				return Task.FromResult(PathToReturn);
 			}
+
+			public Task<string?> SaveFileAsync(string title, IReadOnlyList<FileDialogFilter> filters, string? defaultFileName = null)
+				=> Task.FromResult(PathToReturn);
 		}
 
 		private sealed class StubKeyFileLocator : IKeyFileLocator

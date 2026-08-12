@@ -76,6 +76,18 @@ mkdir -p "${APP_BUNDLE}/Contents/Resources"
 # Copy publish output into the MacOS directory.
 cp -R "${PUBLISH_DIR}/." "${APP_BUNDLE}/Contents/MacOS/"
 
+# Include keepass-proxy binary if it exists alongside the publish output
+PROXY_DIR="$(dirname "$PUBLISH_DIR")/proxy"
+if [[ -d "$PROXY_DIR" ]]; then
+    echo "    Including keepass-proxy from: $PROXY_DIR"
+    cp "${PROXY_DIR}/keepass-proxy" "${APP_BUNDLE}/Contents/MacOS/keepass-proxy" 2>/dev/null || \
+    cp "${PROXY_DIR}/keepass-proxy.dll" "${APP_BUNDLE}/Contents/MacOS/keepass-proxy.dll" 2>/dev/null || true
+    chmod +x "${APP_BUNDLE}/Contents/MacOS/keepass-proxy" 2>/dev/null || true
+elif [[ -f "${PUBLISH_DIR}/keepass-proxy" ]]; then
+    echo "    keepass-proxy found in publish dir"
+    chmod +x "${APP_BUNDLE}/Contents/MacOS/keepass-proxy"
+fi
+
 # Info.plist — generated here so version is embedded at package time.
 INFO_PLIST="${APP_BUNDLE}/Contents/Info.plist"
 # Use the version as both CFBundleShortVersionString (marketing) and
