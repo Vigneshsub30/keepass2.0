@@ -45,14 +45,40 @@ Chrome/Firefox            Native Messaging           keepass-proxy
 
 ---
 
+## Downloads
+
+Download from the [v1.0.0 release](https://github.com/Vigneshsub30/keepass2.0/releases/tag/v1.0.0):
+
+| Platform | File |
+|---|---|
+| macOS (Apple Silicon) | `KeePass2.0-v1.0.0-osx-arm64.dmg` |
+| macOS (Intel) | `KeePass2.0-v1.0.0-osx-x64.dmg` |
+| Windows (x64) | `KeePass2.0-v1.0.0-win-x64.zip` |
+| Linux (x64, .deb) | `KeePass2.0-v1.0.0-linux-x64.deb` |
+| Linux (x64, tar.gz) | `KeePass2.0-v1.0.0-linux-x64.tar.gz` |
+
+All builds are self-contained — no .NET runtime required.
+
 ## Quick Start
 
-### macOS (DMG)
+### macOS
 
-1. Download `KeePass-2.61.1-osx-arm64.dmg` from the [latest release](https://github.com/Vigneshsub30/keepass2.0/releases)
+1. Download the DMG for your Mac (ARM64 for Apple Silicon, x64 for Intel) from the [release page](https://github.com/Vigneshsub30/keepass2.0/releases/tag/v1.0.0)
 2. Mount the disk image and drag **KeePass Password Safe** to Applications
 3. Right-click > Open on first launch (to bypass Gatekeeper for unsigned builds)
 4. Open or create a `.kdbx` database file
+
+### Windows
+
+1. Download `KeePass2.0-v1.0.0-win-x64.zip` from the [release page](https://github.com/Vigneshsub30/keepass2.0/releases/tag/v1.0.0)
+2. Extract the ZIP to a folder
+3. Run `KeePass.Desktop.Avalonia.exe`
+
+### Linux
+
+1. Download the `.deb` or `.tar.gz` from the [release page](https://github.com/Vigneshsub30/keepass2.0/releases/tag/v1.0.0)
+2. For `.deb`: `sudo dpkg -i KeePass2.0-v1.0.0-linux-x64.deb`, then run `keepass`
+3. For `.tar.gz`: extract and run `./KeePass.Desktop.Avalonia`
 
 ### Browser Extension
 
@@ -64,19 +90,10 @@ Chrome/Firefox            Native Messaging           keepass-proxy
 ### Build from Source
 
 ```bash
-# Clone the repo
 git clone https://github.com/Vigneshsub30/keepass2.0.git
 cd keepass2.0
-
-# Build and run (macOS)
 dotnet publish KeePass.Desktop.Avalonia -c Release -r osx-arm64 --self-contained
 ./artifacts/macos/publish/osx-arm64/KeePass.Desktop.Avalonia
-
-# Package as DMG
-SKIP_SIGNING=true bash Build/macos/build-dmg.sh \
-    --version 2.61.1 --rid osx-arm64 \
-    --publish-dir ./artifacts/macos/publish/osx-arm64 \
-    --output-dir ./artifacts/osx-arm64
 ```
 
 ---
@@ -91,7 +108,7 @@ SKIP_SIGNING=true bash Build/macos/build-dmg.sh \
 | Crypto | NaCl.Net (X25519 + XSalsa20-Poly1305) |
 | Browser IPC | Native Messaging Protocol |
 | App IPC | Unix Domain Sockets |
-| Packaging | DMG (macOS), self-contained publish |
+| Packaging | DMG (macOS), ZIP (Windows), DEB/tar.gz (Linux) |
 
 ---
 
@@ -113,9 +130,6 @@ Docs/adr/                  Architecture Decision Records
 
 | Metric | Value |
 |---|---|
-| Commits | 30 |
-| Files changed | 62 |
-| Lines of code added | ~5,000 |
 | Forge work orders | 15 |
 | ADRs written | 8 |
 | Development time | Single day |
@@ -126,8 +140,8 @@ See [SUBMISSION.md](SUBMISSION.md) for the full hackathon submission document.
 
 ## Team
 
-- **Shailesh Kolap**
 - **Vignesh Subramanian**
+- **Shailesh Kolap**
 
 ---
 
