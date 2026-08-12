@@ -88,6 +88,13 @@ elif [[ -f "${PUBLISH_DIR}/keepass-proxy" ]]; then
     chmod +x "${APP_BUNDLE}/Contents/MacOS/keepass-proxy"
 fi
 
+# Copy app icon if available
+ICON_FILE="${SCRIPT_DIR}/AppIcon.icns"
+if [[ -f "$ICON_FILE" ]]; then
+    echo "    Including app icon: $ICON_FILE"
+    cp "$ICON_FILE" "${APP_BUNDLE}/Contents/Resources/AppIcon.icns"
+fi
+
 # Info.plist — generated here so version is embedded at package time.
 INFO_PLIST="${APP_BUNDLE}/Contents/Info.plist"
 # Use the version as both CFBundleShortVersionString (marketing) and

@@ -215,6 +215,7 @@ namespace KeePass.Core.ViewModels
 					DeleteEntryCommand.NotifyCanExecuteChanged();
 					CopyUserNameCommand.NotifyCanExecuteChanged();
 					CopyPasswordCommand.NotifyCanExecuteChanged();
+					CopyUrlCommand.NotifyCanExecuteChanged();
 
 					_isPasswordRevealed = false;
 					OnPropertyChanged("IsPasswordRevealed");
