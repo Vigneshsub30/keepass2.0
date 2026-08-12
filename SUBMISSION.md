@@ -186,47 +186,6 @@ This project was managed entirely through **SoftwareForge.ai**, which orchestrat
 
 
 
-## Commit Log
-
-
-| Commit    | Description                                                                                     |
-| --------- | ----------------------------------------------------------------------------------------------- |
-| `9fef109` | Add app icon support in DMG packaging                                                           |
-| `4f0edfb` | Update tests, solution and DMG packaging for new services                                       |
-| `dc1e6b6` | Wire up desktop UI: entry editor, preview panel, import/export, browser integration, clean quit |
-| `b0d2d4e` | Add native messaging proxy for browser extension communication                                  |
-| `cd16f90` | Add core services: import/export, entry management, preview panel, browser protocol             |
-| `122144d` | Add artifacts/ to .gitignore                                                                    |
-| `48443b0` | Fix DMG creation for large single-file binaries                                                 |
-| `7cd2036` | Fix DMG build: skip code signing when no certificate available                                  |
-| `5680c48` | Enable dual-publish: Avalonia on macOS/Linux, WinForms on Windows                               |
-| `80c7092` | Fix Windows test hang: downgrade xunit runner, add step timeouts                                |
-| `7b221a2` | Fix CI: runsettings XML comment, CRLF shell scripts, skip packaging                             |
-| `7353a0b` | Fix remaining CI failures: osx publish, Ubuntu platform tests                                   |
-| `23e8a38` | Fix CI failures: bad action tag and Roslyn native-DLL filter                                    |
-| `c81689b` | Fix YAML syntax errors in three workflow files                                                  |
-| `9e910f0` | Fix pre-existing build failures blocking CI                                                     |
-| `ac4dc83` | WO-105: Security review sign-off gate for release promotion                                     |
-| `77c53bd` | WO-104: Cross-platform smoke test suite in CI                                                   |
-| `adfea5c` | WO-103: Post-commit vault integrity check with rollback runbooks                                |
-| `a8fffee` | WO-102: Beta release channel with automated promotion                                           |
-| `cd30be3` | WO-101: Add packaging scripts and fix Build/ path casing                                        |
-| `06444df` | WO-101: CI artifact matrix for three-platform signed builds                                     |
-| `6b6b219` | WO-100: ADR for platform capability-tier matrix definition                                      |
-| `3fa4233` | WO-099: ADR for atomic-save transaction guarantees                                              |
-| `90a21a7` | WO-098: ADR for clipboard credential delivery mechanism                                         |
-| `f08e74e` | WO-097: ADR for UI-domain seam and MVVM adoption                                                |
-| `6128d74` | WO-096: ADR for Mono workaround retirement strategy                                             |
-| `f5235cb` | WO-095: ADR for configuration enforcement precedence hierarchy                                  |
-| `f4b8f41` | WO-094: ADR for plugin trust model and isolation                                                |
-| `42d66ba` | WO-093: ADR for KDBX format-version selection logic                                             |
-| `4b93389` | WO-091: Plugin signature verification gate with MetadataLoadContext                             |
-
-
----
-
-
-
 ## Technology Stack
 
 
