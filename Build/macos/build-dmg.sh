@@ -248,42 +248,7 @@ except ImportError:
     print("    ds-store not available, skipping Finder layout (Applications symlink still present)")
 PYSCRIPT
 
-# Detach, then re-attach as browsable so AppleScript can configure the Finder window
-hdiutil detach "$MOUNT_POINT"
-sleep 1
-
-VOL_MOUNT="/Volumes/${VOL_NAME}"
-hdiutil attach "$SPARSE_IMG" -mountpoint "$VOL_MOUNT"
-sleep 1
-
-osascript <<APPLESCRIPT || true
-tell application "Finder"
-    tell disk "${VOL_NAME}"
-        open
-        delay 2
-        set current view of container window to icon view
-        set toolbar visible of container window to false
-        set statusbar visible of container window to false
-        set bounds of container window to {400, 150, 900, 450}
-        set theViewOptions to the icon view options of container window
-        set arrangement of theViewOptions to not arranged
-        set icon size of theViewOptions to 80
-        delay 1
-        try
-            set position of item "${APP_BUNDLE_NAME}" of container window to {125, 140}
-        end try
-        try
-            set position of item "Applications" of container window to {375, 140}
-        end try
-        update without registering applications
-        close
-    end tell
-end tell
-APPLESCRIPT
-
-# Ensure clean state
-sync
-hdiutil detach "$VOL_MOUNT"
+hdiutil detach "$MOUNT_POINT" -force
 hdiutil convert "$SPARSE_IMG" -format UDZO -o "$DMG_PATH" -ov
 rm -f "$SPARSE_IMG"
 rmdir "$MOUNT_POINT" 2>/dev/null || true
