@@ -130,7 +130,7 @@ Docs/adr/                  Architecture Decision Records
 
 | Metric | Value |
 |---|---|
-| Forge work orders | 15 |
+| Forge work orders | 105 |
 | ADRs written | 8 |
 | Development time | Single day |
 
