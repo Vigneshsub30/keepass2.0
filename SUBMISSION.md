@@ -10,7 +10,7 @@
 | **Project**       | KeePass 2.0 — Cross-Platform Password Manager with Browser Integration           |
 | **Hackathon**     | Forge Hackathon 2026                                                             |
 | **Date**          | August 11, 2026                                                                  |
-| **Team**          | Shailesh Kolap, Vignesh Subramanian                                              |
+| **Team**          | Vignesh Subramanian, Shailesh Kolap                                              |
 | **Repository**    | [github.com/Vigneshsub30/keepass2.0](https://github.com/Vigneshsub30/keepass2.0) |
 | **Forge Project** | [SoftwareForge.ai Project](https://softwareforge.ai)                             |
 | **Demo Video**    | *(Google Drive link — to be added)*                                              |
@@ -133,10 +133,6 @@ Addressed critical security gaps in the original codebase:
 
 | Metric                            | Value                      |
 | --------------------------------- | -------------------------- |
-| **Commits**                       | 30                         |
-| **Files changed**                 | 62 (C#/XAML/project files) |
-| **Lines of code added**           | ~5,000                     |
-| **Lines of code modified**        | ~160                       |
 | **Forge work orders completed**   | 15                         |
 | **Architecture Decision Records** | 8 ADRs                     |
 | **Development time**              | Single day                 |
@@ -165,13 +161,37 @@ This project was managed entirely through **SoftwareForge.ai**, which orchestrat
 
 
 
+### Downloads
+
+Download from the [v1.0.0 release](https://github.com/Vigneshsub30/keepass2.0/releases/tag/v1.0.0):
+
+| Platform | File |
+|---|---|
+| macOS (Apple Silicon) | `KeePass2.0-v1.0.0-osx-arm64.dmg` |
+| macOS (Intel) | `KeePass2.0-v1.0.0-osx-x64.dmg` |
+| Windows (x64) | `KeePass2.0-v1.0.0-win-x64.zip` |
+| Linux (x64, .deb) | `KeePass2.0-v1.0.0-linux-x64.deb` |
+| Linux (x64, tar.gz) | `KeePass2.0-v1.0.0-linux-x64.tar.gz` |
+
 ### macOS (DMG)
 
-1. Download `KeePass-2.61.1-osx-arm64.dmg` from the artifacts
+1. Download the DMG for your Mac (ARM64 for Apple Silicon, x64 for Intel)
 2. Double-click to mount the disk image
 3. Drag **KeePass Password Safe** to your Applications folder
 4. Launch from Applications (right-click > Open on first launch to bypass Gatekeeper)
 5. Open or create a `.kdbx` database file
+
+### Windows
+
+1. Download `KeePass2.0-v1.0.0-win-x64.zip`
+2. Extract the ZIP to a folder
+3. Run `KeePass.Desktop.Avalonia.exe`
+
+### Linux
+
+1. Download the `.deb` or `.tar.gz` for your distribution
+2. For `.deb`: `sudo dpkg -i KeePass2.0-v1.0.0-linux-x64.deb`, then run `keepass`
+3. For `.tar.gz`: extract and run `./KeePass.Desktop.Avalonia`
 
 
 
@@ -197,7 +217,7 @@ This project was managed entirely through **SoftwareForge.ai**, which orchestrat
 | **Crypto**      | NaCl.Net (X25519 + XSalsa20-Poly1305)    |
 | **Browser IPC** | Native Messaging Protocol (stdin/stdout) |
 | **App IPC**     | Unix Domain Sockets                      |
-| **Packaging**   | DMG (macOS), self-contained publish      |
+| **Packaging**   | DMG (macOS), ZIP (Windows), DEB (Linux)  |
 | **AI Tools**    | Cursor IDE, SoftwareForge.ai             |
 
 
