@@ -167,12 +167,24 @@ fi
 echo "==> Creating DMG: $DMG_PATH"
 
 rm -f "$DMG_PATH"
-hdiutil create \
-    -volname "KeePass Password Safe" \
-    -srcfolder "$APP_BUNDLE" \
-    -ov \
-    -format UDZO \
-    "$DMG_PATH"
+
+# Two-step creation: hdiutil create -srcfolder can miscalculate the volume
+# size for large single-file .NET self-contained binaries, causing
+# "No space left on device".  Instead, create a sparse image with an
+# explicit size, copy the .app, then convert to compressed UDZO.
+APP_SIZE_MB=$(du -sm "$APP_BUNDLE" | awk '{print $1}')
+SPARSE_SIZE=$(( APP_SIZE_MB + 20 ))m
+SPARSE_IMG="$(mktemp -t keepass_dmg).sparseimage"
+MOUNT_POINT="$(mktemp -d -t keepass_mount)"
+
+hdiutil create -size "$SPARSE_SIZE" -volname "KeePass Password Safe" \
+    -fs HFS+ -type SPARSE "${SPARSE_IMG%.sparseimage}"
+hdiutil attach "$SPARSE_IMG" -mountpoint "$MOUNT_POINT"
+cp -R "$APP_BUNDLE" "$MOUNT_POINT/"
+hdiutil detach "$MOUNT_POINT"
+hdiutil convert "$SPARSE_IMG" -format UDZO -o "$DMG_PATH" -ov
+rm -f "$SPARSE_IMG"
+rmdir "$MOUNT_POINT" 2>/dev/null || true
 
 if [[ "$SKIP_SIGNING" != "true" ]]; then
     # Sign the DMG itself so Gatekeeper accepts it as a distributable.
