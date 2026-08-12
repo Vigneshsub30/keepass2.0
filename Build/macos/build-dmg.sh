@@ -32,6 +32,7 @@ RID=""
 PUBLISH_DIR=""
 OUTPUT_DIR=""
 SKIP_NOTARIZE="${SKIP_NOTARIZE:-false}"   # set to "true" in PR builds
+SKIP_SIGNING="${SKIP_SIGNING:-false}"    # set to "true" for unsigned DMGs
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -40,6 +41,7 @@ while [[ $# -gt 0 ]]; do
         --publish-dir) PUBLISH_DIR="$2"; shift 2 ;;
         --output-dir) OUTPUT_DIR="$2";   shift 2 ;;
         --skip-notarize) SKIP_NOTARIZE="true"; shift ;;
+        --skip-signing)  SKIP_SIGNING="true"; SKIP_NOTARIZE="true"; shift ;;
         *) echo "Unknown argument: $1" >&2; exit 1 ;;
     esac
 done
@@ -129,33 +131,37 @@ retry() {
 
 # ── Code sign ─────────────────────────────────────────────────────────────────
 DEVELOPER_ID="${APPLE_DEVELOPER_ID:-}"
-if [[ -z "$DEVELOPER_ID" ]]; then
+if [[ "$SKIP_SIGNING" != "true" && -z "$DEVELOPER_ID" ]]; then
     # Auto-detect the first Developer ID Application identity in the keychain.
     DEVELOPER_ID=$(security find-identity -v -p codesigning \
         | grep "Developer ID Application" | head -1 \
         | sed 's/.*"\(.*\)"/\1/' || true)
 fi
 
-if [[ -z "$DEVELOPER_ID" ]]; then
-    echo "ERROR: No Developer ID Application certificate found in keychain." >&2
-    echo "       Set APPLE_DEVELOPER_ID or import the certificate before running." >&2
-    exit 1
+if [[ "$SKIP_SIGNING" != "true" && -z "$DEVELOPER_ID" ]]; then
+    echo "WARNING: No Developer ID Application certificate found — producing unsigned DMG." >&2
+    SKIP_SIGNING="true"
+    SKIP_NOTARIZE="true"
 fi
 
-echo "==> Signing with identity: $DEVELOPER_ID"
+if [[ "$SKIP_SIGNING" != "true" ]]; then
+    echo "==> Signing with identity: $DEVELOPER_ID"
 
-retry 3 codesign \
-    --force \
-    --deep \
-    --sign "$DEVELOPER_ID" \
-    --entitlements "$ENTITLEMENTS" \
-    --options runtime \
-    --timestamp \
-    "$APP_BUNDLE"
+    retry 3 codesign \
+        --force \
+        --deep \
+        --sign "$DEVELOPER_ID" \
+        --entitlements "$ENTITLEMENTS" \
+        --options runtime \
+        --timestamp \
+        "$APP_BUNDLE"
 
-echo "==> Verifying code signature …"
-codesign --verify --deep --strict "$APP_BUNDLE"
-echo "    Signature OK."
+    echo "==> Verifying code signature …"
+    codesign --verify --deep --strict "$APP_BUNDLE"
+    echo "    Signature OK."
+else
+    echo "==> Skipping code signing (unsigned build)."
+fi
 
 # ── Create DMG ────────────────────────────────────────────────────────────────
 echo "==> Creating DMG: $DMG_PATH"
@@ -168,11 +174,13 @@ hdiutil create \
     -format UDZO \
     "$DMG_PATH"
 
-# Sign the DMG itself so Gatekeeper accepts it as a distributable.
-retry 3 codesign \
-    --sign "$DEVELOPER_ID" \
-    --timestamp \
-    "$DMG_PATH"
+if [[ "$SKIP_SIGNING" != "true" ]]; then
+    # Sign the DMG itself so Gatekeeper accepts it as a distributable.
+    retry 3 codesign \
+        --sign "$DEVELOPER_ID" \
+        --timestamp \
+        "$DMG_PATH"
+fi
 
 # ── Notarize ─────────────────────────────────────────────────────────────────
 if [[ "$SKIP_NOTARIZE" == "true" ]]; then
