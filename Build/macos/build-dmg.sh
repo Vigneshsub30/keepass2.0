@@ -196,11 +196,94 @@ SPARSE_SIZE=$(( APP_SIZE_MB + 20 ))m
 SPARSE_IMG="$(mktemp -t keepass_dmg).sparseimage"
 MOUNT_POINT="$(mktemp -d -t keepass_mount)"
 
-hdiutil create -size "$SPARSE_SIZE" -volname "KeePass Password Safe" \
+VOL_NAME="KeePass Password Safe"
+
+hdiutil create -size "$SPARSE_SIZE" -volname "$VOL_NAME" \
     -fs HFS+ -type SPARSE "${SPARSE_IMG%.sparseimage}"
-hdiutil attach "$SPARSE_IMG" -mountpoint "$MOUNT_POINT"
+hdiutil attach "$SPARSE_IMG" -mountpoint "$MOUNT_POINT" -nobrowse
 cp -R "$APP_BUNDLE" "$MOUNT_POINT/"
+
+ln -s /Applications "$MOUNT_POINT/Applications"
+
+APP_BUNDLE_NAME="$(basename "$APP_BUNDLE")"
+
+# Write .DS_Store for Finder window layout (app left, Applications right)
+python3 - "$MOUNT_POINT" "$APP_BUNDLE_NAME" <<'PYSCRIPT' || true
+import sys, os
+
+mount = sys.argv[1]
+app_name = sys.argv[2]
+ds_path = os.path.join(mount, ".DS_Store")
+
+try:
+    from ds_store import DSStore
+    with DSStore.open(ds_path, "w+") as d:
+        d["."]["bwsp"] = {
+            "ShowPathbar": False,
+            "ShowSidebar": False,
+            "ShowStatusBar": False,
+            "ShowTabView": False,
+            "ShowToolbar": False,
+            "WindowBounds": "{{400, 150}, {500, 300}}",
+        }
+        d["."]["icvp"] = {
+            "arrangeBy": "none",
+            "backgroundColorBlue": 1.0,
+            "backgroundColorGreen": 1.0,
+            "backgroundColorRed": 1.0,
+            "backgroundType": 1,
+            "gridOffsetX": 0.0,
+            "gridOffsetY": 0.0,
+            "gridSpacing": 100.0,
+            "iconSize": 80.0,
+            "showIconPreview": True,
+            "showItemInfo": False,
+            "textSize": 12.0,
+            "viewOptionsVersion": 1,
+        }
+        d[app_name]["Iloc"] = (125, 140)
+        d["Applications"]["Iloc"] = (375, 140)
+    print("    DS_Store written for drag-to-Applications layout")
+except ImportError:
+    print("    ds-store not available, skipping Finder layout (Applications symlink still present)")
+PYSCRIPT
+
+# Detach, then re-attach as browsable so AppleScript can configure the Finder window
 hdiutil detach "$MOUNT_POINT"
+sleep 1
+
+VOL_MOUNT="/Volumes/${VOL_NAME}"
+hdiutil attach "$SPARSE_IMG" -mountpoint "$VOL_MOUNT"
+sleep 1
+
+osascript <<APPLESCRIPT || true
+tell application "Finder"
+    tell disk "${VOL_NAME}"
+        open
+        delay 2
+        set current view of container window to icon view
+        set toolbar visible of container window to false
+        set statusbar visible of container window to false
+        set bounds of container window to {400, 150, 900, 450}
+        set theViewOptions to the icon view options of container window
+        set arrangement of theViewOptions to not arranged
+        set icon size of theViewOptions to 80
+        delay 1
+        try
+            set position of item "${APP_BUNDLE_NAME}" of container window to {125, 140}
+        end try
+        try
+            set position of item "Applications" of container window to {375, 140}
+        end try
+        update without registering applications
+        close
+    end tell
+end tell
+APPLESCRIPT
+
+# Ensure clean state
+sync
+hdiutil detach "$VOL_MOUNT"
 hdiutil convert "$SPARSE_IMG" -format UDZO -o "$DMG_PATH" -ov
 rm -f "$SPARSE_IMG"
 rmdir "$MOUNT_POINT" 2>/dev/null || true
