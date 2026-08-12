@@ -1,6 +1,7 @@
 # Build output
 bin/
 obj/
+artifacts/
 
 # NuGet packages cache
 .nuget/
