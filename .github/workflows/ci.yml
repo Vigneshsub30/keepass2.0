@@ -55,6 +55,7 @@ jobs:
       # runners. Skip test execution on macOS and Linux.
       - name: Run tests with coverage
         if: runner.os == 'Windows'
+        timeout-minutes: 10
         run: >
           dotnet test KeePass.Tests/KeePass.Tests.csproj
           --configuration Release

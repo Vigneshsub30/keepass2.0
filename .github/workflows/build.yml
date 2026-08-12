@@ -150,6 +150,7 @@ jobs:
       # ── Tests (Windows only — net10.0-windows requires WinDesktop runtime) ── #
       - name: Run unit tests
         if: runner.os == 'Windows'
+        timeout-minutes: 10
         run: >
           dotnet test KeePass.Tests/KeePass.Tests.csproj
           --configuration Release
