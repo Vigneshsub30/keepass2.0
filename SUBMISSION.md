@@ -12,8 +12,9 @@
 | **Date**          | August 11, 2026                                                                  |
 | **Team**          | Vignesh Subramanian, Shailesh Kolap                                              |
 | **Repository**    | [github.com/Vigneshsub30/keepass2.0](https://github.com/Vigneshsub30/keepass2.0) |
-| **Forge Project** | [SoftwareForge.ai Project](https://softwareforge.ai)                             |
-| **Demo Video**    | [Watch on Google Drive](https://drive.google.com/file/d/11a0FOcmz1p-HsMw18zKZChrGPrW_woUX/view?usp=drive_link) |
+| **Forge Project** | [KeePass Modernization](https://hackathon.softwareforge.ai/projects/32e99329-eb95-42b4-99f6-b1ff6f4ce5b8) |
+| **Explainer Video** | [01 - Project Explanation](https://drive.google.com/file/d/1RT_U1j5uA9_s_HESRAYT0u64YQKgG7S-/view?usp=drive_link) |
+| **Demo Video**    | [02 - Project Demo](https://drive.google.com/file/d/1umR9ZVRFnhLo-wQdUBsDgFS1wae4Bmqf/view?usp=drive_link) |
 
 
 ---

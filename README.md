@@ -2,7 +2,7 @@
 
 A modern, cross-platform fork of [KeePass](https://keepass.info/) built with .NET 8 and Avalonia UI. This project transforms the original Windows-only WinForms application into a fully functional password manager that runs on **macOS, Linux, and Windows** — with seamless **browser extension integration** via the KeePassXC-Browser protocol.
 
-> Built during the **Forge Hackathon 2026** using [Cursor](https://cursor.com/) and [SoftwareForge.ai](https://softwareforge.ai/).
+> Built during the **Forge Hackathon 2026** using [Cursor](https://cursor.com/) and [SoftwareForge.ai](https://hackathon.softwareforge.ai/projects/32e99329-eb95-42b4-99f6-b1ff6f4ce5b8).
 
 ---
 
@@ -136,7 +136,7 @@ Docs/adr/                  Architecture Decision Records
 
 See [SUBMISSION.md](SUBMISSION.md) for the full hackathon submission document.
 
-**Demo Video:** [Watch on Google Drive](https://drive.google.com/file/d/11a0FOcmz1p-HsMw18zKZChrGPrW_woUX/view?usp=drive_link)
+**Videos:** [01 - Project Explanation](https://drive.google.com/file/d/1RT_U1j5uA9_s_HESRAYT0u64YQKgG7S-/view?usp=drive_link) | [02 - Project Demo](https://drive.google.com/file/d/1umR9ZVRFnhLo-wQdUBsDgFS1wae4Bmqf/view?usp=drive_link)
 
 ---
 
