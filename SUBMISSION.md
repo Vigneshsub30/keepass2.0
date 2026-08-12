@@ -13,7 +13,7 @@
 | **Team**          | Vignesh Subramanian, Shailesh Kolap                                              |
 | **Repository**    | [github.com/Vigneshsub30/keepass2.0](https://github.com/Vigneshsub30/keepass2.0) |
 | **Forge Project** | [SoftwareForge.ai Project](https://softwareforge.ai)                             |
-| **Demo Video**    | *(Google Drive link — to be added)*                                              |
+| **Demo Video**    | [Watch on Google Drive](https://drive.google.com/file/d/11a0FOcmz1p-HsMw18zKZChrGPrW_woUX/view?usp=drive_link) |
 
 
 ---

@@ -136,6 +136,8 @@ Docs/adr/                  Architecture Decision Records
 
 See [SUBMISSION.md](SUBMISSION.md) for the full hackathon submission document.
 
+**Demo Video:** [Watch on Google Drive](https://drive.google.com/file/d/11a0FOcmz1p-HsMw18zKZChrGPrW_woUX/view?usp=drive_link)
+
 ---
 
 ## Team
