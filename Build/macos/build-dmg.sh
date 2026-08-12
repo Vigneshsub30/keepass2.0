@@ -90,7 +90,7 @@ cat > "$INFO_PLIST" <<PLIST
     <key>CFBundleShortVersionString</key><string>${VERSION}</string>
     <key>CFBundlePackageType</key>      <string>APPL</string>
     <key>CFBundleSignature</key>        <string>????</string>
-    <key>CFBundleExecutable</key>       <string>KeePass</string>
+    <key>CFBundleExecutable</key>       <string>KeePass.Desktop.Avalonia</string>
     <key>LSMinimumSystemVersion</key>   <string>12.0</string>
     <key>NSHighResolutionCapable</key>  <true/>
     <key>CFBundleIconFile</key>         <string>AppIcon</string>
@@ -104,7 +104,6 @@ cat > "$INFO_PLIST" <<PLIST
             <key>CFBundleTypeRole</key>          <string>Editor</string>
             <key>LSIsAppleDefaultForType</key>   <true/>
         </dict>
-    </dict>
     </array>
 </dict>
 </plist>

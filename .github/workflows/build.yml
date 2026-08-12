@@ -167,15 +167,15 @@ jobs:
           if-no-files-found: warn
 
       # ── Publish (self-contained, single-file where applicable) ───────────── #
-      # KeePass/KeePass.csproj targets net10.0-windows (WinForms).  The Windows
-      # Desktop runtime packs (Microsoft.WindowsDesktop.App.WindowsForms) are
-      # only shipped for Windows RIDs, so self-contained publish for osx-* and
-      # linux-* fails with NETSDK1082.  Restrict to Windows runners until the
-      # Avalonia macOS/Linux head (WO-052) is implemented.
+      # Windows: KeePass/KeePass.csproj (WinForms, net10.0-windows)
+      # macOS/Linux: KeePass.Desktop.Avalonia (Avalonia, net10.0)
       - name: Publish — ${{ matrix.rid }}
-        if: runner.os == 'Windows'
         run: >
-          dotnet publish KeePass/KeePass.csproj
+          dotnet publish ${{
+            runner.os == 'Windows'
+            && 'KeePass/KeePass.csproj'
+            || 'KeePass.Desktop.Avalonia/KeePass.Desktop.Avalonia.csproj'
+          }}
           --configuration Release
           --runtime ${{ matrix.rid }}
           --self-contained true
@@ -214,12 +214,12 @@ jobs:
           PUB_DIR="${{ env.ARTIFACT_DIR }}/publish"
           if [[ -d "$PUB_DIR" ]]; then
             find "$PUB_DIR" \
-              \( -name "*.dll" -o -name "KeePass" \) -type f | sort |
+              \( -name "*.dll" -o -name "KeePass" -o -name "KeePass.Desktop.Avalonia" \) -type f | sort |
               while read f; do
                 command -v sha256sum >/dev/null && sha256sum "$f" || shasum -a 256 "$f"
               done
           else
-            echo "No publish directory — skipping hash log (WO-052)"
+            echo "No publish directory — skipping hash log"
           fi
 
       # ── SBOM generation ───────────────────────────────────────────────────── #
@@ -392,11 +392,8 @@ jobs:
             | sed 's/.*"\(.*\)"/\1/')
           echo "APPLE_DEVELOPER_ID=${IDENTITY}" >> "${GITHUB_ENV}"
 
-      # WO-052: re-enable after Avalonia macOS head and dotnet publish for osx RIDs.
-      # Currently the Publish step is Windows-only (net10.0-windows / WinForms),
-      # so there is no publish directory on macOS runners.
       - name: Package signed .dmg (macOS)
-        if: false  # WO-052
+        if: runner.os == 'macOS'
         env:
           APPLE_API_KEY_PATH: /tmp/apple_api.p8
           APPLE_API_KEY_ID:   ${{ secrets.APPLE_API_KEY_ID }}
@@ -422,7 +419,7 @@ jobs:
           fi
 
       - name: Upload macOS .dmg
-        if: false  # WO-052
+        if: runner.os == 'macOS'
         uses: actions/upload-artifact@v4
         with:
           name: KeePass-macos-${{ matrix.rid }}-${{ steps.version.outputs.version }}
@@ -438,11 +435,8 @@ jobs:
       # LINUX PACKAGING
       # ══════════════════════════════════════════════════════════════════════════
 
-      # WO-052: re-enable after Avalonia Linux head and dotnet publish for linux RIDs.
-      # Currently the Publish step is Windows-only (net10.0-windows / WinForms),
-      # so there is no publish directory on Linux runners.
       - name: Install Linux packaging tools
-        if: false  # WO-052
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y ruby ruby-dev rpm libfuse2 fuse
@@ -453,7 +447,7 @@ jobs:
           chmod +x /usr/local/bin/appimagetool
 
       - name: Package .deb (Linux)
-        if: false  # WO-052
+        if: runner.os == 'Linux'
         run: |
           mkdir -p "${{ env.ARTIFACT_DIR }}/packages"
           bash Build/linux/build-deb.sh \
@@ -463,7 +457,7 @@ jobs:
             --output-dir  "${{ env.ARTIFACT_DIR }}/packages"
 
       - name: Package AppImage (Linux)
-        if: false  # WO-052
+        if: runner.os == 'Linux'
         run: |
           bash Build/linux/build-appimage.sh \
             --version    "${{ steps.version.outputs.version }}" \
@@ -504,7 +498,7 @@ jobs:
           gpg --batch --yes --delete-secret-key "${GPG_KEY_ID}" 2>/dev/null || true
 
       - name: Upload Linux packages
-        if: false  # WO-052
+        if: runner.os == 'Linux'
         uses: actions/upload-artifact@v4
         with:
           name: KeePass-linux-${{ matrix.rid }}-${{ steps.version.outputs.version }}

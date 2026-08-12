@@ -22,7 +22,7 @@
 #     AppRun               — launcher script
 #     keepass2.desktop     — XDG desktop entry
 #     keepass2.png         — icon (used by desktop environments)
-#     usr/bin/KeePass      — the main executable
+#     usr/bin/KeePass.Desktop.Avalonia — the main executable
 #     usr/lib/keepass2/    — all publish output
 
 set -euo pipefail
@@ -82,16 +82,16 @@ mkdir -p "${APP_DIR}/usr/lib/keepass2" "${APP_DIR}/usr/bin"
 
 # Copy publish output to usr/lib/keepass2.
 cp -R "${PUBLISH_DIR}/." "${APP_DIR}/usr/lib/keepass2/"
-chmod +x "${APP_DIR}/usr/lib/keepass2/KeePass" 2>/dev/null || true
+chmod +x "${APP_DIR}/usr/lib/keepass2/KeePass.Desktop.Avalonia" 2>/dev/null || true
 
 # Symlink the main executable so it appears in usr/bin (FHS convention).
-ln -sf "../lib/keepass2/KeePass" "${APP_DIR}/usr/bin/keepass2"
+ln -sf "../lib/keepass2/KeePass.Desktop.Avalonia" "${APP_DIR}/usr/bin/keepass2"
 
 # AppRun — the entry point invoked by the AppImage runtime.
 cat > "${APP_DIR}/AppRun" <<'APPRUN'
 #!/bin/sh
 SELF_DIR="$(dirname "$(readlink -f "$0")")"
-exec "${SELF_DIR}/usr/lib/keepass2/KeePass" "$@"
+exec "${SELF_DIR}/usr/lib/keepass2/KeePass.Desktop.Avalonia" "$@"
 APPRUN
 chmod 755 "${APP_DIR}/AppRun"
 

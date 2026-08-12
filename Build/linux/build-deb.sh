@@ -78,12 +78,12 @@ mkdir -p "$LIB_DIR" "$BIN_DIR" "$APP_DIR" "$MIME_DIR"
 
 # Copy publish output.
 cp -R "${PUBLISH_DIR}/." "$LIB_DIR/"
-chmod +x "${LIB_DIR}/KeePass" 2>/dev/null || true
+chmod +x "${LIB_DIR}/KeePass.Desktop.Avalonia" 2>/dev/null || true
 
 # Wrapper launcher — invoked as 'keepass2' from $PATH.
 cat > "${BIN_DIR}/keepass2" <<'WRAPPER'
 #!/bin/sh
-exec /usr/lib/keepass2/KeePass "$@"
+exec /usr/lib/keepass2/KeePass.Desktop.Avalonia "$@"
 WRAPPER
 chmod 755 "${BIN_DIR}/keepass2"
 
