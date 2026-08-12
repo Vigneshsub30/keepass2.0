@@ -90,6 +90,57 @@ namespace KeePass.Desktop.Avalonia.Views
 		}
 
 		// ------------------------------------------------------------------ //
+		// Generate password                                                     //
+		// ------------------------------------------------------------------ //
+
+		private async void GeneratePasswordButton_Click(object? sender, RoutedEventArgs e)
+		{
+			if (DataContext is not EntryEditorViewModel vm) return;
+
+			IServiceProvider? sp = (global::Avalonia.Application.Current as KeePass.Desktop.Avalonia.App)?.Services;
+			IGeneratorProfileStore? store = sp != null
+				? Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions
+					.GetService<IGeneratorProfileStore>(sp)
+				: null;
+
+			var genVm = new PasswordGeneratorViewModel(
+				store ?? new KeePass.Desktop.Avalonia.Services.InMemoryGeneratorProfileStore());
+
+			var genView = new PasswordGeneratorView();
+			genView.DataContext = genVm;
+
+			var dialog = new Window
+			{
+				Title = "Generate Password",
+				Content = genView,
+				Width = 560,
+				Height = 620,
+				WindowStartupLocation = WindowStartupLocation.CenterOwner,
+				CanResize = true
+			};
+
+			genView.PasswordAccepted += (s, protectedPw) =>
+			{
+				string plain = protectedPw?.ReadString() ?? string.Empty;
+				vm.Password = protectedPw ?? KeePassLib.Security.ProtectedString.Empty;
+				vm.PasswordRepeat = protectedPw ?? KeePassLib.Security.ProtectedString.Empty;
+				if (PasswordBox != null) PasswordBox.Text = plain;
+				if (PasswordRepeatBox != null) PasswordRepeatBox.Text = plain;
+			};
+
+			genView.Closed += (s, _) =>
+			{
+				global::Avalonia.Threading.Dispatcher.UIThread.Post(() => dialog.Close());
+			};
+
+			var parent = TopLevel.GetTopLevel(this) as Window;
+			if (parent != null)
+				await dialog.ShowDialog(parent);
+			else
+				dialog.Show();
+		}
+
+		// ------------------------------------------------------------------ //
 		// Advanced tab: custom field removal                                   //
 		// ------------------------------------------------------------------ //
 

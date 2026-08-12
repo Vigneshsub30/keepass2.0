@@ -58,5 +58,33 @@ namespace KeePass.Desktop.Avalonia.Services
 			var result = await storage.OpenFilePickerAsync(options);
 			return result?.Count > 0 ? result[0].TryGetLocalPath() : null;
 		}
+
+		public async Task<string?> SaveFileAsync(
+			string title,
+			IReadOnlyList<CoreFilter> filters,
+			string? defaultFileName = null)
+		{
+			Window? window = _windowFactory();
+			if (window == null) return null;
+
+			IStorageProvider storage = window.StorageProvider;
+
+			var fileTypes = filters
+				.Select(f => new FilePickerFileType(f.Name)
+				{
+					Patterns = f.Extensions.Select(e => e == "*" ? "*.*" : $"*.{e}").ToList()
+				})
+				.ToList();
+
+			var options = new FilePickerSaveOptions
+			{
+				Title = title,
+				FileTypeChoices = fileTypes,
+				SuggestedFileName = defaultFileName
+			};
+
+			var result = await storage.SaveFilePickerAsync(options);
+			return result?.TryGetLocalPath();
+		}
 	}
 }

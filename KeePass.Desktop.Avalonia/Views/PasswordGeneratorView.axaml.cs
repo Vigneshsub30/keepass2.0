@@ -94,13 +94,26 @@ namespace KeePass.Desktop.Avalonia.Views
 			if (DataContext is not PasswordGeneratorViewModel vm) return;
 			if (vm.GeneratedPassword == null) return;
 
-			var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
-			if (clipboard == null) return;
-
 			string plain = vm.GeneratedPassword.ReadString();
-			await clipboard.SetTextAsync(plain);
 
-			// Brief visual feedback: disable button for 1.5 s.
+			IServiceProvider? sp = (global::Avalonia.Application.Current
+				as KeePass.Desktop.Avalonia.App)?.Services;
+			var clipSvc = sp != null
+				? Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions
+					.GetService<KeePass.Core.Platform.IClipboardService>(sp)
+				: null;
+
+			if (clipSvc != null && clipSvc.IsSupported)
+			{
+				clipSvc.SetWithAutoClear(plain, TimeSpan.FromSeconds(12));
+			}
+			else
+			{
+				var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+				if (clipboard != null)
+					await clipboard.SetTextAsync(plain);
+			}
+
 			if (CopyButton != null)
 			{
 				CopyButton.IsEnabled = false;

@@ -23,17 +23,25 @@
                 <MenuItem Header="_Save"      Command="{Binding SaveDatabaseCommand}"  InputGesture="Ctrl+S" />
                 <MenuItem Header="_Close"     Command="{Binding CloseDatabaseCommand}" />
                 <Separator />
+                <MenuItem Header="_Import…"    Command="{Binding ImportCommand}" />
+                <MenuItem Header="_Export…"    Command="{Binding ExportCommand}" />
+                <Separator />
                 <MenuItem Header="_Lock Workspace"   Command="{Binding LockWorkspaceCommand}"   InputGesture="Ctrl+L" />
                 <MenuItem Header="_Unlock Workspace" Command="{Binding UnlockWorkspaceCommand}" />
                 <Separator />
-                <MenuItem Header="E_xit" />
+                <MenuItem Header="E_xit" Command="{Binding ExitCommand}" InputGesture="Ctrl+Q" />
             </MenuItem>
 
-            <MenuItem Header="_Edit">
+            <MenuItem Header="_Entry">
+                <MenuItem Header="_New Entry…"      Command="{Binding AddEntryCommand}" />
+                <MenuItem Header="_Edit Entry…"     Command="{Binding EditEntryCommand}" />
+                <MenuItem Header="_Delete Entry"    Command="{Binding DeleteEntryCommand}" />
+                <Separator />
                 <MenuItem Header="Copy _User Name"  InputGesture="Ctrl+B"
-                          IsEnabled="{Binding CanCopyUserName}" />
+                          Command="{Binding CopyUserNameCommand}" />
                 <MenuItem Header="Copy _Password"   InputGesture="Ctrl+C"
-                          IsEnabled="{Binding CanCopyPassword}" />
+                          Command="{Binding CopyPasswordCommand}" />
+                <Separator />
                 <MenuItem Header="_Find…"           InputGesture="Ctrl+F" />
             </MenuItem>
 
@@ -44,7 +52,9 @@
 
             <MenuItem Header="_Tools">
                 <MenuItem Header="_Options…" />
-                <MenuItem Header="_Generate Password…" />
+                <MenuItem Header="_Generate Password…" Command="{Binding ShowPasswordGeneratorCommand}" />
+                <Separator />
+                <MenuItem Header="_Browser Integration…" x:Name="BrowserIntegrationMenuItem" />
             </MenuItem>
 
             <MenuItem Header="_Help">
@@ -74,7 +84,12 @@
                          Width="200"
                          Text="{Binding QuickSearchText}"
                          IsEnabled="{Binding IsDatabaseOpen}" />
-                <Button ToolTip.Tip="New Entry…" Content="New Entry" IsEnabled="{Binding IsDatabaseOpen}" />
+                <Button Command="{Binding CopyUserNameCommand}" ToolTip.Tip="Copy User Name" Content="Copy User" />
+                <Button Command="{Binding CopyPasswordCommand}" ToolTip.Tip="Copy Password" Content="Copy Pass" />
+                <Separator />
+                <Button Command="{Binding AddEntryCommand}" ToolTip.Tip="New Entry…" Content="New Entry" />
+                <Button Command="{Binding EditEntryCommand}" ToolTip.Tip="Edit Entry…" Content="Edit" />
+                <Button Command="{Binding DeleteEntryCommand}" ToolTip.Tip="Delete Entry" Content="Delete" />
             </StackPanel>
         </Border>
 
@@ -141,16 +156,17 @@
                       AutoGenerateColumns="False"
                       CanUserSortColumns="True"
                       GridLinesVisibility="Horizontal"
-                      SelectionMode="Extended">
+                      SelectionMode="Extended"
+                      DoubleTapped="EntryDataGrid_DoubleTapped">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Title"     Width="*"
-                                        Binding="{Binding Title}" />
+                                        Binding="{Binding TitleText}" />
                     <DataGridTextColumn Header="User Name" Width="120"
-                                        Binding="{Binding UserName}" />
+                                        Binding="{Binding UserNameText}" />
                     <DataGridTextColumn Header="URL"       Width="120"
-                                        Binding="{Binding Url}" />
+                                        Binding="{Binding UrlText}" />
                     <DataGridTextColumn Header="Notes"     Width="80"
-                                        Binding="{Binding Notes}" />
+                                        Binding="{Binding NotesText}" />
                     <DataGridTextColumn Header="Modified"  Width="120"
                                         Binding="{Binding LastModificationTime}" />
                 </DataGrid.Columns>
@@ -163,9 +179,107 @@
             <!-- Entry preview (right panel) -->
             <ScrollViewer Grid.Column="4">
                 <StackPanel Spacing="8" Margin="8">
+
+                    <!-- Placeholder when no single entry is selected -->
                     <TextBlock FontSize="13" FontWeight="Bold"
                                Text="No entry selected" Opacity="0.5"
-                               IsVisible="{Binding !CanCopyUserName}" />
+                               IsVisible="{Binding !HasSelectedEntry}" />
+
+                    <!-- Detail panel, visible when exactly one entry is selected -->
+                    <StackPanel Spacing="10"
+                                IsVisible="{Binding HasSelectedEntry}">
+
+                        <!-- Title -->
+                        <TextBlock Text="{Binding SelectedEntryPreview.TitleText}"
+                                   FontSize="16" FontWeight="Bold"
+                                   TextWrapping="Wrap" />
+
+                        <Separator />
+
+                        <!-- User Name -->
+                        <TextBlock Text="User Name" FontSize="11" Opacity="0.6" />
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0"
+                                       Text="{Binding SelectedEntryPreview.UserNameText}"
+                                       TextWrapping="Wrap" VerticalAlignment="Center" />
+                            <Button Grid.Column="1" Content="Copy" Padding="6,2"
+                                    FontSize="11"
+                                    Command="{Binding CopyUserNameCommand}"
+                                    ToolTip.Tip="Copy user name" />
+                        </Grid>
+
+                        <!-- Password -->
+                        <TextBlock Text="Password" FontSize="11" Opacity="0.6" />
+                        <Grid ColumnDefinitions="*,Auto,Auto">
+                            <TextBlock Grid.Column="0"
+                                       Text="{Binding PreviewPasswordText}"
+                                       VerticalAlignment="Center"
+                                       FontFamily="monospace" />
+                            <ToggleButton Grid.Column="1" Margin="4,0,0,0"
+                                          Content="Show" Padding="6,2" FontSize="11"
+                                          IsChecked="{Binding IsPasswordRevealed}"
+                                          ToolTip.Tip="Reveal / hide password" />
+                            <Button Grid.Column="2" Content="Copy" Padding="6,2"
+                                    FontSize="11" Margin="4,0,0,0"
+                                    Command="{Binding CopyPasswordCommand}"
+                                    ToolTip.Tip="Copy password (auto-clear 12s)" />
+                        </Grid>
+
+                        <!-- URL -->
+                        <TextBlock Text="URL" FontSize="11" Opacity="0.6" />
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0"
+                                       Text="{Binding SelectedEntryPreview.UrlText}"
+                                       TextWrapping="Wrap" VerticalAlignment="Center"
+                                       Foreground="{DynamicResource SystemAccentColor}" />
+                            <Button Grid.Column="1" Content="Copy" Padding="6,2"
+                                    FontSize="11"
+                                    Command="{Binding CopyUrlCommand}"
+                                    ToolTip.Tip="Copy URL" />
+                        </Grid>
+
+                        <Separator />
+
+                        <!-- Notes -->
+                        <TextBlock Text="Notes" FontSize="11" Opacity="0.6" />
+                        <TextBlock Text="{Binding SelectedEntryPreview.NotesText}"
+                                   TextWrapping="Wrap" MaxHeight="120"
+                                   Opacity="0.85" />
+
+                        <Separator />
+
+                        <!-- Timestamps -->
+                        <TextBlock Text="Details" FontSize="11" Opacity="0.6" />
+                        <Grid ColumnDefinitions="Auto,8,*" RowDefinitions="Auto,Auto,Auto,Auto"
+                              Margin="0,2,0,0">
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Created:"
+                                       FontSize="11" Opacity="0.6" />
+                            <TextBlock Grid.Row="0" Grid.Column="2"
+                                       Text="{Binding SelectedEntryPreview.CreationTime}"
+                                       FontSize="11" />
+
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Modified:"
+                                       FontSize="11" Opacity="0.6" />
+                            <TextBlock Grid.Row="1" Grid.Column="2"
+                                       Text="{Binding SelectedEntryPreview.LastModificationTime}"
+                                       FontSize="11" />
+
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Accessed:"
+                                       FontSize="11" Opacity="0.6" />
+                            <TextBlock Grid.Row="2" Grid.Column="2"
+                                       Text="{Binding SelectedEntryPreview.LastAccessTime}"
+                                       FontSize="11" />
+
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Expires:"
+                                       FontSize="11" Opacity="0.6"
+                                       IsVisible="{Binding SelectedEntryPreview.Expires}" />
+                            <TextBlock Grid.Row="3" Grid.Column="2"
+                                       Text="{Binding SelectedEntryPreview.ExpiryTime}"
+                                       FontSize="11"
+                                       IsVisible="{Binding SelectedEntryPreview.Expires}" />
+                        </Grid>
+
+                    </StackPanel>
                 </StackPanel>
             </ScrollViewer>
 

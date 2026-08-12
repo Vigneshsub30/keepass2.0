@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\KeePass.Core\KeePass.Core.csproj" />
+    <ProjectReference Include="..\KeePass.Platform.Unix\KeePass.Platform.Unix.csproj" />
     <ProjectReference Include="..\KeePassLib\KeePassLib.csproj" />
   </ItemGroup>
 

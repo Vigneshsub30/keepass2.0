@@ -34,7 +34,7 @@
                         <TextBox Text="{Binding UserName}" Watermark="User name" />
 
                         <TextBlock Text="Password" FontSize="11" Opacity="0.7" />
-                        <Grid ColumnDefinitions="*,Auto">
+                        <Grid ColumnDefinitions="*,Auto,Auto">
                             <TextBox Grid.Column="0"
                                      x:Name="PasswordBox"
                                      PasswordChar="●"
@@ -45,6 +45,11 @@
                                           Content="👁"
                                           Checked="PasswordReveal_Checked"
                                           Unchecked="PasswordReveal_Unchecked" />
+                            <Button Grid.Column="2" Margin="4,0,0,0"
+                                    Content="⚡ Gen"
+                                    ToolTip.Tip="Generate Password…"
+                                    x:Name="GeneratePasswordButton"
+                                    Click="GeneratePasswordButton_Click" />
                         </Grid>
                         <ProgressBar Minimum="0" Maximum="128"
                                      Value="{Binding PasswordQualityBits}"
