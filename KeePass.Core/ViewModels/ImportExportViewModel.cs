@@ -377,7 +377,8 @@ namespace KeePass.Core.ViewModels
 				new FileDialogFilter { Name = "All Files", Extensions = new[] { "*" } }
 			};
 
-			string? path = await _fileDialog.OpenFileAsync("Export To", filters);
+			string? defaultName = string.IsNullOrEmpty(ext) ? null : $"export.{ext}";
+			string? path = await _fileDialog.SaveFileAsync("Export To", filters, defaultName);
 			if (!string.IsNullOrEmpty(path))
 				DestinationPath = path;
 		}

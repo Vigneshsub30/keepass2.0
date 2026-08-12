@@ -63,8 +63,9 @@ namespace KeePass.Core.ViewModels
 
 		// ── Events ────────────────────────────────────────────────────────────
 
-		/// <summary>Raised after <see cref="SaveCommand"/> successfully applies changes.</summary>
-		public event EventHandler Saved;
+		/// <summary>Raised after <see cref="SaveCommand"/> successfully applies changes.
+		/// In create mode, the event arg carries the newly created <see cref="PwEntry"/>.</summary>
+		public event EventHandler<PwEntry> Saved;
 
 		/// <summary>Raised after <see cref="CancelCommand"/> discards changes.</summary>
 		public event EventHandler Cancelled;
@@ -319,7 +320,6 @@ namespace KeePass.Core.ViewModels
 			}
 			else
 			{
-				// Create a history backup before mutating
 				_source.CreateBackup(null);
 				target = _source;
 			}
@@ -327,8 +327,15 @@ namespace KeePass.Core.ViewModels
 			ApplyToEntry(target);
 			target.Touch(true);
 
-			Saved?.Invoke(this, EventArgs.Empty);
+			ResultEntry = _isCreateMode ? target : null;
+			Saved?.Invoke(this, target);
 		}
+
+		/// <summary>
+		/// After <see cref="SaveCommand"/> completes in create mode, holds the
+		/// newly created <see cref="PwEntry"/>. Null in edit mode.
+		/// </summary>
+		public PwEntry ResultEntry { get; private set; }
 
 		private void Cancel()
 		{

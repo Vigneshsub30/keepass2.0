@@ -53,6 +53,20 @@ namespace KeePass.Core.Projections
 		/// <summary>The notes field (may be protected).</summary>
 		public ProtectedString Notes { get; init; }
 
+		// ── Display-friendly string accessors for data binding ───────────────
+
+		/// <summary>Plain-text title for UI display.</summary>
+		public string TitleText => Title?.ReadString() ?? string.Empty;
+
+		/// <summary>Plain-text user name for UI display.</summary>
+		public string UserNameText => UserName?.ReadString() ?? string.Empty;
+
+		/// <summary>Plain-text URL for UI display.</summary>
+		public string UrlText => Url?.ReadString() ?? string.Empty;
+
+		/// <summary>Plain-text notes for UI display.</summary>
+		public string NotesText => Notes?.ReadString() ?? string.Empty;
+
 		/// <summary>The override URL (plain string, rarely used).</summary>
 		public string OverrideUrl { get; init; }
 

@@ -20,6 +20,22 @@ namespace KeePass.Core.Services
 		/// dialog is cancelled.
 		/// </returns>
 		Task<string?> OpenFileAsync(string title, IReadOnlyList<FileDialogFilter> filters);
+
+		/// <summary>
+		/// Presents a platform-native save-file dialog.
+		/// </summary>
+		/// <param name="title">Dialog title text.</param>
+		/// <param name="filters">
+		/// Ordered list of extension filters displayed in the dialog.
+		/// </param>
+		/// <param name="defaultFileName">
+		/// Optional suggested file name (without directory) pre-filled in the dialog.
+		/// </param>
+		/// <returns>
+		/// The absolute path chosen by the user, or <c>null</c> when the
+		/// dialog is cancelled.
+		/// </returns>
+		Task<string?> SaveFileAsync(string title, IReadOnlyList<FileDialogFilter> filters, string? defaultFileName = null);
 	}
 
 	/// <summary>
