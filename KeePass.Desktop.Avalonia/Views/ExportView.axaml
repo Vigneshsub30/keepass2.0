@@ -1,0 +1,70 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:KeePass.Core.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="480" d:DesignHeight="420"
+             x:Class="KeePass.Desktop.Avalonia.Views.ExportView"
+             x:DataType="vm:ExportViewModel">
+
+    <Grid RowDefinitions="Auto,*,Auto" Margin="12">
+
+        <TextBlock Grid.Row="0" Text="Export to File"
+                   FontSize="15" FontWeight="Bold" Margin="0,0,0,10" />
+
+        <ScrollViewer Grid.Row="1">
+            <StackPanel Spacing="10">
+
+                <!-- Format selector -->
+                <TextBlock Text="Format" FontSize="11" Opacity="0.7" />
+                <ListBox ItemsSource="{Binding Formats}"
+                         SelectedItem="{Binding SelectedFormat}"
+                         MaxHeight="180"
+                         SelectionMode="Single">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:FormatProviderViewModel">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <TextBlock Text="📄" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <Separator />
+
+                <!-- Destination file -->
+                <TextBlock Text="Destination File" FontSize="11" Opacity="0.7" />
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBox Grid.Column="0"
+                             Text="{Binding DestinationPath}"
+                             IsReadOnly="True"
+                             Watermark="Select destination file…" />
+                    <Button Grid.Column="1" Margin="8,0,0,0"
+                            Content="Browse…"
+                            Command="{Binding BrowseDestinationCommand}" />
+                </Grid>
+
+                <Separator />
+
+                <!-- Progress -->
+                <ProgressBar IsVisible="{Binding IsExporting}"
+                             IsIndeterminate="True" Height="6" />
+                <TextBlock Text="{Binding StatusMessage}"
+                           FontSize="11"
+                           IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Buttons -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal"
+                    HorizontalAlignment="Right" Spacing="8" Margin="0,10,0,0">
+            <Button Content="Cancel" Command="{Binding CancelCommand}" />
+            <Button Content="Export" Classes="accent"
+                    Command="{Binding ExportCommand}"
+                    IsEnabled="{Binding CanExport}" />
+        </StackPanel>
+
+    </Grid>
+</UserControl>

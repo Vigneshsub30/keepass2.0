@@ -1,0 +1,22 @@
+# Build output
+bin/
+obj/
+artifacts/
+
+# NuGet packages cache
+.nuget/
+packages/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Rider
+.idea/
+
+# macOS
+.DS_Store
+
+# Cursor
+.cursor

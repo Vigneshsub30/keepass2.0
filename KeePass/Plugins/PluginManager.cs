@@ -1,0 +1,682 @@
+/*
+  KeePass Password Safe - The Open-Source Password Manager
+  Copyright (C) 2003-2026 Dominik Reichl <dominik.reichl@t-online.de>
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+*/
+
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Reflection;
+using System.Runtime.Loader;
+using System.Text;
+using System.Windows.Forms;
+
+using KeePass.App;
+using KeePass.App.Configuration;
+using KeePass.Resources;
+using KeePass.UI;
+using KeePass.Util;
+
+using KeePassLib;
+using KeePassLib.Diagnostics;
+using KeePassLib.Plugins;
+using KeePassLib.Cryptography;
+
+using Microsoft.Extensions.Logging;
+using KeePassLib.Delegates;
+using KeePassLib.Interfaces;
+using KeePassLib.Native;
+using KeePassLib.Utility;
+
+namespace KeePass.Plugins
+{
+	internal sealed class PluginManager : IEnumerable<PluginInfo>
+	{
+		private readonly List<PluginInfo> m_lPlugins = new List<PluginInfo>();
+		private IPluginHost m_host = null;
+		private KeePassLib.Plugins.IPluginAuditLogger m_auditLogger =
+			KeePassLib.Plugins.NullPluginAuditLogger.Instance;
+
+		private static readonly ILogger<PluginManager> s_logger =
+			Program.LoggerFactory.CreateLogger<PluginManager>();
+
+		private static string g_strUserDir = string.Empty;
+		internal static string UserDirectory
+		{
+			get { return g_strUserDir; }
+		}
+
+		public void Initialize(IPluginHost host)
+		{
+			Debug.Assert(host != null);
+			m_host = host;
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return m_lPlugins.GetEnumerator();
+		}
+		
+		public IEnumerator<PluginInfo> GetEnumerator()
+		{
+			return m_lPlugins.GetEnumerator();
+		}
+
+		internal void LoadAllPlugins()
+		{
+			string[] vExclNames = new string[] {
+				AppDefs.FileNames.Program, AppDefs.FileNames.XmlSerializers,
+				NativeLib.DllFileA64, NativeLib.DllFileX32, NativeLib.DllFileX64,
+				AppDefs.FileNames.ShInstUtil
+			};
+
+			string strAppDir = UrlUtil.GetFileDirectory(WinUtil.GetExecutable(),
+				false, true);
+			LoadAllPlugins(strAppDir, SearchOption.TopDirectoryOnly, vExclNames);
+			g_strUserDir = strAppDir; // Preliminary, see below
+
+			if(WinUtil.IsAppX)
+			{
+				string str = UrlUtil.EnsureTerminatingSeparator(
+					AppConfigSerializer.AppDataDirectory, false) + AppDefs.PluginsDir;
+				LoadAllPlugins(str, SearchOption.AllDirectories, vExclNames);
+
+				g_strUserDir = str;
+			}
+			else if(!NativeLib.IsUnix())
+			{
+				string str = UrlUtil.EnsureTerminatingSeparator(strAppDir,
+					false) + AppDefs.PluginsDir;
+				LoadAllPlugins(str, SearchOption.AllDirectories, vExclNames);
+
+				g_strUserDir = str;
+			}
+			else // Unix
+			{
+				try
+				{
+					DirectoryInfo diPlgRoot = new DirectoryInfo(strAppDir);
+					foreach(DirectoryInfo diSub in diPlgRoot.GetDirectories())
+					{
+						if(diSub == null) { Debug.Assert(false); continue; }
+
+						if(string.Equals(diSub.Name, AppDefs.PluginsDir,
+							StrUtil.CaseIgnoreCmp))
+						{
+							LoadAllPlugins(diSub.FullName, SearchOption.AllDirectories,
+								vExclNames);
+
+							g_strUserDir = diSub.FullName;
+						}
+					}
+				}
+				catch(Exception) { Debug.Assert(false); }
+			}
+		}
+
+		public void LoadAllPlugins(string strDir, SearchOption so, string[] vExclNames)
+		{
+			Debug.Assert(m_host != null);
+
+			try
+			{
+				if(!Directory.Exists(strDir)) return; // No assert
+
+				List<string> lDlls = UrlUtil.GetFilePaths(strDir, "*.dll", so);
+				FilterList(lDlls, vExclNames);
+
+				List<string> lExes = UrlUtil.GetFilePaths(strDir, "*.exe", so);
+				FilterList(lExes, vExclNames);
+
+				List<string> lPlgxs = UrlUtil.GetFilePaths(strDir, "*." +
+					PlgxPlugin.PlgxExtension, so);
+				FilterList(lPlgxs, vExclNames);
+
+				FilterLists(lDlls, lExes, lPlgxs);
+
+				LoadPlugins(lDlls, null, null, true);
+				LoadPlugins(lExes, null, null, true);
+
+				if(lPlgxs.Count != 0)
+				{
+					OnDemandStatusDialog dlgStatus = new OnDemandStatusDialog(true, null);
+					dlgStatus.StartLogging(PwDefs.ShortProductName, false);
+
+					try
+					{
+						foreach(string strFile in lPlgxs)
+							PlgxPlugin.Load(strFile, dlgStatus);
+					}
+					finally { dlgStatus.EndLogging(); }
+				}
+			}
+			catch(Exception) { Debug.Assert(false); } // Path access violation
+		}
+
+		public void LoadPlugin(string strFilePath, string strTypeName,
+			string strDisplayFilePath, bool bSkipCacheFile)
+		{
+			if(strFilePath == null) throw new ArgumentNullException("strFilePath");
+
+			LoadPlugins(new List<string> { strFilePath }, strTypeName,
+				strDisplayFilePath, bSkipCacheFile);
+		}
+
+		private void LoadPlugins(List<string> lFiles, string strTypeName,
+			string strDisplayFilePath, bool bSkipCacheFiles)
+		{
+			string strCacheRoot = UrlUtil.EnsureTerminatingSeparator(
+				PlgxCache.GetCacheRoot(), false);
+
+			foreach(string strFile in lFiles)
+			{
+				if(bSkipCacheFiles && strFile.StartsWith(strCacheRoot,
+					StrUtil.CaseIgnoreCmp))
+					continue;
+
+				FileVersionInfo fvi;
+				try
+				{
+					fvi = FileVersionInfo.GetVersionInfo(strFile);
+
+					if((fvi == null) || (fvi.ProductName == null) ||
+						(fvi.ProductName != AppDefs.PluginProductName))
+					{
+						continue;
+					}
+				}
+				catch(Exception) { continue; }
+
+				Exception exShowStd = null;
+				try
+				{
+				// Pre-execution metadata inspection — no plugin code runs yet.
+				PluginInspectionResult inspResult =
+					PluginMetadataInspector.Inspect(strFile);
+				if(!inspResult.IsAdmitted)
+				{
+					string reasons = string.Join("; ", inspResult.RejectionReasons);
+					s_logger.LogWarning(
+						"Plugin rejected by metadata inspection. " +
+						"File: {PluginFile}, Reasons: {Reasons}",
+						KeePassLogRedactor.RedactIfVaultField(null, strDisplayFilePath),
+						reasons);
+					MessageService.ShowWarning(KPRes.PluginLoadFailed,
+						strFile, reasons);
+					continue;
+				}
+
+				// Code-signing verification against the publisher allow-list.
+				PublisherKeyAllowList allowList =
+					PublisherKeyAllowList.FromConfiguration(
+						Program.Config.Security);
+				PluginSignatureResult sigResult =
+					PluginSignatureVerifier.Verify(strFile, allowList);
+				if(!sigResult.IsValid)
+				{
+					s_logger.LogWarning(
+						"Plugin rejected by signature verification. " +
+						"File: {PluginFile}, Reason: {Reason}, SignatureType: {SignatureType}",
+						KeePassLogRedactor.RedactIfVaultField(null, strDisplayFilePath),
+						sigResult.RejectionReason,
+						sigResult.SignatureType.ToString());
+					MessageService.ShowWarning(KPRes.PluginLoadFailed,
+						strFile, sigResult.RejectionReason);
+					continue;
+				}
+
+				string strHash = Convert.ToBase64String(CryptoUtil.HashSha256(
+					strFile), Base64FormattingOptions.None);
+
+				PluginInfo pi = new PluginInfo(strFile, fvi, strDisplayFilePath);
+				pi.Interface = CreatePluginInstance(pi.FilePath, strTypeName);
+
+				m_auditLogger.LogLoadAttempted(strFile);
+				CheckCompatibility(strHash, pi.Interface, m_auditLogger);
+				// CheckCompatibilityRefl(strFile);
+
+				if(!pi.Interface.Initialize(m_host))
+					continue; // Fail without error
+
+				m_lPlugins.Add(pi);
+				s_logger.LogInformation(
+					"Plugin loaded successfully. File: {PluginFile}, " +
+					"Type: {PluginType}, SignatureType: {SignatureType}",
+					KeePassLogRedactor.RedactIfVaultField(null, strDisplayFilePath),
+					inspResult.PluginTypeName ?? "(unknown)",
+					sigResult.SignatureType.ToString());
+				}
+				catch(BadImageFormatException exBif)
+				{
+					if(Is1xPlugin(strFile))
+						MessageService.ShowWarning(KPRes.PluginIncompatible +
+							MessageService.NewLine + strFile + MessageService.NewParagraph +
+							KPRes.Plugin1x + MessageService.NewParagraph + KPRes.Plugin1xHint);
+					else exShowStd = exBif;
+				}
+				catch(Exception ex)
+				{
+					if(PwDefs.DebugMode) MessageService.ShowWarning(strFile, ex);
+					else exShowStd = ex;
+				}
+
+				if(exShowStd != null)
+					ShowLoadError(strFile, exShowStd, null);
+			}
+		}
+
+		internal static void ShowLoadError(string strPath, Exception ex,
+			IStatusLogger slStatus)
+		{
+			if(string.IsNullOrEmpty(strPath)) { Debug.Assert(false); return; }
+
+			if(slStatus != null)
+				slStatus.SetText(KPRes.PluginLoadFailed, LogStatusType.Info);
+
+			bool bShowExcp = PwDefs.DebugMode;
+			string strExcpS = ((ex != null) ? StrUtil.FormatException(ex, false) : null);
+			string strExcpF = ((ex != null) ? StrUtil.FormatException(ex, true) : null);
+
+			string strMsg = strPath + MessageService.NewParagraph + KPRes.PluginLoadFailed;
+			if(!string.IsNullOrEmpty(strExcpS))
+				strMsg += MessageService.NewParagraph + strExcpS;
+			if(NativeLib.IsUnix())
+				strMsg += MessageService.NewParagraph + KPRes.PluginMonoComplete;
+
+			VistaTaskDialog vtd = new VistaTaskDialog();
+			vtd.Content = strMsg;
+			vtd.ExpandedByDefault = (!string.IsNullOrEmpty(strExcpF) && bShowExcp);
+			vtd.ExpandedInformation = strExcpF;
+			vtd.WindowTitle = PwDefs.ShortProductName;
+			vtd.SetIcon(VtdIcon.Warning);
+
+			if(!vtd.ShowDialog())
+			{
+				if(!bShowExcp) MessageService.ShowWarning(strMsg);
+				else MessageService.ShowWarning(strMsg, ex);
+			}
+		}
+
+		public void UnloadAllPlugins()
+		{
+			foreach(PluginInfo plugin in m_lPlugins)
+			{
+				Debug.Assert(plugin.Interface != null);
+				if(plugin.Interface != null)
+				{
+					try { plugin.Interface.Terminate(); }
+					catch(Exception) { Debug.Assert(false); }
+				}
+
+				UnloadPluginALC(plugin.FilePath);
+			}
+
+			m_lPlugins.Clear();
+		}
+
+		/// <summary>
+		/// Unloads the <see cref="PluginLoadContext"/> associated with the
+		/// plugin at <paramref name="pluginFilePath"/>, if one exists.
+		/// </summary>
+		private void UnloadPluginALC(string pluginFilePath)
+		{
+			if(string.IsNullOrEmpty(pluginFilePath)) return;
+			lock(m_dictAlc)
+			{
+				if(m_dictAlc.TryGetValue(pluginFilePath, out PluginLoadContext alc))
+				{
+					try { alc.Unload(); }
+					catch(Exception) { Debug.Assert(false); }
+					m_dictAlc.Remove(pluginFilePath);
+				}
+			}
+		}
+
+		private Plugin CreatePluginInstance(string strFilePath,
+			string strTypeName)
+		{
+			Debug.Assert(strFilePath != null);
+			if(strFilePath == null) throw new ArgumentNullException("strFilePath");
+
+			string strType;
+			if(string.IsNullOrEmpty(strTypeName))
+			{
+				strType = UrlUtil.GetFileName(strFilePath);
+				strType = UrlUtil.StripExtension(strType) + "." +
+					UrlUtil.StripExtension(strType) + "Ext";
+			}
+			else strType = strTypeName + "." + strTypeName + "Ext";
+
+			// Load the plugin into its own collectible ALC so its private
+			// dependencies are isolated from other plugins and the host.
+			var alc = new PluginLoadContext(strFilePath);
+			Assembly asm = alc.LoadFromAssemblyPath(Path.GetFullPath(strFilePath));
+
+			Type t = asm.GetType(strType, throwOnError: false);
+			if(t == null)
+			{
+				// Scan all exported types for a Plugin-derived concrete type
+				// when the conventional name is not found.
+				foreach(Type exported in asm.GetExportedTypes())
+				{
+					if(!exported.IsAbstract && typeof(Plugin).IsAssignableFrom(exported))
+					{
+						t = exported;
+						break;
+					}
+				}
+			}
+
+			if(t == null)
+			{
+				alc.Unload();
+				throw new FileLoadException(
+					$"No Plugin-derived type found in {strFilePath}.");
+			}
+
+			Plugin plugin = (Activator.CreateInstance(t) as Plugin);
+			if(plugin == null)
+			{
+				alc.Unload();
+				throw new FileLoadException($"Could not create an instance of {t.FullName}.");
+			}
+
+			// Track the ALC so we can unload it when the plugin is removed.
+			lock(m_dictAlc) { m_dictAlc[strFilePath] = alc; }
+			return plugin;
+		}
+
+		// Dictionary of per-plugin AssemblyLoadContexts for lifecycle management.
+		private readonly System.Collections.Generic.Dictionary<string, PluginLoadContext>
+			m_dictAlc = new System.Collections.Generic.Dictionary<string, PluginLoadContext>(
+				StringComparer.OrdinalIgnoreCase);
+
+		private static bool Is1xPlugin(string strFile)
+		{
+			try
+			{
+				byte[] pbFile = File.ReadAllBytes(strFile);
+				byte[] pbSig = StrUtil.Utf8.GetBytes("KpCreateInstance");
+				return (MemUtil.IndexOf(pbFile, pbSig) >= 0);
+			}
+			catch(Exception) { Debug.Assert(false); }
+
+			return false;
+		}
+
+		private static void FilterList(List<string> l, string[] vExclNames)
+		{
+			if((l == null) || (vExclNames == null)) { Debug.Assert(false); return; }
+
+			for(int i = l.Count - 1; i >= 0; --i)
+			{
+				string strName = UrlUtil.GetFileName(l[i]);
+				if(string.IsNullOrEmpty(strName))
+				{
+					Debug.Assert(false);
+					l.RemoveAt(i);
+					continue;
+				}
+
+				// Ignore satellite assemblies
+				if(strName.EndsWith(".resources.dll", StrUtil.CaseIgnoreCmp))
+				{
+					l.RemoveAt(i);
+					continue;
+				}
+
+				foreach(string strExcl in vExclNames)
+				{
+					if(string.IsNullOrEmpty(strExcl)) { Debug.Assert(false); continue; }
+
+					if(strName.Equals(strExcl, StrUtil.CaseIgnoreCmp))
+					{
+						l.RemoveAt(i);
+						break;
+					}
+				}
+			}
+		}
+
+		private static void FilterLists(List<string> lDlls, List<string> lExes,
+			List<string> lPlgxs)
+		{
+			bool bPreferDll = Program.IsStableAssembly();
+
+			for(int i = lDlls.Count - 1; i >= 0; --i)
+			{
+				string strDllPre = UrlUtil.StripExtension(lDlls[i]);
+
+				for(int j = lPlgxs.Count - 1; j >= 0; --j)
+				{
+					string strPlgxPre = UrlUtil.StripExtension(lPlgxs[j]);
+
+					if(string.Equals(strDllPre, strPlgxPre, StrUtil.CaseIgnoreCmp))
+					{
+						if(bPreferDll) lPlgxs.RemoveAt(j);
+						else lDlls.RemoveAt(i);
+
+						break;
+					}
+				}
+			}
+		}
+
+		private static void CheckRefs(Module m, int iMdTokenType,
+			GAction<Module, int> fCheck)
+		{
+			if((m == null) || (fCheck == null)) { Debug.Assert(false); return; }
+			if((iMdTokenType & 0x00FFFFFF) != 0)
+			{
+				Debug.Assert(false); // Not a valid MetadataTokenType
+				return;
+			}
+			if((iMdTokenType < 0) || (iMdTokenType == 0x7F000000))
+			{
+				Debug.Assert(false); // Loop below would need to be adjusted
+				return;
+			}
+
+			try
+			{
+				// https://msdn.microsoft.com/en-us/library/ms404456(v=vs.100).aspx
+				// https://docs.microsoft.com/en-us/dotnet/standard/metadata-and-self-describing-components
+				int s = iMdTokenType | 1; // RID = 0 <=> 'nil token'
+				int e = iMdTokenType | 0x00FFFFFF;
+
+				for(int i = s; i <= e; ++i) fCheck(m, i);
+			}
+			catch(ArgumentOutOfRangeException) { } // End of metadata table
+			catch(ArgumentException) { Debug.Assert(false); }
+			// Other exceptions indicate an unresolved reference
+		}
+
+		private static void CheckTypeRef(Module m, int iMdToken)
+		{
+			// ResolveType should throw exception for unresolvable token
+			// if(m.ResolveType(iMdToken) == null) { Debug.Assert(false); }
+
+			// ResolveType should throw exception for unresolvable token
+			Type t = m.ResolveType(iMdToken);
+			if(t == null) { Debug.Assert(false); return; }
+
+			if(t.Assembly == typeof(PluginManager).Assembly)
+			{
+				if(t.IsNotPublic || t.IsNestedPrivate || t.IsNestedAssembly ||
+					t.IsNestedFamANDAssem)
+					throw new UnauthorizedAccessException("Ref.: " + t.ToString() + ".");
+			}
+		}
+
+		private static void CheckMemberRef(Module m, int iMdToken)
+		{
+			// ResolveMember should throw exception for unresolvable token
+			// if(m.ResolveMember(iMdToken) == null) { Debug.Assert(false); }
+
+			// ResolveMember should throw exception for unresolvable token
+			MemberInfo mi = m.ResolveMember(iMdToken);
+			if(mi == null) { Debug.Assert(false); return; }
+
+			if(mi.Module == typeof(PluginManager).Module)
+			{
+				MethodBase mb = (mi as MethodBase);
+				if(mb != null)
+				{
+					if(mb.IsPrivate || mb.IsAssembly || mb.IsFamilyAndAssembly)
+						ThrowRefAccessExcp(mb);
+					return;
+				}
+
+				FieldInfo fi = (mi as FieldInfo);
+				if(fi != null)
+				{
+					if(fi.IsPrivate || fi.IsAssembly || fi.IsFamilyAndAssembly)
+						ThrowRefAccessExcp(fi);
+					return;
+				}
+
+				Debug.Assert(false); // Unknown member reference type
+			}
+		}
+
+		private static void ThrowRefAccessExcp(MemberInfo mi)
+		{
+			string str = "Ref.: ";
+
+			try
+			{
+				Type t = mi.DeclaringType;
+				if(t != null) str += t.ToString() + " -> ";
+			}
+			catch(Exception) { Debug.Assert(false); }
+
+			throw new MemberAccessException(str + mi.ToString() + ".");
+		}
+
+		private static void CheckCompatibilityPriv(Plugin p)
+		{
+			// Workaround #9604 (Mono SIGABRT on invalid token) was retired.
+			// Module.ResolveType and Module.ResolveMember work correctly on
+			// all platforms on .NET 10 — the check now runs everywhere.
+
+			Assembly asm = p.GetType().Assembly;
+			if(asm == typeof(PluginManager).Assembly) { Debug.Assert(false); return; }
+
+			foreach(Module m in asm.GetModules())
+			{
+				// MetadataTokenType.TypeRef = 0x01000000
+				CheckRefs(m, 0x01000000, CheckTypeRef);
+
+				// MetadataTokenType.MemberRef = 0x0A000000
+				CheckRefs(m, 0x0A000000, CheckMemberRef);
+			}
+		}
+
+		private static void CheckCompatibility(string strHash, Plugin p,
+			KeePassLib.Plugins.IPluginAuditLogger auditLogger)
+		{
+			AceApplication aceApp = Program.Config.Application;
+			if(aceApp.IsPluginCompatible(strHash)) return;
+
+			string filePath = p.GetType().Assembly.Location;
+			try
+			{
+				CheckCompatibilityPriv(p);
+				auditLogger.LogAdmitted(filePath, p.GetType().FullName, null);
+			}
+			catch(Exception ex)
+			{
+				auditLogger.LogRejected(filePath,
+					$"Reference-token check failed: {ex.Message}");
+				throw new ExtendedException(null, ex, KPRes.PluginUpdateHint);
+			}
+
+			aceApp.SetPluginCompatible(strHash);
+		}
+
+		/* private static void CheckCompatibilityRefl(string strFile)
+		{
+			ResolveEventHandler eh = delegate(object sender, ResolveEventArgs e)
+			{
+				string strName = e.Name;
+				if(strName.Equals("KeePass", StrUtil.CaseIgnoreCmp) ||
+					strName.StartsWith("KeePass,", StrUtil.CaseIgnoreCmp))
+					return Assembly.ReflectionOnlyLoadFrom(WinUtil.GetExecutable());
+
+				return Assembly.ReflectionOnlyLoad(strName);
+			};
+
+			AppDomain d = AppDomain.CurrentDomain;
+			d.ReflectionOnlyAssemblyResolve += eh;
+			try
+			{
+				Assembly asm = Assembly.ReflectionOnlyLoadFrom(strFile);
+				asm.GetTypes();
+			}
+			finally { d.ReflectionOnlyAssemblyResolve -= eh; }
+		} */
+
+		internal void AddMenuItems(PluginMenuType t, ToolStripItemCollection c,
+			ToolStripItem tsiPrev)
+		{
+			if(c == null) { Debug.Assert(false); return; }
+
+			List<ToolStripItem> l = new List<ToolStripItem>();
+			foreach(PluginInfo pi in m_lPlugins)
+			{
+				if(pi == null) { Debug.Assert(false); continue; }
+
+				Plugin p = pi.Interface;
+				if(p == null) { Debug.Assert(false); continue; }
+
+				System.Collections.Generic.IReadOnlyList<KeePassLib.Plugins.PluginMenuCommand> cmds =
+					p.GetMenuCommands(t);
+				foreach(KeePassLib.Plugins.PluginMenuCommand cmd in cmds)
+				{
+					ToolStripMenuItem tsmi = WinFormsPluginMenuAdapter.ToMenuItem(cmd);
+					if(tsmi != null) l.Add(tsmi);
+				}
+			}
+			if(l.Count == 0) return;
+
+			int iPrev = ((tsiPrev != null) ? c.IndexOf(tsiPrev) : -1);
+			if(iPrev < 0) { Debug.Assert(false); iPrev = c.Count - 1; }
+			int iIns = iPrev + 1;
+
+			l.Sort(PluginManager.CompareToolStripItems);
+			if((iPrev >= 0) && (iPrev < c.Count) && !(c[iPrev] is ToolStripSeparator))
+				l.Insert(0, new ToolStripSeparator());
+			if((iIns < c.Count) && !(c[iIns] is ToolStripSeparator))
+				l.Add(new ToolStripSeparator());
+
+			if(iIns == c.Count) c.AddRange(l.ToArray());
+			else
+			{
+				for(int i = 0; i < l.Count; ++i)
+					c.Insert(iIns + i, l[i]);
+			}
+		}
+
+		private static int CompareToolStripItems(ToolStripItem x,
+			ToolStripItem y)
+		{
+			return string.Compare(x.Text, y.Text, StrUtil.CaseIgnoreCmp);
+		}
+	}
+}

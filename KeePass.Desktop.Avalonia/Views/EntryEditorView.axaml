@@ -1,0 +1,255 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:KeePass.Core.ViewModels"
+             xmlns:proj="using:KeePass.Core.Projections"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="620" d:DesignHeight="580"
+             x:Class="KeePass.Desktop.Avalonia.Views.EntryEditorView"
+             x:DataType="vm:EntryEditorViewModel">
+
+    <Grid RowDefinitions="Auto,*,Auto" Margin="12">
+
+        <!-- Window header -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+            <TextBlock Text="✏️" FontSize="20" VerticalAlignment="Center" />
+            <TextBlock Text="Entry Properties"
+                       FontSize="15" FontWeight="Bold" VerticalAlignment="Center" />
+        </StackPanel>
+
+        <!-- ═════════════════════════════════════════════════════════════ -->
+        <!-- Six-tab content area                                           -->
+        <!-- ═════════════════════════════════════════════════════════════ -->
+        <TabControl Grid.Row="1">
+
+            <!-- ────────────────────────── Tab 1: General ──────────────────────────── -->
+            <TabItem Header="General">
+                <ScrollViewer>
+                    <StackPanel Spacing="8" Margin="8">
+
+                        <TextBlock Text="Title *" FontSize="11" Opacity="0.7" />
+                        <TextBox Text="{Binding Title}" Watermark="Entry title (required)" />
+
+                        <TextBlock Text="User Name" FontSize="11" Opacity="0.7" />
+                        <TextBox Text="{Binding UserName}" Watermark="User name" />
+
+                        <TextBlock Text="Password" FontSize="11" Opacity="0.7" />
+                        <Grid ColumnDefinitions="*,Auto,Auto">
+                            <TextBox Grid.Column="0"
+                                     x:Name="PasswordBox"
+                                     PasswordChar="●"
+                                     Watermark="Password"
+                                     TextChanged="PasswordBox_TextChanged" />
+                            <ToggleButton Grid.Column="1" Margin="4,0,0,0"
+                                          ToolTip.Tip="Reveal / hide"
+                                          Content="👁"
+                                          Checked="PasswordReveal_Checked"
+                                          Unchecked="PasswordReveal_Unchecked" />
+                            <Button Grid.Column="2" Margin="4,0,0,0"
+                                    Content="⚡ Gen"
+                                    ToolTip.Tip="Generate Password…"
+                                    x:Name="GeneratePasswordButton"
+                                    Click="GeneratePasswordButton_Click" />
+                        </Grid>
+                        <ProgressBar Minimum="0" Maximum="128"
+                                     Value="{Binding PasswordQualityBits}"
+                                     Height="4" />
+
+                        <TextBlock Text="Repeat Password" FontSize="11" Opacity="0.7" />
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBox Grid.Column="0"
+                                     x:Name="PasswordRepeatBox"
+                                     PasswordChar="●"
+                                     Watermark="Repeat password"
+                                     TextChanged="PasswordRepeatBox_TextChanged" />
+                            <ToggleButton Grid.Column="1" Margin="4,0,0,0"
+                                          ToolTip.Tip="Reveal / hide"
+                                          Content="👁"
+                                          Checked="RepeatReveal_Checked"
+                                          Unchecked="RepeatReveal_Unchecked" />
+                        </Grid>
+                        <Border IsVisible="{Binding PasswordMismatch}"
+                                Background="#20FF0000" CornerRadius="3" Padding="6,3">
+                            <TextBlock Text="Passwords do not match" Foreground="Red" FontSize="11" />
+                        </Border>
+
+                        <TextBlock Text="URL" FontSize="11" Opacity="0.7" />
+                        <TextBox Text="{Binding Url}" Watermark="https://example.com" />
+
+                        <TextBlock Text="Notes" FontSize="11" Opacity="0.7" />
+                        <TextBox Text="{Binding Notes}"
+                                 AcceptsReturn="True" Height="80"
+                                 TextWrapping="Wrap" />
+
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ────────────────────────── Tab 2: Advanced ──────────────────────────── -->
+            <TabItem Header="Advanced">
+                <Grid RowDefinitions="Auto,*,Auto" Margin="8">
+
+                    <TextBlock Grid.Row="0" Text="Custom String Fields"
+                               FontSize="13" FontWeight="SemiBold" Margin="0,0,0,4" />
+
+                    <DataGrid Grid.Row="1"
+                              x:Name="CustomFieldGrid"
+                              ItemsSource="{Binding CustomFields}"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="False"
+                              GridLinesVisibility="Horizontal"
+                              CanUserSortColumns="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Name"  Width="160"
+                                                Binding="{Binding Name}" />
+                            <DataGridTextColumn Header="Value" Width="*"
+                                                Binding="{Binding ValueText}" />
+                            <DataGridCheckBoxColumn Header="Protected" Width="80"
+                                                    Binding="{Binding IsProtected}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <StackPanel Grid.Row="2" Orientation="Horizontal"
+                                Spacing="6" Margin="0,6,0,0">
+                        <Button Content="Add Field"
+                                Command="{Binding AddFieldCommand}"
+                                CommandParameter="" />
+                        <Button Content="Remove Selected"
+                                x:Name="RemoveFieldButton"
+                                Click="RemoveFieldButton_Click" />
+                    </StackPanel>
+
+                </Grid>
+            </TabItem>
+
+            <!-- ────────────────────────── Tab 3: Properties ──────────────────────────── -->
+            <TabItem Header="Properties">
+                <ScrollViewer>
+                    <StackPanel Spacing="10" Margin="8">
+
+                        <TextBlock Text="Tags (comma-separated)" FontSize="11" Opacity="0.7" />
+                        <TextBox x:Name="TagsBox"
+                                 Watermark="tag1, tag2, tag3"
+                                 TextChanged="TagsBox_TextChanged"
+                                 LostFocus="TagsBox_LostFocus" />
+
+                        <Separator />
+
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <CheckBox Content="Entry expires"
+                                      IsChecked="{Binding Expires}" />
+                        </StackPanel>
+
+                        <StackPanel IsVisible="{Binding Expires}" Spacing="6">
+                            <TextBlock Text="Expiry date (UTC)" FontSize="11" Opacity="0.7" />
+                            <CalendarDatePicker SelectedDate="{Binding ExpiryTime}" />
+                        </StackPanel>
+
+                        <Separator />
+
+                        <CheckBox Content="Quality check" IsChecked="{Binding QualityCheck}" />
+
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ────────────────────────── Tab 4: Auto-Type ──────────────────────────── -->
+            <TabItem Header="Auto-Type">
+                <Grid RowDefinitions="Auto,*,Auto" Margin="8">
+
+                    <TextBlock Grid.Row="0" Text="Window / Sequence Associations"
+                               FontSize="13" FontWeight="SemiBold" Margin="0,0,0,4" />
+
+                    <DataGrid Grid.Row="1"
+                              x:Name="AssocGrid"
+                              ItemsSource="{Binding AutoTypeAssociations}"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="False"
+                              GridLinesVisibility="Horizontal">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Window"   Width="*"
+                                                Binding="{Binding WindowName}" />
+                            <DataGridTextColumn Header="Sequence" Width="*"
+                                                Binding="{Binding Sequence}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <StackPanel Grid.Row="2" Orientation="Horizontal"
+                                Spacing="6" Margin="0,6,0,0">
+                        <Button Content="Add Association"
+                                Command="{Binding AddAssociationCommand}" />
+                        <Button Content="Remove Selected"
+                                x:Name="RemoveAssocButton"
+                                Click="RemoveAssocButton_Click" />
+                    </StackPanel>
+
+                </Grid>
+            </TabItem>
+
+            <!-- ────────────────────────── Tab 5: History ──────────────────────────── -->
+            <TabItem Header="History">
+                <Grid RowDefinitions="*" Margin="8">
+
+                    <DataGrid ItemsSource="{Binding HistoryEntries}"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              GridLinesVisibility="Horizontal">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Modified" Width="150"
+                                                Binding="{Binding LastModificationTime}" />
+                            <DataGridTextColumn Header="Title"    Width="*"
+                                                Binding="{Binding Title}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                </Grid>
+            </TabItem>
+
+            <!-- ────────────────────────── Tab 6: Attachments ──────────────────────────── -->
+            <TabItem Header="Attachments">
+                <Grid RowDefinitions="*,Auto" Margin="8">
+
+                    <ListBox Grid.Row="0"
+                             x:Name="AttachmentList"
+                             ItemsSource="{Binding Attachments}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="proj:BinaryReference">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="{Binding Name}" />
+                                    <TextBlock Text="{Binding Size, StringFormat=' ({0} bytes)'}"
+                                               Opacity="0.6" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <StackPanel Grid.Row="1" Orientation="Horizontal"
+                                Spacing="6" Margin="0,6,0,0">
+                        <Button Content="Add Attachment…"
+                                x:Name="AddAttachButton"
+                                Click="AddAttachButton_Click" />
+                        <Button Content="Remove Selected"
+                                x:Name="RemoveAttachButton"
+                                Click="RemoveAttachButton_Click" />
+                    </StackPanel>
+
+                </Grid>
+            </TabItem>
+
+        </TabControl>
+
+        <!-- ═════════════════════════════════════════════════════════════ -->
+        <!-- OK / Cancel bar                                               -->
+        <!-- ═════════════════════════════════════════════════════════════ -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal"
+                    HorizontalAlignment="Right" Spacing="8" Margin="0,8,0,0">
+            <TextBlock Text="{Binding PasswordMismatch, StringFormat='Passwords do not match'}"
+                       Foreground="Red" FontSize="11" VerticalAlignment="Center"
+                       IsVisible="{Binding PasswordMismatch}" />
+            <Button Content="Cancel" Command="{Binding CancelCommand}" />
+            <Button Content="OK" Classes="accent"
+                    Command="{Binding SaveCommand}" />
+        </StackPanel>
+
+    </Grid>
+</UserControl>

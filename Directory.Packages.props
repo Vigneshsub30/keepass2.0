@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Central Package Management (CPM) for the KeePass repository.
+
+  All <PackageReference> elements across the solution must declare only the
+  Include attribute — the version is resolved from the <PackageVersion> entries
+  here.  Never add a Version attribute to a PackageReference; add or update the
+  corresponding PackageVersion entry in this file instead.
+-->
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Provides FileSystemAclExtensions (GetAccessControl / SetAccessControl)
+         extension methods for FileInfo on .NET Core targets.
+         Used in KeePassLib/Serialization/FileTransactionEx.cs. -->
+    <PackageVersion Include="Avalonia" Version="11.3.20" />
+    <PackageVersion Include="Avalonia.Controls.DataGrid" Version="11.3.13" />
+    <PackageVersion Include="Avalonia.Desktop" Version="11.3.20" />
+    <PackageVersion Include="Avalonia.Themes.Fluent" Version="11.3.20" />
+    <PackageVersion Include="Avalonia.Headless.XUnit" Version="11.3.20" />
+    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageVersion Include="coverlet.collector" Version="10.0.1">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageVersion>
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.6.0" />
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.Testing" Version="10.8.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.10" />
+    <PackageVersion Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
+    <!-- Available for future use if cross-platform GDI+ support is needed
+         beyond the built-in net10.0-windows platform surface. -->
+    <PackageVersion Include="System.Drawing.Common" Version="10.0.10" />
+    <!-- Available for future use to embed PDB source-mapping for debugging. -->
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.301" />
+    <!-- Test packages for KeePass.Tests (xUnit characterization tests). -->
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.8.1" />
+    <PackageVersion Include="System.Reflection.MetadataLoadContext" Version="10.0.10" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="NaCl.Net" Version="0.1.13" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+</Project>

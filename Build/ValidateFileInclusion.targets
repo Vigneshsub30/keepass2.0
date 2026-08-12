@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ValidateFileInclusion.targets
+  ─────────────────────────────
+  Post-build MSBuild target that verifies every .cs file present in the
+  project directory is explicitly listed in the project's Compile item group.
+
+  This is the build-integrated counterpart to scripts/Validate-ProjectFiles.ps1
+  (which requires pwsh and is intended for manual or CI invocation).
+
+  Behaviour
+  ─────────
+  • Errors  if a .cs file exists on disk but is not in @(Compile).  This
+    prevents EnableDefaultItems=false from silently dropping newly-added
+    source files that a developer forgot to register.
+  • Warns   if a @(Compile) entry has no matching file on disk (stale
+    reference), so developers notice orphaned entries without breaking the
+    build.
+  • Passes  silently (low-importance message) when disk and csproj agree.
+
+  opt-out
+  ───────
+  Set <EnableFileInclusionValidation>false</EnableFileInclusionValidation>
+  in a project file, or pass /p:EnableFileInclusionValidation=false on the
+  command line, to skip this target for a specific project or invocation.
+-->
+<Project>
+
+  <Target Name="ValidateFileInclusion"
+          AfterTargets="Build"
+          Condition="'$(EnableFileInclusionValidation)' != 'false'">
+
+    <!-- ── Step 1: collect all .cs files on disk ────────────────────────── -->
+    <ItemGroup>
+      <!--
+        Glob every .cs file under the project root.  Exclude the obj/ and
+        bin/ output directories so MSBuild-generated attribute files (e.g.
+        .NETCoreApp,Version=v10.0.AssemblyAttributes.cs) are not flagged as
+        untracked.
+      -->
+      <!--
+        $(MSBuildProjectDirectory) has no trailing separator, so we add /
+        explicitly before the glob wildcards.
+      -->
+      <_FIV_DiskCs
+          Include="$(MSBuildProjectDirectory)/**/*.cs"
+          Exclude="$(MSBuildProjectDirectory)/obj/**;$(MSBuildProjectDirectory)/bin/**" />
+    </ItemGroup>
+
+    <!-- ── Step 2: resolve Compile items to absolute paths ──────────────── -->
+    <ItemGroup>
+      <!--
+        @(Compile) items are stored as relative paths (e.g. Collections\Foo.cs).
+        %(FullPath) resolves each relative path against MSBuildProjectDirectory,
+        producing the same absolute path format as the glob above.
+      -->
+      <_FIV_CompileFull Include="@(Compile->'%(FullPath)')" />
+    </ItemGroup>
+
+    <!-- ── Step 3: compute differences ──────────────────────────────────── -->
+    <ItemGroup>
+      <!-- On disk but not in Compile — the critical case. -->
+      <_FIV_Untracked Include="@(_FIV_DiskCs)"
+                      Exclude="@(_FIV_CompileFull)" />
+      <!--
+        In Compile but not on disk — stale reference.
+        Also exclude obj/ and bin/ from this check: the SDK injects generated
+        files (e.g. .NETCoreApp,Version=v10.0.AssemblyAttributes.cs) into
+        @(Compile) at build time; those paths live under obj/ and are not
+        manually authored, so they must not appear as stale warnings.
+      -->
+      <_FIV_Stale Include="@(_FIV_CompileFull)"
+                  Exclude="@(_FIV_DiskCs);$(MSBuildProjectDirectory)/obj/**;$(MSBuildProjectDirectory)/bin/**" />
+    </ItemGroup>
+
+    <!-- ── Step 4: report ────────────────────────────────────────────────── -->
+    <!--
+      MSBuild %0A encodes a newline so the file list renders one-per-line in
+      terminal and MSBuild log output.
+    -->
+    <Error
+        Condition="'@(_FIV_Untracked)' != ''"
+        Text="$(MSBuildProjectName): .cs file(s) on disk are not listed in Compile — add them to the project file or set &lt;EnableFileInclusionValidation&gt;false&lt;/EnableFileInclusionValidation&gt; to suppress this check:%0A  @(_FIV_Untracked, '%0A  ')" />
+
+    <Warning
+        Condition="'@(_FIV_Stale)' != ''"
+        Text="$(MSBuildProjectName): Compile item(s) reference files not found on disk:%0A  @(_FIV_Stale, '%0A  ')" />
+
+    <Message
+        Condition="'@(_FIV_Untracked)' == '' and '@(_FIV_Stale)' == ''"
+        Importance="Low"
+        Text="$(MSBuildProjectName): file inclusion validation passed." />
+
+  </Target>
+
+</Project>

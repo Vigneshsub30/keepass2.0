@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Default (empty) AppConfigEx fixture.
+  Produced by serializing 'new AppConfigEx()' — all values are at their
+  factory defaults.  The XmlSerializer includes an empty root element with
+  standard XSD namespace declarations matching the real format.
+-->
+<Configuration xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+</Configuration>

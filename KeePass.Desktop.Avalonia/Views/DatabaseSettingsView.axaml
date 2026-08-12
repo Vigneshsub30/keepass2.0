@@ -1,0 +1,166 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:KeePass.Core.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="520" d:DesignHeight="480"
+             x:Class="KeePass.Desktop.Avalonia.Views.DatabaseSettingsView"
+             x:DataType="vm:DatabaseSettingsViewModel">
+
+    <Grid RowDefinitions="Auto,*,Auto" Margin="12">
+
+        <!-- Header -->
+        <TextBlock Grid.Row="0" Text="Database Settings"
+                   FontSize="15" FontWeight="Bold" Margin="0,0,0,10" />
+
+        <TabControl Grid.Row="1">
+
+            <!-- ── General ── -->
+            <TabItem Header="General">
+                <StackPanel Spacing="10" Margin="8">
+                    <TextBlock Text="Database Name" FontSize="11" Opacity="0.7" />
+                    <TextBox Text="{Binding DatabaseName}" />
+
+                    <TextBlock Text="Description" FontSize="11" Opacity="0.7" />
+                    <TextBox Text="{Binding Description}"
+                             AcceptsReturn="True" Height="70" TextWrapping="Wrap" />
+
+                    <TextBlock Text="Default Username" FontSize="11" Opacity="0.7" />
+                    <TextBox Text="{Binding DefaultUserName}" />
+                </StackPanel>
+            </TabItem>
+
+            <!-- ── Security ── -->
+            <TabItem Header="Security">
+                <ScrollViewer>
+                    <StackPanel Spacing="10" Margin="8">
+
+                        <TextBlock Text="Encryption Cipher" FontSize="11" Opacity="0.7" />
+                        <ComboBox ItemsSource="{Binding Ciphers}"
+                                  SelectedItem="{Binding SelectedCipher}"
+                                  DisplayMemberBinding="{Binding Name}"
+                                  HorizontalAlignment="Stretch" />
+
+                        <Separator />
+
+                        <TextBlock Text="Key Derivation Function (KDF)" FontSize="11" Opacity="0.7" />
+                        <ComboBox ItemsSource="{Binding KdfEngines}"
+                                  SelectedItem="{Binding SelectedKdf}"
+                                  DisplayMemberBinding="{Binding Name}"
+                                  HorizontalAlignment="Stretch" />
+
+                        <!-- Dynamic KDF parameter panel -->
+                        <ContentControl Content="{Binding KdfParameters}">
+                            <ContentControl.DataTemplates>
+
+                                <!-- Argon2 parameters -->
+                                <DataTemplate DataType="{x:Type vm:Argon2ParametersViewModel}">
+                                    <StackPanel Spacing="8" Margin="0,4,0,0">
+                                        <TextBlock Text="Memory (MB)" FontSize="11" Opacity="0.7" />
+                                        <NumericUpDown Value="{Binding MemoryMb}"
+                                                       Minimum="8" Maximum="4096"
+                                                       Increment="8" />
+
+                                        <TextBlock Text="Iterations" FontSize="11" Opacity="0.7" />
+                                        <NumericUpDown Value="{Binding Iterations}"
+                                                       Minimum="1" Maximum="999" />
+
+                                        <TextBlock Text="Parallelism (threads)" FontSize="11" Opacity="0.7" />
+                                        <NumericUpDown Value="{Binding Parallelism}"
+                                                       Minimum="1" Maximum="64" />
+                                    </StackPanel>
+                                </DataTemplate>
+
+                                <!-- AES-KDF parameters -->
+                                <DataTemplate DataType="{x:Type vm:AesKdfParametersViewModel}">
+                                    <StackPanel Spacing="8" Margin="0,4,0,0">
+                                        <TextBlock Text="Encryption Rounds" FontSize="11" Opacity="0.7" />
+                                        <NumericUpDown Value="{Binding Rounds}"
+                                                       Minimum="1" Maximum="99999999" />
+                                    </StackPanel>
+                                </DataTemplate>
+
+                            </ContentControl.DataTemplates>
+                        </ContentControl>
+
+                        <Separator />
+
+                        <!-- Benchmark -->
+                        <Grid ColumnDefinitions="Auto,*">
+                            <Button Grid.Column="0"
+                                    Content="⏱ Benchmark (1 s)"
+                                    Command="{Binding BenchmarkCommand}"
+                                    IsEnabled="{Binding !IsBenchmarking}" />
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding BenchmarkStatus}"
+                                       VerticalAlignment="Center"
+                                       Margin="8,0,0,0"
+                                       TextWrapping="Wrap"
+                                       FontSize="11" Opacity="0.8" />
+                        </Grid>
+
+                        <ProgressBar IsVisible="{Binding IsBenchmarking}"
+                                     IsIndeterminate="True" Height="6" />
+
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ── Compression ── -->
+            <TabItem Header="Compression">
+                <StackPanel Spacing="10" Margin="8">
+                    <TextBlock Text="Database Compression" FontSize="11" Opacity="0.7" />
+                    <RadioButton GroupName="Compression" Content="None"
+                                 IsChecked="{Binding IsCompressionNone}"
+                                 x:Name="CompNoneRadio" />
+                    <RadioButton GroupName="Compression" Content="GZip"
+                                 IsChecked="{Binding IsCompressionGZip}"
+                                 x:Name="CompGZipRadio" />
+                </StackPanel>
+            </TabItem>
+
+            <!-- ── Recycle Bin ── -->
+            <TabItem Header="Recycle Bin">
+                <StackPanel Spacing="10" Margin="8">
+                    <CheckBox Content="Use Recycle Bin"
+                              IsChecked="{Binding RecycleBinEnabled}" />
+                    <TextBlock Text="Entries deleted within the app are moved to the Recycle Bin group."
+                               TextWrapping="Wrap" FontSize="11" Opacity="0.7" />
+                </StackPanel>
+            </TabItem>
+
+            <!-- ── History ── -->
+            <TabItem Header="History">
+                <StackPanel Spacing="10" Margin="8">
+                    <TextBlock Text="Maximum history items per entry (-1 = unlimited)"
+                               TextWrapping="Wrap" FontSize="11" Opacity="0.7" />
+                    <NumericUpDown Value="{Binding HistoryMaxItems}"
+                                   Minimum="-1" Maximum="9999" />
+
+                    <TextBlock Text="Maximum history size in bytes (-1 = unlimited)"
+                               TextWrapping="Wrap" FontSize="11" Opacity="0.7" />
+                    <NumericUpDown Value="{Binding HistoryMaxSizeDecimal}"
+                                   Minimum="-1" Maximum="999999999" />
+                </StackPanel>
+            </TabItem>
+
+            <!-- ── Advanced ── -->
+            <TabItem Header="Advanced">
+                <StackPanel Spacing="10" Margin="8">
+                    <TextBlock Text="Additional advanced database settings can be configured here."
+                               TextWrapping="Wrap" FontSize="11" Opacity="0.7" />
+                </StackPanel>
+            </TabItem>
+
+        </TabControl>
+
+        <!-- OK / Cancel -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal"
+                    HorizontalAlignment="Right" Spacing="8" Margin="0,10,0,0">
+            <Button Content="Cancel" Click="CancelButton_Click" />
+            <Button Content="OK" Classes="accent"
+                    Command="{Binding ApplyCommand}" />
+        </StackPanel>
+
+    </Grid>
+</UserControl>

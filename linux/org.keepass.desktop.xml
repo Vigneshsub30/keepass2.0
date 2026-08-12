@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="application/x-keepass2">
+    <comment>KeePass 2 Database</comment>
+    <comment xml:lang="de">KeePass-2-Datenbank</comment>
+    <icon name="keepass"/>
+    <glob pattern="*.kdbx"/>
+    <magic priority="80">
+      <!-- KDBX4 signature: 0x9AA2D903 0xB54BFB67 -->
+      <match type="string" offset="0" value="\x03\xd9\xa2\x9a\x67\xfb\x4b\xb5"/>
+    </magic>
+  </mime-type>
+</mime-info>

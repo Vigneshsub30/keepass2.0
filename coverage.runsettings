@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Coverlet run settings for XPlat Code Coverage collection.
+  Referenced by the CI workflow via the "settings" flag of dotnet test.
+
+  Include scope: KeePassLib only (domain + cryptography).
+  Excluded: KeePass.Tests, xUnit infrastructure, auto-generated Designer files.
+
+  The threshold is set conservatively and must be ratcheted upward with each
+  new test batch.  Update the Threshold value below when adding coverage.
+  Current baseline target: ≥5% line coverage (Phase 2 goal: 40%, Phase 3: 70%).
+-->
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat Code Coverage">
+        <Configuration>
+          <!-- Output Cobertura XML (consumed by ReportGenerator in CI). -->
+          <Format>cobertura</Format>
+
+          <!-- Cover only KeePassLib assembly. -->
+          <Include>[KeePassLib]*</Include>
+
+          <!-- Exclude test infrastructure, xUnit, and platform-specific glue. -->
+          <Exclude>
+            [KeePass.Tests]*,
+            [xunit.*]*,
+            [Microsoft.*]*,
+            [System.*]*
+          </Exclude>
+
+          <!-- Skip auto-generated WinForms Designer files. -->
+          <ExcludeByFile>**\*.Designer.cs</ExcludeByFile>
+
+          <!-- Record each hit only once for cleaner branch coverage numbers. -->
+          <SingleHit>false</SingleHit>
+
+          <!-- Embed SourceLink info into the coverage report. -->
+          <UseSourceLink>true</UseSourceLink>
+
+          <!-- Do not instrument the test assembly itself. -->
+          <IncludeTestAssembly>false</IncludeTestAssembly>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

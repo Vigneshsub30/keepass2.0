@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Enforced (administrator-policy) AppConfigEx fixture.
+  An enforced config is merged on top of the user config via XmlUtil.MergeElements,
+  so values present here override the corresponding user settings.
+  This fixture enforces:
+    - RememberKeySources = true    (overrides user's false)
+    - LockAfterTime = 300          (overrides user's 900)
+-->
+<Configuration xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Defaults>
+    <RememberKeySources>true</RememberKeySources>
+  </Defaults>
+  <Security>
+    <WorkspaceLocking>
+      <LockAfterTime>300</LockAfterTime>
+    </WorkspaceLocking>
+  </Security>
+</Configuration>

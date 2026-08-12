@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <LangVersion>10</LangVersion>
+    <SignAssembly>false</SignAssembly>
+    <AssemblyName>KeePass.Platform.Unix</AssemblyName>
+    <RootNamespace>KeePass.Platform.Unix</RootNamespace>
+    <!-- Re-enable SDK globbing and disable the disk-vs-Compile validation.
+         This is a new library (not legacy), so all source files are auto-included. -->
+    <EnableDefaultItems>true</EnableDefaultItems>
+    <EnableFileInclusionValidation>false</EnableFileInclusionValidation>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\KeePass.Core\KeePass.Core.csproj" />
+  </ItemGroup>
+
+</Project>

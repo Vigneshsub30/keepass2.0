@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Hardened-runtime entitlements for KeePass.app.
+
+  The hardened runtime restricts the set of operations an application can
+  perform.  Each key below grants an explicit exception needed for KeePass
+  to function correctly under macOS's security model.
+
+  com.apple.security.cs.allow-jit
+    Allows the .NET runtime's JIT compiler to generate executable code.
+    Required for .NET 10 on arm64/x64 macOS; without this the process is
+    terminated when the CLR attempts to mark pages as execute.
+
+  com.apple.security.cs.disable-library-validation
+    Permits loading of dynamic libraries that are not signed by Apple or
+    by the same Developer ID as the application.  Required for:
+      - ICU libraries bundled with the .NET 10 runtime
+      - libargon2 (native Argon2 implementation)
+      - Any third-party plugin DLLs the user installs
+
+  com.apple.security.cs.allow-unsigned-executable-memory
+    Needed by the .NET 10 AOT/interpreter path on older macOS versions where
+    MAP_JIT is unavailable.  Kept here for forward-compatibility with
+    environments that do not grant MAP_JIT to unsigned mappings.
+
+  com.apple.security.network.client
+    Allows outbound network connections.  Required for:
+      - Downloading favicons and website metadata
+      - Checking for application updates (via the built-in update checker)
+      - Trigger URL opening in the system browser
+
+  com.apple.security.files.user-selected.read-write
+    Grants read/write access to files the user explicitly chooses via an
+    NSOpenPanel / NSSavePanel.  Required for opening and saving .kdbx files.
+
+  com.apple.security.files.bookmarks.app-scope
+    Allows the creation of security-scoped bookmarks so the application can
+    remember access to user-selected files across launches (sandbox-safe MRU
+    list persistence).
+
+  IMPORTANT: do NOT add com.apple.security.get-task-allow=true in a
+  distribution build.  That entitlement disables hardened runtime protections
+  and will cause notarization to fail.
+-->
+<plist version="1.0">
+<dict>
+    <!-- JIT execution for the .NET 10 runtime -->
+    <key>com.apple.security.cs.allow-jit</key>
+    <true/>
+
+    <!-- Dynamic library loading for bundled runtimes and plugins -->
+    <key>com.apple.security.cs.disable-library-validation</key>
+    <true/>
+
+    <!-- Unsigned executable memory for .NET interpreter fallback -->
+    <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+    <true/>
+
+    <!-- Outbound network access for update checks and favicons -->
+    <key>com.apple.security.network.client</key>
+    <true/>
+
+    <!-- Read/write access to user-chosen files (.kdbx databases) -->
+    <key>com.apple.security.files.user-selected.read-write</key>
+    <true/>
+
+    <!-- Security-scoped bookmarks for MRU persistence -->
+    <key>com.apple.security.files.bookmarks.app-scope</key>
+    <true/>
+</dict>
+</plist>

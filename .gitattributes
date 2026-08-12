@@ -1,0 +1,4 @@
+# Force LF line endings for files that must run on Unix (macOS / Linux).
+*.sh     text eol=lf
+*.bash   text eol=lf
+*.plist  text eol=lf

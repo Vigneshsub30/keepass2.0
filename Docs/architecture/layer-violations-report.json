@@ -1,0 +1,119 @@
+{
+  "baseline_violation_count": 65,
+  "baseline_system_gravity": 62,
+  "target_violation_count": 20,
+  "target_system_gravity": 70,
+  "verified_eliminated": [
+    "AppConfigEx.OnLoad -> MruList.AddItem (WO-080: moved to MruInitializationService in Program.cs)",
+    "AppConfigEx.OnLoad -> MonoWorkarounds.IsRequired (WO-081: moved to PlatformWorkaroundService in Program.cs)",
+    "DefaultPluginHost -> MainForm concrete field (WO-079: replaced with IMainFormFacade interface)"
+  ],
+  "remaining_violations": [
+    {
+      "category": "config->UI",
+      "severity": "high",
+      "source_file": "KeePass/App/Configuration/AppEnforcedConfig.cs",
+      "line": 26,
+      "text": "using System.Windows.Forms;"
+    },
+    {
+      "category": "config->UI",
+      "severity": "high",
+      "source_file": "KeePass/App/Configuration/AppEnforcedConfig.cs",
+      "line": 271,
+      "text": "internal static bool ConfirmSavingItems(Form fParent)"
+    },
+    {
+      "category": "config->UI",
+      "severity": "high",
+      "source_file": "KeePass/App/Configuration/AceUI.cs",
+      "line": 238,
+      "text": "private string m_strToolStripRenderer = string.Empty;"
+    },
+    {
+      "category": "config->UI",
+      "severity": "high",
+      "source_file": "KeePass/App/Configuration/AceUI.cs",
+      "line": 240,
+      "text": "public string ToolStripRenderer"
+    },
+    {
+      "category": "config->UI",
+      "severity": "high",
+      "source_file": "KeePass/App/Configuration/AceUI.cs",
+      "line": 242,
+      "text": "get { return m_strToolStripRenderer; }"
+    },
+    {
+      "category": "config->UI",
+      "severity": "high",
+      "source_file": "KeePass/App/Configuration/AceUI.cs",
+      "line": 246,
+      "text": "m_strToolStripRenderer = value;"
+    },
+    {
+      "category": "config->UI",
+      "severity": "high",
+      "source_file": "KeePass/App/Configuration/AppConfigEx.cs",
+      "line": 27,
+      "text": "using System.Windows.Forms;"
+    },
+    {
+      "category": "config->UI",
+      "severity": "high",
+      "source_file": "KeePass/App/Configuration/AceIntegration.cs",
+      "line": 25,
+      "text": "using System.Windows.Forms;"
+    },
+    {
+      "category": "config->UI",
+      "severity": "high",
+      "source_file": "KeePass/App/Configuration/AceMainWindow.cs",
+      "line": 26,
+      "text": "using System.Windows.Forms;"
+    },
+    {
+      "category": "config->UI",
+      "severity": "high",
+      "source_file": "KeePass/App/Configuration/AppConfigEx.Sections.cs",
+      "line": 24,
+      "text": "using System.Windows.Forms;"
+    },
+    {
+      "category": "config->UI",
+      "severity": "high",
+      "source_file": "KeePass/App/Configuration/AppConfigEx.Sections.cs",
+      "line": 252,
+      "text": "bool bConfirm, bool bAllowElevate, Form fParent, object oSender)"
+    },
+    {
+      "category": "services->UI",
+      "severity": "medium",
+      "source_file": "KeePass/Services/DatabaseSessionCoordinator.cs",
+      "line": 434,
+      "text": "System.Windows.Forms.Form fParent)"
+    },
+    {
+      "category": "services->UI",
+      "severity": "medium",
+      "source_file": "KeePass/Services/PlatformWorkaroundService.cs",
+      "line": 1,
+      "text": "using System.Windows.Forms;"
+    },
+    {
+      "category": "services->UI",
+      "severity": "medium",
+      "source_file": "KeePass/Services/WinFormsDialogService.cs",
+      "line": 22,
+      "text": "using System.Windows.Forms;"
+    },
+    {
+      "category": "services->UI",
+      "severity": "medium",
+      "source_file": "KeePass/Services/WinFormsMessageService.cs",
+      "line": 20,
+      "text": "using System.Windows.Forms;"
+    }
+  ],
+  "remaining_count": 15
+}

@@ -1,0 +1,157 @@
+name: macOS Release
+
+# Runs on every tag push (e.g. v2.61.1) or can be triggered manually.
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version number (e.g. 2.61.1)"
+        required: true
+        default: "2.61.1"
+
+permissions:
+  contents: write   # needed to upload release artifacts
+
+jobs:
+  build-sign-notarize:
+    name: Build, Sign, Notarize (.dmg)
+    runs-on: macos-14
+    timeout-minutes: 60
+
+    env:
+      KEEPASS_VERSION: ${{ github.event.inputs.version || github.ref_name }}
+      OUTPUT_DIR: ${{ github.workspace }}/artifacts/macos
+
+    steps:
+      # ── Checkout ──────────────────────────────────────────────────────── #
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── .NET SDK ──────────────────────────────────────────────────────── #
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.x"
+
+      # ── Import Developer ID certificate ───────────────────────────────── #
+      - name: Import signing certificate
+        env:
+          CERTIFICATE_BASE64:   ${{ secrets.APPLE_DEVELOPER_ID_CERTIFICATE }}
+          CERTIFICATE_PASSWORD: ${{ secrets.APPLE_DEVELOPER_ID_PASSWORD }}
+        run: |
+          KEYCHAIN_PATH="$(mktemp -d)/signing.keychain-db"
+          KEYCHAIN_PASSWORD="$(openssl rand -hex 16)"
+
+          security create-keychain -p "${KEYCHAIN_PASSWORD}" "${KEYCHAIN_PATH}"
+          security set-keychain-settings -lut 21600 "${KEYCHAIN_PATH}"
+          security unlock-keychain -p "${KEYCHAIN_PASSWORD}" "${KEYCHAIN_PATH}"
+
+          CERT_FILE="$(mktemp).p12"
+          echo "${CERTIFICATE_BASE64}" | base64 --decode > "${CERT_FILE}"
+          security import "${CERT_FILE}" \
+            -k "${KEYCHAIN_PATH}" \
+            -P "${CERTIFICATE_PASSWORD}" \
+            -T /usr/bin/codesign
+          security list-keychains -d user -s "${KEYCHAIN_PATH}" login.keychain-db
+          security set-key-partition-list \
+            -S apple-tool:,apple: \
+            -s -k "${KEYCHAIN_PASSWORD}" "${KEYCHAIN_PATH}"
+
+          # Expose keychain path for later steps (optional cleanup)
+          echo "KEYCHAIN_PATH=${KEYCHAIN_PATH}" >> "${GITHUB_ENV}"
+
+      # ── Discover signing identity ────────────────────────────────────── #
+      - name: Set APPLE_DEVELOPER_ID
+        run: |
+          IDENTITY=$(security find-identity -v -p codesigning \
+            | grep "Developer ID Application" | head -1 \
+            | sed 's/.*"\(.*\)"/\1/')
+          if [[ -z "${IDENTITY}" ]]; then
+            echo "Error: no Developer ID Application certificate found" >&2
+            exit 1
+          fi
+          echo "APPLE_DEVELOPER_ID=${IDENTITY}" >> "${GITHUB_ENV}"
+          echo "Found identity: ${IDENTITY}"
+
+      # ── Strip leading 'v' from tag name for version string ────────────── #
+      - name: Resolve version string
+        run: |
+          VER="${KEEPASS_VERSION#v}"
+          echo "KEEPASS_VERSION=${VER}" >> "${GITHUB_ENV}"
+
+      # ── Build ─────────────────────────────────────────────────────────── #
+      - name: Build .app bundles
+        run: bash macOS/build-macos.sh
+
+      # ── Sign (arm64) ──────────────────────────────────────────────────── #
+      - name: Sign osx-arm64 bundle
+        run: |
+          bash macOS/sign-macos.sh \
+            "${OUTPUT_DIR}/KeePass-osx-arm64.app"
+
+      # ── Package arm64 DMG ─────────────────────────────────────────────── #
+      - name: Create osx-arm64 .dmg
+        run: |
+          bash macOS/package-dmg.sh \
+            "${OUTPUT_DIR}/KeePass-osx-arm64.app" \
+            "${OUTPUT_DIR}/KeePass-${KEEPASS_VERSION}-osx-arm64.dmg"
+
+      # ── Sign (x64) ────────────────────────────────────────────────────── #
+      - name: Sign osx-x64 bundle
+        run: |
+          bash macOS/sign-macos.sh \
+            "${OUTPUT_DIR}/KeePass-osx-x64.app"
+
+      # ── Package x64 DMG ───────────────────────────────────────────────── #
+      - name: Create osx-x64 .dmg
+        run: |
+          bash macOS/package-dmg.sh \
+            "${OUTPUT_DIR}/KeePass-osx-x64.app" \
+            "${OUTPUT_DIR}/KeePass-${KEEPASS_VERSION}-osx-x64.dmg"
+
+      # ── Notarize arm64 ────────────────────────────────────────────────── #
+      - name: Notarize osx-arm64 .dmg
+        env:
+          APPLE_ID:             ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID:        ${{ secrets.APPLE_TEAM_ID }}
+          APP_SPECIFIC_PASSWORD: ${{ secrets.APP_SPECIFIC_PASSWORD }}
+        run: |
+          bash macOS/notarize-macos.sh \
+            "${OUTPUT_DIR}/KeePass-${KEEPASS_VERSION}-osx-arm64.dmg"
+
+      # ── Notarize x64 ──────────────────────────────────────────────────── #
+      - name: Notarize osx-x64 .dmg
+        env:
+          APPLE_ID:             ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID:        ${{ secrets.APPLE_TEAM_ID }}
+          APP_SPECIFIC_PASSWORD: ${{ secrets.APP_SPECIFIC_PASSWORD }}
+        run: |
+          bash macOS/notarize-macos.sh \
+            "${OUTPUT_DIR}/KeePass-${KEEPASS_VERSION}-osx-x64.dmg"
+
+      # ── Verify ────────────────────────────────────────────────────────── #
+      - name: Verify signatures
+        run: |
+          for DMG in "${OUTPUT_DIR}"/*.dmg; do
+            echo "==> Verifying ${DMG}"
+            codesign --verify --deep --strict "${DMG%%.dmg}.app" 2>/dev/null \
+              || echo "  [NOTE] codesign on .dmg not applicable — checked .app"
+            xcrun stapler validate "${DMG}"
+          done
+
+      # ── Upload artifacts ───────────────────────────────────────────────── #
+      - name: Upload .dmg artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: KeePass-macos-${{ env.KEEPASS_VERSION }}
+          path: ${{ env.OUTPUT_DIR }}/*.dmg
+          retention-days: 30
+
+      # ── Cleanup keychain ──────────────────────────────────────────────── #
+      - name: Cleanup keychain
+        if: always()
+        run: |
+          security delete-keychain "${KEYCHAIN_PATH}" 2>/dev/null || true

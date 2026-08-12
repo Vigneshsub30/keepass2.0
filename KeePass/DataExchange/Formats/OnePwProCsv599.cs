@@ -1,0 +1,188 @@
+﻿/*
+  KeePass Password Safe - The Open-Source Password Manager
+  Copyright (C) 2003-2026 Dominik Reichl <dominik.reichl@t-online.de>
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+*/
+
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Text;
+
+using KeePass.Resources;
+
+using KeePassLib;
+using KeePassLib.Interfaces;
+using KeePassLib.Security;
+using KeePassLib.Utility;
+
+namespace KeePass.DataExchange.Formats
+{
+	// 1PW 6.15-7.05+ and its predecessor 1Password Pro 5.99,
+	// not 1Password (which is an entirely different product)
+	internal sealed class OnePwProCsv599 : FileFormatProvider
+	{
+		public override bool SupportsImport { get { return true; } }
+		public override bool SupportsExport { get { return false; } }
+
+		public override string FormatName { get { return "1PW & 1Password Pro CSV"; } }
+		public override string DefaultExtension { get { return "csv"; } }
+		public override string ApplicationGroup { get { return KPRes.PasswordManagers; } }
+
+		public override bool ImportAppendsToRootGroupOnly { get { return false; } }
+
+		public override void Import(PwDatabase pdStorage, Stream sInput,
+			IStatusLogger slLogger)
+		{
+			string strData = MemUtil.ReadString(sInput, Encoding.Default);
+
+			string[] vLines = strData.Split(new char[] { '\r', '\n' },
+				StringSplitOptions.RemoveEmptyEntries);
+
+			Dictionary<string, PwGroup> dictGroups = new Dictionary<string, PwGroup>();
+			foreach(string strLine in vLines)
+			{
+				ProcessCsvLine(strLine, pdStorage, dictGroups);
+			}
+		}
+
+		private static void ProcessCsvLine(string strLine, PwDatabase pd,
+			Dictionary<string, PwGroup> dictGroups)
+		{
+			if(strLine == "\"Bezeichnung\"\t\"User/ID\"\t\"1.Passwort\"\t\"Url/Programm\"\t\"Geändert am\"\t\"Bemerkung\"\t\"2.Passwort\"\t\"Läuft ab\"\t\"Kategorie\"\t\"Eigene Felder\"")
+				return;
+
+			string str = strLine;
+			if(str.StartsWith("\"") && str.EndsWith("\""))
+				str = str.Substring(1, str.Length - 2);
+			else { Debug.Assert(false); }
+
+			string[] v = str.Split(new string[] { "\"\t\"" }, StringSplitOptions.None);
+
+			int iOffset;
+			if(v.Length == 11) iOffset = 0; // 1Password Pro 5.99
+			else if(v.Length == 10) iOffset = -1; // 1PW 6.15
+			else if(v.Length > 11) iOffset = 0; // Unknown extension
+			else return;
+
+			string strGroup = v[9 + iOffset];
+			PwGroup pg;
+			if(dictGroups.ContainsKey(strGroup)) pg = dictGroups[strGroup];
+			else
+			{
+				pg = new PwGroup(true, true, strGroup, PwIcon.Folder);
+				pd.RootGroup.AddGroup(pg, true);
+				dictGroups[strGroup] = pg;
+			}
+
+			PwEntry pe = new PwEntry(true, true);
+			pg.AddEntry(pe, true);
+
+			ImportUtil.Add(pe, PwDefs.TitleField, ParseCsvWord(v[1 + iOffset]), pd);
+			ImportUtil.Add(pe, PwDefs.UserNameField, ParseCsvWord(v[2 + iOffset]), pd);
+			ImportUtil.Add(pe, PwDefs.PasswordField, ParseCsvWord(v[3 + iOffset]), pd);
+			ImportUtil.Add(pe, PwDefs.UrlField, ParseCsvWord(v[4 + iOffset]), pd);
+			ImportUtil.Add(pe, PwDefs.NotesField, ParseCsvWord(v[6 + iOffset]), pd);
+			pe.Strings.Set(PwDefs.PasswordField + " 2", new ProtectedString(
+				pd.MemoryProtection.ProtectPassword, ParseCsvWord(v[7 + iOffset])));
+
+			// 1Password Pro only:
+			// Debug.Assert(v[9] == v[0]); // ?
+
+			DateTime dt;
+			if(ParseDateTime(v[5 + iOffset], out dt))
+			{
+				pe.CreationTime = pe.LastAccessTime = pe.LastModificationTime = dt;
+			}
+			else { Debug.Assert(false); }
+
+			if(ParseDateTime(v[8 + iOffset], out dt))
+			{
+				pe.Expires = true;
+				pe.ExpiryTime = dt;
+			}
+
+			AddCustomFields(pe, v[10 + iOffset]);
+		}
+
+		private static string ParseCsvWord(string strWord)
+		{
+			string str = strWord;
+
+			str = str.Replace("\\r", string.Empty);
+			str = str.Replace("\\n", "\r\n");
+
+			return str;
+		}
+
+		private static bool ParseDateTime(string str, out DateTime dt)
+		{
+			str = (str ?? string.Empty).Trim();
+			dt = DateTime.MinValue;
+
+			if(str.Length == 0) return false;
+			if(str.Equals("nie", StrUtil.CaseIgnoreCmp)) return false;
+			if(str.Equals("never", StrUtil.CaseIgnoreCmp)) return false;
+			if(str.Equals("morgen", StrUtil.CaseIgnoreCmp))
+			{
+				dt = DateTime.UtcNow.AddDays(1.0);
+				return true;
+			}
+
+			string[] v = str.Split(new char[] { '.', '\r', '\n', ' ', '\t',
+				'-', ':' }, StringSplitOptions.RemoveEmptyEntries);
+
+			try
+			{
+				if(v.Length == 6)
+					dt = (new DateTime(int.Parse(v[2]), int.Parse(v[1]),
+						int.Parse(v[0]), int.Parse(v[3]), int.Parse(v[4]),
+						int.Parse(v[5]), DateTimeKind.Local)).ToUniversalTime();
+				else if(v.Length == 3)
+					dt = (new DateTime(int.Parse(v[2]), int.Parse(v[1]),
+						int.Parse(v[0]), 0, 0, 0, DateTimeKind.Local)).ToUniversalTime();
+				else { Debug.Assert(false); return false; }
+			}
+			catch(Exception) { Debug.Assert(false); return false; }
+
+			return true;
+		}
+
+		private static void AddCustomFields(PwEntry pe, string strCustom)
+		{
+			string[] vItems = strCustom.Split(new string[] { @"|~#~|" },
+				StringSplitOptions.RemoveEmptyEntries);
+
+			foreach(string strItem in vItems)
+			{
+				string[] vData = strItem.Split(new char[] { '|' },
+					StringSplitOptions.None);
+
+				if(vData.Length >= 3)
+				{
+					string strValue = vData[2];
+					for(int i = 3; i < vData.Length; ++i)
+						strValue += @"|" + vData[i];
+
+					pe.Strings.Set(vData[1], new ProtectedString(false,
+						strValue));
+				}
+				else { Debug.Assert(false); }
+			}
+		}
+	}
+}

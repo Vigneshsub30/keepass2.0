@@ -1,0 +1,78 @@
+name: Platform Tests
+
+# Run cross-platform regression and characterization tests for WO-044.
+# This workflow targets the KeePass.Tests.Platform project (net10.0) which
+# runs on all three OS runners without requiring Microsoft.WindowsDesktop.App.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  platform-tests:
+    name: Platform Tests / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-14, ubuntu-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-platform-${{ hashFiles('Directory.Packages.props') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-platform-
+            ${{ runner.os }}-nuget-
+
+      - name: Set up .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore NuGet packages
+        run: dotnet restore KeePass.Tests.Platform/KeePass.Tests.Platform.csproj
+
+      - name: Build platform test project
+        run: >
+          dotnet build KeePass.Tests.Platform/KeePass.Tests.Platform.csproj
+          --configuration Release --no-restore
+
+      # Install xclip on Ubuntu for clipboard integration tests.
+      - name: Install clipboard helper (Ubuntu)
+        if: runner.os == 'Linux'
+        run: sudo apt-get install -y xclip xsel
+
+      # Install libsecret-tools on Ubuntu for credential store integration tests.
+      - name: Install secret-tool (Ubuntu)
+        if: runner.os == 'Linux'
+        run: sudo apt-get install -y libsecret-tools
+
+      - name: Run platform tests
+        run: >
+          dotnet test KeePass.Tests.Platform/KeePass.Tests.Platform.csproj
+          --configuration Release --no-build
+          --logger "trx;LogFileName=platform-test-results.trx"
+          --verbosity normal
+          --collect:"XPlat Code Coverage"
+          --results-directory coverage-platform
+
+      - name: Upload test results
+        if: success() || failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: platform-test-results-${{ runner.os }}
+          path: KeePass.Tests.Platform/TestResults/*.trx
+          if-no-files-found: warn

@@ -1,0 +1,99 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:KeePass.Core.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="420" d:DesignHeight="360"
+             x:Class="KeePass.Desktop.Avalonia.Views.KeyPromptView"
+             x:DataType="vm:KeyPromptViewModel">
+
+    <Grid RowDefinitions="Auto,*,Auto" Margin="16">
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,16">
+            <TextBlock Text="&#x1F512;" FontSize="24" VerticalAlignment="Center" />
+            <StackPanel>
+                <TextBlock Text="Enter Master Key" FontSize="16" FontWeight="Bold" />
+                <TextBlock Text="{Binding DatabasePath}" FontSize="11" Opacity="0.6"
+                           TextTrimming="CharacterEllipsis" MaxWidth="340" />
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Key source inputs -->
+        <StackPanel Grid.Row="1" Spacing="12">
+
+            <!-- Master Password -->
+            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseHighBrush}"
+                    BorderThickness="0,0,0,1" Padding="0,0,0,4">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Master Password" FontSize="12" Opacity="0.7" />
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBox Grid.Column="0"
+                                 x:Name="PasswordBox"
+                                 PasswordChar="●"
+                                 Watermark="Enter password…"
+                                 IsEnabled="{Binding !IsKeyDerivationInProgress}"
+                                 TextChanged="PasswordBox_TextChanged"
+                                 KeyDown="PasswordBox_KeyDown" />
+                        <ToggleButton Grid.Column="1" x:Name="RevealToggle"
+                                      Margin="4,0,0,0"
+                                      ToolTip.Tip="Show / Hide password"
+                                      Content="👁"
+                                      Checked="RevealToggle_Checked"
+                                      Unchecked="RevealToggle_Unchecked" />
+                    </Grid>
+                    <!-- Password quality bar -->
+                    <ProgressBar Minimum="0" Maximum="128"
+                                 Value="{Binding PasswordQualityBits}"
+                                 Height="4" />
+                </StackPanel>
+            </Border>
+
+            <!-- Key File -->
+            <StackPanel Spacing="4">
+                <CheckBox Content="Key File"
+                          IsChecked="{Binding UseKeyFile}"
+                          IsEnabled="{Binding !IsKeyDerivationInProgress}" />
+                <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding UseKeyFile}">
+                    <TextBox Grid.Column="0"
+                             Text="{Binding KeyFilePath}"
+                             Watermark="Path to key file…"
+                             IsEnabled="{Binding !IsKeyDerivationInProgress}"
+                             IsReadOnly="True" />
+                    <Button Grid.Column="1" Content="Browse…"
+                            Margin="4,0,0,0"
+                            Command="{Binding BrowseKeyFileCommand}"
+                            IsEnabled="{Binding !IsKeyDerivationInProgress}" />
+                </Grid>
+            </StackPanel>
+
+        </StackPanel>
+
+        <!-- Bottom actions -->
+        <StackPanel Grid.Row="2" Spacing="8" Margin="0,16,0,0">
+
+            <!-- Progress area (visible only while deriving) -->
+            <StackPanel IsVisible="{Binding IsKeyDerivationInProgress}" Spacing="4">
+                <ProgressBar Minimum="0" Maximum="100"
+                             Value="{Binding KeyDerivationProgress}"
+                             IsIndeterminate="{Binding IsKeyDerivationInProgress}"
+                             Height="6" />
+                <TextBlock Text="Deriving key, please wait…"
+                           FontSize="11" Opacity="0.7" HorizontalAlignment="Center" />
+            </StackPanel>
+
+            <!-- OK / Cancel -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                <Button Content="Cancel"
+                        x:Name="CancelButton"
+                        Click="CancelButton_Click"
+                        IsEnabled="{Binding !IsKeyDerivationInProgress}" />
+                <Button Content="OK"
+                        x:Name="OkButton"
+                        Classes="accent"
+                        Command="{Binding UnlockCommand}" />
+            </StackPanel>
+        </StackPanel>
+
+    </Grid>
+</UserControl>

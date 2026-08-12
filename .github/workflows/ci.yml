@@ -1,0 +1,515 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  # Required for SLSA provenance attestation (WO-009).
+  id-token: write
+  attestations: write
+
+jobs:
+  build:
+    name: Build & Test / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-14, ubuntu-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # NuGet package cache keyed on OS + Directory.Packages.props hash.
+      # On Windows, ~/.nuget/packages resolves to %USERPROFILE%\.nuget\packages.
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('Directory.Packages.props') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Set up .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore NuGet packages
+        run: dotnet restore KeePass.sln
+
+      # All three projects target net10.0-windows; Directory.Build.props sets
+      # EnableWindowsTargeting=true so the build succeeds on macOS and Linux.
+      - name: Build — Release
+        run: dotnet build KeePass.sln --configuration Release --no-restore
+
+      # The test project (KeePass.Tests) targets net10.0-windows, which requires
+      # the Microsoft.WindowsDesktop.App runtime that is only available on Windows
+      # runners. Skip test execution on macOS and Linux.
+      - name: Run tests with coverage
+        if: runner.os == 'Windows'
+        timeout-minutes: 10
+        run: >
+          dotnet test KeePass.Tests/KeePass.Tests.csproj
+          --configuration Release
+          --no-build
+          --logger "trx;LogFileName=test-results.trx"
+          --verbosity normal
+          --collect:"XPlat Code Coverage"
+          --results-directory coverage
+          --settings coverage.runsettings
+
+      - name: Upload test results
+        if: runner.os == 'Windows' && (success() || failure())
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-windows
+          # With --results-directory coverage the TRX lands in coverage/ not
+          # in KeePass.Tests/TestResults/, so we glob both locations.
+          path: |
+            coverage/test-results.trx
+            KeePass.Tests/TestResults/*.trx
+          if-no-files-found: warn
+
+      # ── Coverage reporting (WO-025) ─────────────────────────────────────────
+      # Uses ReportGenerator to produce a human-readable summary from the
+      # Cobertura XML emitted by coverlet.  Only runs on Windows where tests run.
+      - name: Install ReportGenerator
+        if: runner.os == 'Windows' && (success() || failure())
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool
+
+      - name: Generate coverage report
+        if: runner.os == 'Windows' && (success() || failure())
+        shell: pwsh
+        run: |
+          $coberturaFiles = Get-ChildItem -Path coverage -Recurse -Filter coverage.cobertura.xml |
+            Select-Object -ExpandProperty FullName
+          if (-not $coberturaFiles) {
+            Write-Warning "No Cobertura XML files found — coverage collection may have failed"
+            exit 0
+          }
+          $reports = $coberturaFiles -join ";"
+          reportgenerator `
+            -reports:$reports `
+            -targetdir:coverage-report `
+            -reporttypes:"HtmlSummary;TextSummary;Cobertura" `
+            -assemblyfilters:"+KeePassLib;-KeePass.Tests"
+
+      - name: Print coverage summary
+        if: runner.os == 'Windows' && (success() || failure())
+        shell: pwsh
+        run: |
+          $summary = "coverage-report\Summary.txt"
+          if (Test-Path $summary) {
+            Write-Host "=== Code Coverage Summary ==="
+            Get-Content $summary
+          } else {
+            Write-Warning "Coverage summary not found"
+          }
+
+      # Fail the build if KeePassLib line coverage drops below the threshold.
+      # Threshold is set conservatively (5%) and must be ratcheted upward as
+      # more tests are added. Update this value after each phase of test work.
+      - name: Enforce coverage threshold (≥5% line coverage)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $xml = "coverage-report\Cobertura.xml"
+          if (-not (Test-Path $xml)) {
+            Write-Warning "Merged Cobertura XML not found — skipping threshold check"
+            exit 0
+          }
+          [xml]$cov = Get-Content $xml
+          $lineRate = [double]$cov.coverage."line-rate"
+          $pct = [math]::Round($lineRate * 100, 2)
+          Write-Host "KeePassLib line coverage: $pct%"
+          # Baseline threshold — ratchet this up as coverage grows.
+          $threshold = 5.0
+          if ($pct -lt $threshold) {
+            Write-Error "Coverage $pct% is below the required threshold of $threshold%"
+            exit 1
+          }
+          Write-Host "Coverage gate passed: $pct% >= $threshold%"
+
+      - name: Upload coverage report
+        if: runner.os == 'Windows' && (success() || failure())
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-windows
+          path: coverage-report/
+          if-no-files-found: warn
+
+      # Log SHA-256 hashes of the primary assemblies to make deterministic-build
+      # regressions visible in the CI log (WO-008).
+      - name: Log assembly hashes (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $files = @(
+            "KeePass/bin/Release/net10.0-windows/KeePass.dll",
+            "KeePassLib/bin/Release/net10.0-windows/KeePassLib.dll",
+            "Translation/TrlUtil/bin/Release/net10.0-windows/TrlUtil.dll"
+          )
+          foreach ($f in $files) {
+            if (Test-Path $f) { Get-FileHash $f -Algorithm SHA256 | Select-Object Hash, Path | Format-Table -AutoSize }
+          }
+
+      - name: Log assembly hashes (Linux / macOS)
+        if: runner.os != 'Windows'
+        run: |
+          for f in \
+            KeePass/bin/Release/net10.0-windows/KeePass.dll \
+            KeePassLib/bin/Release/net10.0-windows/KeePassLib.dll \
+            Translation/TrlUtil/bin/Release/net10.0-windows/TrlUtil.dll; do
+            [ -f "$f" ] && (command -v sha256sum >/dev/null && sha256sum "$f" || shasum -a 256 "$f")
+          done
+
+      # ── SBOM generation (WO-009) ────────────────────────────────────────────
+      # CycloneDX produces a machine-readable inventory of all NuGet dependencies.
+      - name: Install CycloneDX SBOM tool
+        run: dotnet tool install --global CycloneDX
+
+      - name: Generate SBOM (CycloneDX JSON)
+        run: dotnet CycloneDX KeePass.sln --output sbom/ --json
+
+      # Verify that key packages appear in the SBOM JSON using cross-platform
+      # PowerShell Core (pwsh is pre-installed on all GitHub Actions runners).
+      - name: Verify SBOM contents
+        shell: pwsh
+        run: |
+          $bom = Get-Content sbom/bom.json -Raw | ConvertFrom-Json
+          $pkgNames = $bom.components | ForEach-Object { $_.name }
+          $expected = @("System.Drawing.Common", "System.IO.FileSystem.AccessControl")
+          foreach ($pkg in $expected) {
+            if ($pkgNames -contains $pkg) {
+              Write-Host "SBOM OK: $pkg found"
+            } else {
+              Write-Warning "SBOM: '$pkg' not found in components — check CycloneDX output"
+            }
+          }
+          Write-Host "Total SBOM components: $($bom.components.Count)"
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-cyclonedx-${{ runner.os }}
+          path: sbom/bom.json
+          if-no-files-found: error
+
+      # ── SLSA provenance attestation (WO-009) ───────────────────────────────
+      # Generates a signed SLSA provenance attestation stored in GitHub's
+      # attestation store.  Verifiable with: gh attestation verify <file> -R <repo>
+      # Only run on Windows where the primary distributable artifacts are built.
+      - name: Attest build provenance
+        if: runner.os == 'Windows'
+        id: attest
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            KeePass/bin/Release/net10.0-windows/KeePass.dll
+            KeePassLib/bin/Release/net10.0-windows/KeePassLib.dll
+            Translation/TrlUtil/bin/Release/net10.0-windows/TrlUtil.dll
+
+      - name: Upload provenance attestation bundle
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: provenance-attestation-windows
+          path: ${{ steps.attest.outputs.bundle-path }}
+          if-no-files-found: warn
+
+      # ── Authenticode code signing (WO-010) ─────────────────────────────────
+      # Signing is Windows-only and runs only on push to main / version tags.
+      # Pull-request builds are intentionally skipped (untrusted forks must not
+      # trigger signing).  Requires SIGNING_ENABLED repository variable = 'true'
+      # and the three AZURE_* secrets documented in SIGNING.md.
+      - name: Azure login (OIDC federation)
+        if: >
+          runner.os == 'Windows' &&
+          github.event_name == 'push' &&
+          (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) &&
+          vars.SIGNING_ENABLED == 'true'
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Sign Windows binaries (Azure Trusted Signing)
+        if: >
+          runner.os == 'Windows' &&
+          github.event_name == 'push' &&
+          (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) &&
+          vars.SIGNING_ENABLED == 'true'
+        uses: azure/trusted-signing-action@v0.4.0
+        with:
+          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure-subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          endpoint: https://eus.codesigning.azure.net/
+          trusted-signing-account-name: ${{ vars.AZURE_TRUSTED_SIGNING_ACCOUNT }}
+          certificate-profile-name: ${{ vars.AZURE_CERTIFICATE_PROFILE }}
+          # Sign all .exe and .dll files in the output directory.
+          files-folder: KeePass/bin/Release/net10.0-windows
+          files-folder-filter: exe,dll
+          files-folder-recurse: false
+          # RFC 3161 timestamp ensures signatures remain valid after cert expiry.
+          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+          timestamp-digest: SHA256
+
+      # Also sign KeePassLib (it ships standalone) and TrlUtil.
+      - name: Sign KeePassLib and TrlUtil (Azure Trusted Signing)
+        if: >
+          runner.os == 'Windows' &&
+          github.event_name == 'push' &&
+          (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) &&
+          vars.SIGNING_ENABLED == 'true'
+        uses: azure/trusted-signing-action@v0.4.0
+        with:
+          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure-subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          endpoint: https://eus.codesigning.azure.net/
+          trusted-signing-account-name: ${{ vars.AZURE_TRUSTED_SIGNING_ACCOUNT }}
+          certificate-profile-name: ${{ vars.AZURE_CERTIFICATE_PROFILE }}
+          files: |
+            KeePassLib/bin/Release/net10.0-windows/KeePassLib.dll
+            Translation/TrlUtil/bin/Release/net10.0-windows/TrlUtil.exe
+          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+          timestamp-digest: SHA256
+
+      # Verify the Authenticode signatures using signtool.exe (ships with the
+      # Windows SDK, available on windows-latest runners).
+      - name: Verify Authenticode signatures
+        if: >
+          runner.os == 'Windows' &&
+          github.event_name == 'push' &&
+          (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) &&
+          vars.SIGNING_ENABLED == 'true'
+        shell: pwsh
+        run: |
+          $files = @(
+            "KeePass/bin/Release/net10.0-windows/KeePass.exe",
+            "KeePassLib/bin/Release/net10.0-windows/KeePassLib.dll",
+            "Translation/TrlUtil/bin/Release/net10.0-windows/TrlUtil.exe"
+          )
+          $failed = $false
+          foreach ($f in $files) {
+            if (Test-Path $f) {
+              $sig = Get-AuthenticodeSignature $f
+              Write-Host "$f : $($sig.Status)"
+              if ($sig.Status -ne 'Valid') { $failed = $true; Write-Error "Signature invalid: $f" }
+            }
+          }
+          if ($failed) { exit 1 }
+
+      # ── macOS Developer ID signing and notarization (WO-011) ───────────────
+      # Steps below require the Avalonia .app bundle to exist at build/KeePass.app.
+      # Until WO-052 (Avalonia bootstrap) lands, bundle-check outputs 'false' and
+      # all subsequent signing steps are automatically skipped.
+      - name: Check for macOS app bundle
+        id: bundle-check
+        if: runner.os == 'macOS'
+        run: |
+          if [ -d "build/KeePass.app" ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::build/KeePass.app not found — macOS signing skipped (add Avalonia head in WO-052)"
+          fi
+
+      - name: Import Developer ID certificate into temporary keychain
+        if: >
+          runner.os == 'macOS' &&
+          github.event_name == 'push' &&
+          (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) &&
+          vars.MACOS_SIGNING_ENABLED == 'true' &&
+          steps.bundle-check.outputs.exists == 'true'
+        env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_DEVELOPER_ID_CERTIFICATE }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.MACOS_KEYCHAIN_PASSWORD }}
+        run: |
+          echo "$MACOS_CERTIFICATE" | base64 --decode > /tmp/developer_id.p12
+          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security import /tmp/developer_id.p12 -k build.keychain \
+            -P "$MACOS_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: \
+            -s -k "$KEYCHAIN_PASSWORD" build.keychain
+          rm /tmp/developer_id.p12
+
+      - name: Sign app bundle (codesign — hardened runtime)
+        if: >
+          runner.os == 'macOS' &&
+          github.event_name == 'push' &&
+          (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) &&
+          vars.MACOS_SIGNING_ENABLED == 'true' &&
+          steps.bundle-check.outputs.exists == 'true'
+        run: |
+          codesign --force --deep --sign "Developer ID Application" \
+            --entitlements macOS/entitlements.plist \
+            --options runtime \
+            --timestamp \
+            build/KeePass.app
+
+      - name: Create DMG (hdiutil)
+        if: >
+          runner.os == 'macOS' &&
+          github.event_name == 'push' &&
+          (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) &&
+          vars.MACOS_SIGNING_ENABLED == 'true' &&
+          steps.bundle-check.outputs.exists == 'true'
+        run: |
+          mkdir -p dist
+          hdiutil create -volname KeePass \
+            -srcfolder build/KeePass.app \
+            -ov -format UDZO \
+            dist/KeePass.dmg
+          codesign --sign "Developer ID Application" --timestamp dist/KeePass.dmg
+
+      - name: Notarize DMG (xcrun notarytool)
+        if: >
+          runner.os == 'macOS' &&
+          github.event_name == 'push' &&
+          (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) &&
+          vars.MACOS_SIGNING_ENABLED == 'true' &&
+          steps.bundle-check.outputs.exists == 'true'
+        env:
+          APPLE_API_KEY_CONTENT: ${{ secrets.APPLE_API_KEY_CONTENT }}
+        run: |
+          echo "$APPLE_API_KEY_CONTENT" > /tmp/apple_api_key.p8
+          xcrun notarytool submit dist/KeePass.dmg \
+            --key /tmp/apple_api_key.p8 \
+            --key-id "${{ secrets.APPLE_API_KEY_ID }}" \
+            --issuer "${{ secrets.APPLE_API_ISSUER_ID }}" \
+            --wait \
+            --timeout 30m
+          rm /tmp/apple_api_key.p8
+
+      - name: Staple notarization ticket
+        if: >
+          runner.os == 'macOS' &&
+          github.event_name == 'push' &&
+          (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) &&
+          vars.MACOS_SIGNING_ENABLED == 'true' &&
+          steps.bundle-check.outputs.exists == 'true'
+        run: xcrun stapler staple dist/KeePass.dmg
+
+      - name: Verify DMG signature and notarization
+        if: >
+          runner.os == 'macOS' &&
+          github.event_name == 'push' &&
+          (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) &&
+          vars.MACOS_SIGNING_ENABLED == 'true' &&
+          steps.bundle-check.outputs.exists == 'true'
+        run: |
+          spctl --assess --type open --context context:primary-signature \
+            -v build/KeePass.app
+          xcrun stapler validate dist/KeePass.dmg
+
+      - name: Upload notarized DMG
+        if: >
+          runner.os == 'macOS' &&
+          github.event_name == 'push' &&
+          (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) &&
+          vars.MACOS_SIGNING_ENABLED == 'true' &&
+          steps.bundle-check.outputs.exists == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: KeePass-macos-signed-dmg
+          path: dist/KeePass.dmg
+
+      - name: Cleanup temporary keychain
+        if: always() && runner.os == 'macOS'
+        run: security delete-keychain build.keychain 2>/dev/null || true
+
+      # ── Linux GPG checksum signing (WO-012) ────────────────────────────────
+      # Generates SHA-256 checksums for Linux artifacts and creates a detached
+      # GPG signature.  Skipped on pull requests and when LINUX_SIGNING_ENABLED
+      # is not set.  The GPG key never appears in logs (imported from secrets).
+      - name: Generate SHA-256 checksums (Linux)
+        if: >
+          runner.os == 'Linux' &&
+          github.event_name == 'push' &&
+          (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) &&
+          vars.LINUX_SIGNING_ENABLED == 'true'
+        run: |
+          sha256sum \
+            KeePassLib/bin/Release/net10.0-windows/KeePassLib.dll \
+            Translation/TrlUtil/bin/Release/net10.0-windows/TrlUtil.dll \
+            > SHA256SUMS
+          cat SHA256SUMS
+
+      - name: Import GPG signing key
+        if: >
+          runner.os == 'Linux' &&
+          github.event_name == 'push' &&
+          (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) &&
+          vars.LINUX_SIGNING_ENABLED == 'true'
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.LINUX_GPG_SIGNING_KEY }}
+        run: echo "$GPG_PRIVATE_KEY" | gpg --batch --import
+
+      - name: Sign SHA256SUMS with GPG (detached signature)
+        if: >
+          runner.os == 'Linux' &&
+          github.event_name == 'push' &&
+          (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) &&
+          vars.LINUX_SIGNING_ENABLED == 'true'
+        env:
+          GPG_KEY_ID: ${{ secrets.LINUX_GPG_KEY_ID }}
+          GPG_PASSPHRASE: ${{ secrets.LINUX_GPG_PASSPHRASE }}
+        run: |
+          echo "$GPG_PASSPHRASE" | gpg --batch --yes --pinentry-mode loopback \
+            --passphrase-fd 0 \
+            --detach-sign --armor \
+            -u "$GPG_KEY_ID" \
+            --output SHA256SUMS.sig \
+            SHA256SUMS
+
+      - name: Upload checksums and GPG signature
+        if: >
+          runner.os == 'Linux' &&
+          github.event_name == 'push' &&
+          (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) &&
+          vars.LINUX_SIGNING_ENABLED == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: KeePass-linux-checksums
+          path: |
+            SHA256SUMS
+            SHA256SUMS.sig
+          if-no-files-found: error
+
+      - name: Remove GPG key from keyring (cleanup)
+        if: >
+          always() &&
+          runner.os == 'Linux' &&
+          vars.LINUX_SIGNING_ENABLED == 'true'
+        env:
+          GPG_KEY_ID: ${{ secrets.LINUX_GPG_KEY_ID }}
+        run: gpg --batch --yes --delete-secret-key "$GPG_KEY_ID" 2>/dev/null || true
+
+      # Upload the primary binaries produced by the Release build.
+      # On Windows these include native .exe launchers; on macOS/Linux the
+      # managed .dll assemblies are still produced and uploaded.
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: KeePass-binaries-${{ runner.os }}
+          path: |
+            KeePass/bin/Release/net10.0-windows/KeePass.exe
+            KeePass/bin/Release/net10.0-windows/KeePass.dll
+            KeePassLib/bin/Release/net10.0-windows/KeePassLib.dll
+            Translation/TrlUtil/bin/Release/net10.0-windows/TrlUtil.exe
+            Translation/TrlUtil/bin/Release/net10.0-windows/TrlUtil.dll
+          if-no-files-found: warn
